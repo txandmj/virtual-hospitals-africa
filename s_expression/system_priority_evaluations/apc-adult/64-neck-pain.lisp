@@ -1,5 +1,6 @@
 ;; Page 64 - Neck Pain: Urgent for meningitis and neurological signs
 (system_priority_evaluation
+  "Urgent: neck pain with meningism, neurological or traumatic signs"
   adult
   Urgent
   (and

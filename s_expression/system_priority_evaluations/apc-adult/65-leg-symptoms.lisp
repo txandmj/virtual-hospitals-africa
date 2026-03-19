@@ -1,5 +1,6 @@
 ;; Page 65 - Leg Symptoms: Urgent for DVT signs
 (system_priority_evaluation
+  "Urgent: calf pain with swelling suggestive of DVT"
   adult
   Urgent
   (and
@@ -9,6 +10,7 @@
 )
 ;; Page 65 - Leg Symptoms: Urgent for acute and critical limb ischaemia
 (system_priority_evaluation
+  "Urgent: leg pain with absent pulse or gangrene"
   adult
   Urgent
   (and

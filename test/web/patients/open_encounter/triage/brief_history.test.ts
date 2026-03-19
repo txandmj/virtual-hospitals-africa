@@ -384,7 +384,7 @@ describeParallel('triage/brief_history', () => {
             'is_me': true,
             'role': 'nurse',
             'is_admin': false,
-            'seen_at': z.string().datetime({ offset: true }),
+            'seen_at': z.date(),
           },
           'attributes': [],
 
@@ -432,7 +432,7 @@ describeParallel('triage/brief_history', () => {
             'is_me': true,
             'role': 'nurse',
             'is_admin': false,
-            'seen_at': z.string().datetime({ offset: true }),
+            'seen_at': z.date(),
           },
           'attributes': [],
           // 'source_relations': [],

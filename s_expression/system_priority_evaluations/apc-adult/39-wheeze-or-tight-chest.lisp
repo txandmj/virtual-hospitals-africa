@@ -1,5 +1,6 @@
 ;; Page 39 - Wheeze: Severe wheeze
 (system_priority_evaluation
+  "Emergency: severe wheeze with respiratory distress"
   adult
   Emergency
   (and

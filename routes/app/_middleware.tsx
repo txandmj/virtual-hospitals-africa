@@ -90,23 +90,25 @@ export function getLoggedInHealthWorker(
     const { health_worker, present_encounter } = await promiseProps({
       present_encounter: traceTime(
         'present_encounter',
-        db.selectFrom('employment')
-          .innerJoin('patient_encounter_employees', 'patient_encounter_employees.employment_id', 'employment.id')
-          .innerJoin('patient_encounters', 'patient_encounter_employees.patient_encounter_id', 'patient_encounters.id')
-          .innerJoin('employment_presence', 'employment.id', 'employment_presence.id')
-          .where('employment.health_worker_id', '=', health_worker_id)
-          .where('patient_encounters.closed_at', 'is', null)
-          .whereRef('patient_encounters.patient_id', '=', 'employment_presence.with_patient_id')
-          .select('patient_encounters.id')
-          .executeTakeFirst(),
+        () =>
+          db.selectFrom('employment')
+            .innerJoin('patient_encounter_employees', 'patient_encounter_employees.employment_id', 'employment.id')
+            .innerJoin('patient_encounters', 'patient_encounter_employees.patient_encounter_id', 'patient_encounters.id')
+            .innerJoin('employment_presence', 'employment.id', 'employment_presence.id')
+            .where('employment.health_worker_id', '=', health_worker_id)
+            .where('patient_encounters.closed_at', 'is', null)
+            .whereRef('patient_encounters.patient_id', '=', 'employment_presence.with_patient_id')
+            .select('patient_encounters.id')
+            .executeTakeFirst(),
       ),
-      update_session: traceTime('sessions.tickUpdatedAt', sessions.tickUpdatedAt(db, { session_id, health_worker_id })),
+      update_session: traceTime('sessions.tickUpdatedAt', () => sessions.tickUpdatedAt(db, { session_id, health_worker_id })),
       health_worker: traceTime(
         'health_workers.getByIdOptional',
-        health_workers.getByIdOptional(
-          db,
-          health_worker_id,
-        ),
+        () =>
+          health_workers.getByIdOptional(
+            db,
+            health_worker_id,
+          ),
       ),
     })
 

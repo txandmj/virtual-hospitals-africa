@@ -14,7 +14,19 @@ import type {
   ValueExpression,
 } from 'kysely'
 import type { ComponentChild, JSX } from 'preact'
-import type { AgeUnit, DB, EncounterReason, FamilyType, MaritalStatus, MessagePriority, PatientCohabitation, SnomedCategory, Workflow } from './db.d.ts'
+import type {
+  AgeUnit,
+  DB,
+  DiagnosisCertainty,
+  EncounterReason,
+  FamilyType,
+  MaritalStatus,
+  MessagePriority,
+  PatientCohabitation,
+  SnomedCategory,
+  WarningSignPriority,
+  Workflow,
+} from './db.d.ts'
 import type { Department } from './shared/departments.ts'
 import type { Priority } from './shared/priorities.ts'
 import type { MessageTargetCategory } from './shared/message_targets.ts'
@@ -22,7 +34,7 @@ import type { CommonConditionKey } from './shared/brief_history.ts'
 import type { VitalAssessment, VitalMeasurement } from './shared/vitals.ts'
 import type { WarningSignKey } from './shared/warning_signs.ts'
 import type { Decimal } from './util/decimal.ts'
-import type { Lang } from './shared/s_expression_schemas.ts'
+import type { Lang, QueryableEvidenceNode } from './shared/s_expression_schemas.ts'
 import type { PrescriptionFrequency } from './shared/prescription.ts'
 import { SEXED_RELATION_SNOMED_CONCEPT_IDS } from './shared/family.ts'
 export { type Department } from './shared/departments.ts'
@@ -2719,8 +2731,9 @@ type SignShared<Category> = {
 export type WarningSignDef<Priority extends 'Urgent' | 'Very urgent' | 'Emergency'> = SignShared<Priority> & {
   key: WarningSignKey
   priority: Priority
-  excluding_s_expression?: string
+  excluding_s_expressions?: string[]
   prompt_when_s_expression?: string
+  prompt_when_not_s_expression?: string
 }
 
 export type WarningSign = Omit<WarningSignDef<'Urgent' | 'Very urgent' | 'Emergency'>, 'category'> & {
@@ -2962,4 +2975,59 @@ export type SidebarProps = {
   urlSearchParams: URLSearchParams
   nav_links: LinkDef[]
   tutorial?: boolean
+}
+
+export type NewRecordsToConsider = {
+  patient_id: string
+  patient_encounter_id: string
+  // procedure_id: string
+  patient_age_determination: AgeDetermination | null
+  records: {
+    id: string
+    existence: 'Yes' | 'No' | 'Unknown'
+  }[]
+}
+
+export type ApplicableRuleEffectTask = {
+  type: 'task'
+  procedure_s_expression: string
+}
+
+export type ApplicableRuleEffectSystemPriorityEvaluation = {
+  type: 'system_priority_evaluation'
+  priority: WarningSignPriority
+}
+
+export type ApplicableRuleEffectSystemSystemDiagnosisRule = {
+  type: 'system_diagnosis_rule'
+  snomed_concept: {
+    id: string
+    name: string
+    category: SnomedCategory
+  }
+  certainty: DiagnosisCertainty
+}
+
+export type ApplicableRuleEffect =
+  | ApplicableRuleEffectTask
+  | ApplicableRuleEffectSystemPriorityEvaluation
+  | ApplicableRuleEffectSystemSystemDiagnosisRule
+
+export type ApplicableRule = {
+  description: string
+  matching_finding_ids: string[]
+  due_to: QueryableEvidenceNode
+  rule_effect: ApplicableRuleEffect
+}
+
+export type RuleRunnerInput = {
+  listener_id: string
+  listener_name: string
+  patient_id: string
+  patient_encounter_id: string
+  patient_age_determination: AgeDetermination | null
+  records: {
+    id: string
+    existence: 'Yes' | 'No' | 'Unknown'
+  }[]
 }

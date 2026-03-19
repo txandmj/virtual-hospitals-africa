@@ -1,16 +1,17 @@
-import { IdSelection, Maybe, TrxOrDbOrQueryCreator } from '../../types.ts'
-import { SelectQueryBuilder, sql } from 'kysely'
-import { DB, Existence } from '../../db.d.ts'
 import { assert } from 'std/assert/assert.ts'
+import type { IdSelection, Maybe, TrxOrDbOrQueryCreator } from '../../types.ts'
+import type { SelectQueryBuilder } from 'kysely'
+import type { DB, Existence } from '../../db.d.ts'
 import isString from '../../util/isString.ts'
 import { isAtom, parseWithSchema } from '../../shared/s_expression.ts'
 import { deduplicate } from '../helpers.ts'
-import { any_query, Lang, MeasurementComparison, QueryableNode } from '../../shared/s_expression_schemas.ts'
+import { any_query_single, Lang, MeasurementComparison, QueryableSingleNode } from '../../shared/s_expression_schemas.ts'
 import { inverseSExpressions } from '../../shared/s_expression_inverse.ts'
 import { ATTRIBUTE, DUE_TO, EVENT, MEASUREMENT_FINDING, QUALIFIER_VALUE, RELATIONSHIP } from '../../shared/snomed_concepts.ts'
 import isKeyOf from '../../util/isKeyOf.ts'
 import isObjectLike from '../../util/isObjectLike.ts'
 import { diagnosisToEvaluation } from '../../shared/diagnosis.ts'
+import { humanReadableJson } from '../../util/humanReadableJson.ts'
 
 type PatientIdentifiers = {
   patient_id: string | IdSelection
@@ -60,11 +61,15 @@ function baseQuery(
     include_negative,
     qualifiers = [],
     attributes = [],
+    excluding = [],
     exact = false,
   }: PatientIdentifiers & {
     root_snomed_concept?: Maybe<Lang['snomed_concept']>
     specific_snomed_concept?: Maybe<Lang['snomed_concept']>
     value_snomed_concept?: Maybe<Lang['snomed_concept']>
+    excluding?: Array<
+      Lang['excluding']
+    >
     qualifiers?: Array<
       Lang['qualifier']
     >
@@ -126,8 +131,7 @@ function baseQuery(
               eb.exists(
                 trx.selectFrom('snomed_concept_active_descendants_realized')
                   .where('snomed_concept_active_descendants_realized.descendant_id', '=', eb.ref('patient_records_aggregated.specific_snomed_concept_id'))
-                  .where('snomed_concept_active_descendants_realized.ancestor_id', '=', snomed_concept)
-                  .select(sql`1`.as('x')),
+                  .where('snomed_concept_active_descendants_realized.ancestor_id', '=', snomed_concept),
               ),
             ]),
           ])
@@ -176,7 +180,7 @@ function baseQuery(
     )
   ), query)
 
-  return attributes.reduce((qb, attribute): typeof query => {
+  const with_attributes = attributes.reduce((qb, attribute): typeof query => {
     const attribute_query = EXPRESSION_BUILDERS.attribute(trx, {
       patient_id,
       patient_encounter_id,
@@ -221,25 +225,38 @@ function baseQuery(
       ])
     )
   }, with_qualifiers)
+
+  return excluding.reduce((qb, excl): typeof query =>
+    qb.where(
+      'patient_records_aggregated.id',
+      'not in',
+      buildExpression(trx, {
+        patient_id,
+        patient_encounter_id,
+      }, excl.finding),
+    ), with_attributes)
 }
 
 export const satisfyingSExpression = deduplicate(
   async function satisfyingSExpression(
     trx: TrxOrDbOrQueryCreator,
     { s_expression, ...patient }: {
-      s_expression: string | QueryableNode
+      s_expression: string | QueryableSingleNode
     } & PatientIdentifiers,
   ): Promise<SatisfyingResult> {
-    const node = isString(s_expression) ? parseWithSchema(s_expression, any_query) : s_expression
+    const node = isString(s_expression) ? parseWithSchema(s_expression, any_query_single) : s_expression
 
     if (isAtom(node, 'not')) {
-      const any_matching = await buildExpression(trx, patient, node.expression)
-        .limit(1).executeTakeFirst()
-
-      return {
-        record_ids: [],
-        satisfies: !any_matching,
-      }
+      throw new Error(`Move to evidence ${humanReadableJson(node)}`)
+    }
+    if (isAtom(node, 'or')) {
+      throw new Error(`Move to evidence ${humanReadableJson(node)}`)
+    }
+    if (isAtom(node, 'and')) {
+      throw new Error(`Move to evidence ${humanReadableJson(node)}`)
+    }
+    if (isAtom(node, 'any2')) {
+      throw new Error(`Move to evidence ${humanReadableJson(node)}`)
     }
     const qb = buildExpression(trx, patient, node)
     const rows = await qb.execute()
@@ -355,6 +372,7 @@ export const EXPRESSION_BUILDERS = {
       specific_snomed_concept,
       qualifiers,
       attributes,
+      excluding,
       exact,
       existence,
       history,
@@ -367,6 +385,7 @@ export const EXPRESSION_BUILDERS = {
       value_snomed_concept,
       qualifiers,
       attributes,
+      excluding,
       exact,
       existence,
       // For historical findings, look for findings at any point in the patient's history
@@ -490,54 +509,54 @@ export const EXPRESSION_BUILDERS = {
       )
       .where('patient_events.datetime', '=', new Date(value.datetime))
   },
-  not(trx, { patient_id, patient_encounter_id }, { expression }) {
-    return baseQuery(trx, {
-      patient_id,
-      patient_encounter_id,
-    }).where(
-      'patient_records_aggregated.id',
-      'not in',
-      buildExpression(
-        trx,
-        { patient_id, patient_encounter_id },
-        expression,
-      ),
-    )
-  },
-  or(trx, { patient_id, patient_encounter_id }, { expressions }) {
-    return baseQuery(trx, { patient_id, patient_encounter_id })
-      .where(
-        (eb) =>
-          eb.or(expressions.map((expression) =>
-            eb(
-              'patient_records_aggregated.id',
-              'in',
-              buildExpression(
-                trx,
-                { patient_id, patient_encounter_id },
-                expression,
-              ),
-            )
-          )),
-      )
-  },
-  and(trx, { patient_id, patient_encounter_id }, { expressions }) {
-    return baseQuery(trx, { patient_id, patient_encounter_id })
-      .where(
-        (eb) =>
-          eb.and(expressions.map((expression) =>
-            eb(
-              'patient_records_aggregated.id',
-              'in',
-              buildExpression(
-                trx,
-                { patient_id, patient_encounter_id },
-                expression,
-              ),
-            )
-          )),
-      )
-  },
+  // not(trx, { patient_id, patient_encounter_id }, { expression }) {
+  //   return baseQuery(trx, {
+  //     patient_id,
+  //     patient_encounter_id,
+  //   }).where(
+  //     'patient_records_aggregated.id',
+  //     'not in',
+  //     buildExpression(
+  //       trx,
+  //       { patient_id, patient_encounter_id },
+  //       expression,
+  //     ),
+  //   )
+  // },
+  // or(trx, { patient_id, patient_encounter_id }, { expressions }) {
+  //   return baseQuery(trx, { patient_id, patient_encounter_id })
+  //     .where(
+  //       (eb) =>
+  //         eb.or(expressions.map((expression) =>
+  //           eb(
+  //             'patient_records_aggregated.id',
+  //             'in',
+  //             buildExpression(
+  //               trx,
+  //               { patient_id, patient_encounter_id },
+  //               expression,
+  //             ),
+  //           )
+  //         )),
+  //     )
+  // },
+  // and(trx, { patient_id, patient_encounter_id }, { expressions }) {
+  //   return baseQuery(trx, { patient_id, patient_encounter_id })
+  //     .where(
+  //       (eb) =>
+  //         eb.and(expressions.map((expression) =>
+  //           eb(
+  //             'patient_records_aggregated.id',
+  //             'in',
+  //             buildExpression(
+  //               trx,
+  //               { patient_id, patient_encounter_id },
+  //               expression,
+  //             ),
+  //           )
+  //         )),
+  //     )
+  // },
   diagnosis(trx, patient, diagnosis) {
     return evaluation(trx, patient, diagnosisToEvaluation(diagnosis))
   },
@@ -608,42 +627,42 @@ export const EXPRESSION_BUILDERS = {
       .where('patient_measurements.comparator', '=', '=')
       .where('patient_measurements.value', '=', String(value))
   },
-  any2(trx, patient, { expressions }) {
-    return baseQuery(trx, patient)
-      .where((eb) => {
-        // Create a CASE expression for each input expression that evaluates to 1 if true, 0 if false
-        const conditions = expressions.map((expression) =>
-          eb.case()
-            .when(
-              eb(
-                'patient_records_aggregated.id',
-                'in',
-                buildExpression(trx, patient, expression),
-              ),
-            )
-            .then(1)
-            .else(0)
-            .end()
-        )
+  // any2(trx, patient, { expressions }) {
+  //   return baseQuery(trx, patient)
+  //     .where((eb) => {
+  //       // Create a CASE expression for each input expression that evaluates to 1 if true, 0 if false
+  //       const conditions = expressions.map((expression) =>
+  //         eb.case()
+  //           .when(
+  //             eb(
+  //               'patient_records_aggregated.id',
+  //               'in',
+  //               buildExpression(trx, patient, expression),
+  //             ),
+  //           )
+  //           .then(1)
+  //           .else(0)
+  //           .end()
+  //       )
 
-        // Sum all the boolean-to-int conversions and check if >= 2
-        return sql<boolean>`(${sql.join(conditions, sql` + `)}) >= 2`
-      })
-  },
+  //       // Sum all the boolean-to-int conversions and check if >= 2
+  //       return sql<boolean>`(${sql.join(conditions, sql` + `)}) >= 2`
+  //     })
+  // },
 } satisfies {
-  [T in QueryableNode['atom']]: (
+  [T in QueryableSingleNode['atom']]: (
     trx: TrxOrDbOrQueryCreator,
     patient: PatientIdentifiers,
-    node: QueryableNode & { atom: T },
+    node: QueryableSingleNode & { atom: T },
   ) => SelectQueryBuilder<DB, 'patient_records_aggregated', { id: string }>
 }
 
 export function buildExpression(
   trx: TrxOrDbOrQueryCreator,
   patient: PatientIdentifiers,
-  s_expression: QueryableNode | string,
+  s_expression: QueryableSingleNode | string,
 ): SelectQueryBuilder<DB, 'patient_records_aggregated', { id: string }> {
-  const node = typeof s_expression === 'string' ? parseWithSchema(s_expression, any_query) : s_expression
+  const node = typeof s_expression === 'string' ? parseWithSchema(s_expression, any_query_single) : s_expression
 
   if (!isKeyOf(node.atom, EXPRESSION_BUILDERS)) {
     throw new Error(`${node.atom} is not directly queryable`)

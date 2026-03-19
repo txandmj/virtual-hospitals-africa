@@ -9,9 +9,6 @@ import { z } from 'zod'
 import { postHandler } from '../../../../../../../../backend/postHandler.ts'
 import WarningSignsPage from '../../../../../../../../islands/WarningSigns/Page.tsx'
 import { FindingNodeToInsert, patient_findings } from '../../../../../../../../db/models/patient_findings.ts'
-import { filter } from '../../../../../../../../util/inParallel.ts'
-import { WARNING_SIGNS } from '../../../../../../../../shared/warning_signs.ts'
-import { satisfyingSExpression } from '../../../../../../../../db/models/s_expression.ts'
 import { promiseProps } from '../../../../../../../../util/promiseProps.ts'
 
 import { assert } from 'std/assert/assert.ts'
@@ -21,7 +18,6 @@ import { normalForm, sExpressionZodValidator } from '../../../../../../../../sha
 import { markEnteredInError } from '../../../../../../../../db/models/patient_records_base.ts'
 import hrefFromCtx from '../../../../../../../../util/hrefFromCtx.ts'
 import { asNormalFormSExpression } from '../../../../../../../../shared/patient_records.ts'
-import partition from '../../../../../../../../util/partition.ts'
 import { SearchResult } from '../../../../../../../../db/models/_base.ts'
 import { ORDERED_PRIORITIES } from '../../../../../../../../shared/priorities.ts'
 import values from '../../../../../../../../util/values.ts'
@@ -35,9 +31,8 @@ import { now } from '../../../../../../../../db/helpers.ts'
 import { exists } from '../../../../../../../../util/exists.ts'
 import compactMap from '../../../../../../../../util/compactMap.ts'
 import { COMMON_SYMPTOMS } from '../../../../../../../../shared/common_symptoms.ts'
-
-import sortBy from '../../../../../../../../util/sortBy.ts'
 import { insertable_finding_base } from '../../../../../../../../shared/s_expression_schemas.ts'
+import { getWarningSignsForPatient } from '../triage/warning_signs.tsx'
 
 export const EmergencyEscalationEmergencyReasonSchema = z.object({
   s_expression: sExpressionZodValidator(insertable_finding_base),
@@ -223,31 +218,6 @@ function getAllFindingsReportedPreviouslyOnThisPage(
   })
 }
 
-async function getWarningSignsForPatient(
-  { state: { trx, patient_id } }: OpenEncounterWorkflowContext,
-): Promise<WarningSign[]> {
-  const [having_prompt_when, no_prompt_when] = partition(
-    WARNING_SIGNS.adult,
-    (sign) => !!sign.prompt_when_s_expression,
-  )
-  const satisfying_prompt_when = await filter(having_prompt_when, promptWhen)
-  const warning_signs_for_patient = [...no_prompt_when, ...satisfying_prompt_when]
-  return sortBy(
-    warning_signs_for_patient,
-    (sign) => ORDERED_PRIORITIES.indexOf(sign.priority),
-    (sign) => WARNING_SIGNS.adult.indexOf(sign),
-  )
-
-  async function promptWhen({ prompt_when_s_expression }: WarningSign) {
-    assert(prompt_when_s_expression)
-    const { satisfies } = await satisfyingSExpression(trx, {
-      patient_id,
-      s_expression: prompt_when_s_expression,
-    })
-    return satisfies
-  }
-}
-
 function* signsMatchedWithPriorRecords(
   prior_findings: SearchResult<typeof patient_findings>[],
   warning_signs_for_patient: WarningSign[],
@@ -319,7 +289,7 @@ export async function EmergencyEscalationReasonPage(
     warning_signs_for_patient,
   } = await promiseProps({
     prior_findings: getAllFindingsReportedPreviouslyOnThisPage(ctx),
-    warning_signs_for_patient: getWarningSignsForPatient(ctx),
+    warning_signs_for_patient: getWarningSignsForPatient(ctx.state.trx, ctx.state.patient_id, ctx.state.patient_age_determination),
   })
 
   const warning_signs = signsMatchedWithPriorRecords(

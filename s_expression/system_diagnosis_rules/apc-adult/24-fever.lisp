@@ -1,5 +1,6 @@
 ;; Page 24 - Fever: meningitis likely with neck stiffness, or drowsy/confused with purpuric rash
 (system_diagnosis_rule
+  "Diagnose probable meningitis"
   (diagnosis
     (snomed_concept "Meningitis" "disorder")
     probable
@@ -17,6 +18,7 @@
 )
 ;; Page 24 - Fever: appendicitis likely with right lower abdominal tenderness
 (system_diagnosis_rule
+  "Diagnose probable appendicitis"
   (diagnosis
     (snomed_concept "Acute appendicitis" "disorder")
     probable

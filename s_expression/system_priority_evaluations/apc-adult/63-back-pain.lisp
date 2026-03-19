@@ -1,5 +1,6 @@
 ;; Page 63 - Back Pain: Urgent for cauda equina and other danger signs
 (system_priority_evaluation
+  "Urgent: back pain with cauda equina or neurological signs"
   adult
   Urgent
   (and

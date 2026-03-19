@@ -4,21 +4,22 @@ import { blankSelection, jsonArrayFrom } from '../helpers.ts'
 import { base } from './_base.ts'
 import { patient_record_qualifiers } from './patient_record_qualifiers.ts'
 import { buildExpression, maybeSnomedConceptBase, snomedConceptBase } from './s_expression.ts'
-import { Lang, QueryableNode } from '../../shared/s_expression_schemas.ts'
+import { Lang, QueryableSingleNode } from '../../shared/s_expression_schemas.ts'
 import assertHasProperty from '../../util/assertHasProperty.ts'
 import { formatRecord } from '../../shared/patient_records.ts'
 import { QUALIFIER_VALUE } from '../../shared/snomed_concepts.ts'
 import { IntermediateBaseRecord, nonGroupedBaseQuery } from './patient_records_base.ts'
-import { RawBuilder, sql } from 'kysely'
+import { ExpressionBuilder, RawBuilder, sql } from 'kysely'
 import { assert } from 'std/assert/assert.ts'
 import isString from '../../util/isString.ts'
+import { DB } from '../../db.d.ts'
 
 export type PatientRecordsSearch = {
   patient_id?: string | IdSelection
   patient_encounter_id?: string | IdSelection
   root_snomed_concept_id?: string | string[]
   specific_snomed_concept_id?: string | string[]
-  s_expression?: string | QueryableNode
+  s_expression?: string | QueryableSingleNode
   excluding_patient_encounter_id?: string | IdSelection
   search?: string
   include_invalid?: boolean
@@ -67,7 +68,8 @@ export function baseInsert(
             trx,
             value_snomed_concept,
           ),
-        }),
+        })
+        .returningAll(),
   )
 
   function qualifierCte(
@@ -233,6 +235,36 @@ export function baseInsertMany(
     )
 }
 
+export function priorityQuery(eb: ExpressionBuilder<DB, 'patient_records_aggregated'>) {
+  return eb.selectFrom('patient_triage_level')
+    .innerJoin(
+      'patient_records as triage_patient_records',
+      'patient_triage_level.id',
+      'triage_patient_records.id',
+    )
+    .innerJoin('patient_records_still_valid as triage_valid', 'triage_valid.id', 'triage_patient_records.id')
+    .innerJoin(
+      'patient_record_relations as triage_relations',
+      'triage_relations.source_id',
+      'patient_triage_level.id',
+    )
+    .innerJoin(
+      'snomed_inferred_canonical_name_and_category as triage_snomed_inferred_canonical_name_and_category',
+      'triage_patient_records.value_snomed_concept_id',
+      'triage_snomed_inferred_canonical_name_and_category.id',
+    )
+    .whereRef(
+      'triage_relations.destination_id',
+      '=',
+      'patient_records_aggregated.id',
+    )
+    .select('triage_snomed_inferred_canonical_name_and_category.name')
+    .orderBy('triage_patient_records.created_at', 'desc')
+    .limit(1)
+    .$castTo<Priority | null>()
+    .as('priority')
+}
+
 export const patient_records = base({
   top_level_table: 'patient_records',
   baseQuery(
@@ -257,33 +289,7 @@ export const patient_records = base({
             ).selectAll('evaluation_records'),
         ).as('evaluations'),
 
-        eb.selectFrom('patient_triage_level')
-          .innerJoin(
-            'patient_records as triage_patient_records',
-            'patient_triage_level.id',
-            'triage_patient_records.id',
-          )
-          .innerJoin('patient_records_still_valid as triage_valid', 'triage_valid.id', 'triage_patient_records.id')
-          .innerJoin(
-            'patient_record_relations as triage_relations',
-            'triage_relations.source_id',
-            'patient_triage_level.id',
-          )
-          .innerJoin(
-            'snomed_inferred_canonical_name_and_category as triage_snomed_inferred_canonical_name_and_category',
-            'triage_patient_records.value_snomed_concept_id',
-            'triage_snomed_inferred_canonical_name_and_category.id',
-          )
-          .whereRef(
-            'triage_relations.destination_id',
-            '=',
-            'patient_records_aggregated.id',
-          )
-          .select('triage_snomed_inferred_canonical_name_and_category.name')
-          .orderBy('triage_patient_records.created_at', 'desc')
-          .limit(1)
-          .$castTo<Priority | null>()
-          .as('priority'),
+        priorityQuery(eb),
 
         jsonArrayFrom(
           eb.selectFrom('patient_record_relations')

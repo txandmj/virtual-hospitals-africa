@@ -1,5 +1,6 @@
 ;; Page 26 - Weakness or Tiredness
 (system_priority_evaluation
+  "Urgent: fatigue with cardiac, respiratory or systemic signs"
   adult
   Urgent
   (and

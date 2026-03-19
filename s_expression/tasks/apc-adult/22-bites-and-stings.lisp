@@ -21,8 +21,9 @@
 (task
   "Check for snake bite"
   adult
-  (and (clinical_finding (snomed_concept "Bite - wound" "disorder"))
-       (not (clinical_finding (snomed_concept "Animal bite wound" "disorder"))))
+  (clinical_finding (snomed_concept "Bite - wound" "disorder")
+    (excluding (clinical_finding (snomed_concept "Animal bite wound" "disorder")))
+  )
   (check_for
     (clinical_finding (snomed_concept "Snake bite - wound" "disorder"))
     (finding (snomed_concept "Exposure to (contextual qualifier)" "qualifier value") (snomed_concept "Snake venom" "substance"))

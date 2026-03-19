@@ -6,9 +6,9 @@ import partition from '../util/partition.ts'
 import { assertArrayEmpty } from '../util/arraySize.ts'
 import { assert } from 'std/assert/assert.ts'
 import { isAtom, Units, UNITS_ARRAY } from './s_expression.ts'
-import { AgeDetermination, Coordinates, Existence, Maybe, NonNullableProperty, Priority } from '../types.ts'
+import { AgeDetermination, Coordinates, Existence, Maybe, NonNullableProperty } from '../types.ts'
 import { snomed_category } from '../util/validators.ts'
-import { SnomedCategory } from '../db.d.ts'
+import { SnomedCategory, WarningSignPriority } from '../db.d.ts'
 import {
   ALLERGIC_CONDITION,
   CAUSATIVE_AGENT,
@@ -43,23 +43,28 @@ type NonQueryableBaseLang = {
     href: string
     thumbnail_href: string | null
   }
+  excluding: {
+    finding: Lang['finding' | 'measurement']
+  }
   evaluates: {
-    expression: QueryableNode
+    expression: QueryableSingleNode
   }
   task: {
     description: string
     ages: AgeDetermination[]
-    due_to: QueryableNode
+    due_to: QueryableEvidenceNode
     procedure: Lang['procedure']
   }
   system_priority_evaluation: {
+    description: string
     ages: AgeDetermination[]
-    due_to: QueryableNode
-    priority: Priority
+    due_to: QueryableEvidenceNode
+    priority: WarningSignPriority
   }
   system_diagnosis_rule: {
+    description: string
     ages: AgeDetermination[]
-    due_to: QueryableNode
+    due_to: QueryableEvidenceNode
     diagnosis: Lang['diagnosis']
   }
   time_ago: Duration
@@ -68,7 +73,22 @@ type NonQueryableBaseLang = {
   }
 }
 
-type QueryableBaseLang =
+type QueryableMultiBaseLang = {
+  not: {
+    expression: QueryableEvidenceNode
+  }
+  and: {
+    expressions: QueryableEvidenceNode[]
+  }
+  any2: {
+    expressions: QueryableEvidenceNode[]
+  }
+  or: {
+    expressions: QueryableEvidenceNode[]
+  }
+}
+
+type QueryableSingleBaseLang =
   & {
     finding: {
       root_snomed_concept: Lang['snomed_concept'] | null
@@ -76,6 +96,7 @@ type QueryableBaseLang =
       value_snomed_concept: Lang['snomed_concept'] | null
       qualifiers: Lang['qualifier'][]
       attributes: Lang['attribute'][]
+      excluding: Lang['excluding'][]
       exact: boolean
       history: boolean
       existence: Existence | 'Any'
@@ -121,18 +142,6 @@ type QueryableBaseLang =
       snomed_concept: Lang['snomed_concept']
       possible: boolean
     }
-    not: {
-      expression: QueryableNode
-    }
-    and: {
-      expressions: QueryableNode[]
-    }
-    or: {
-      expressions: QueryableNode[]
-    }
-    any2: {
-      expressions: QueryableNode[]
-    }
   }
   & {
     [Comp in Comparisons]:
@@ -152,7 +161,7 @@ export type MeasurementComparison = Lang[Comparisons] & { type: 'measurement' }
 
 export type FindingRecencyComparison = Lang[Comparisons] & { type: 'finding_recency' }
 
-type BaseLang = NonQueryableBaseLang & QueryableBaseLang
+type BaseLang = NonQueryableBaseLang & QueryableSingleBaseLang & QueryableMultiBaseLang
 
 export type Lang = {
   [Atom in keyof BaseLang]: {
@@ -162,7 +171,9 @@ export type Lang = {
 
 export type AnyNode = Lang[keyof Lang]
 
-export type QueryableNode = Lang[keyof QueryableBaseLang]
+export type QueryableSingleNode = Lang[keyof QueryableSingleBaseLang]
+
+export type QueryableEvidenceNode = QueryableSingleNode | Lang[keyof QueryableMultiBaseLang]
 
 export type InsertableFindingBase = NonNullableProperty<Lang['finding'], 'root_snomed_concept' | 'specific_snomed_concept'> & {
   existence: Existence
@@ -236,6 +247,29 @@ const snomed_concept_or_attribute_or_qualifier: z.ZodType<
   ])
 ).describe('snomed_concept_id | attribute | qualifier')
 
+const attribute_or_qualifier_or_excluding: z.ZodType<
+  | Lang['attribute']
+  | Lang['qualifier']
+  | Lang['excluding']
+> = z.lazy(() =>
+  z.union([
+    attribute_or_qualifier,
+    excluding,
+  ])
+).describe('snomed_concept_id | attribute | qualifier | excluding')
+
+const snomed_concept_or_attribute_or_qualifier_or_excluding: z.ZodType<
+  | Lang['snomed_concept']
+  | Lang['attribute']
+  | Lang['qualifier']
+  | Lang['excluding']
+> = z.lazy(() =>
+  z.union([
+    snomed_concept_or_attribute_or_qualifier,
+    excluding,
+  ])
+).describe('snomed_concept_id | attribute | qualifier | excluding')
+
 function isQualifier(node: AnyNode): node is Lang['qualifier'] {
   return node.atom === 'qualifier'
 }
@@ -244,19 +278,23 @@ function isAttribute(node: AnyNode): node is Lang['attribute'] {
   return node.atom === 'attribute'
 }
 
+function isExcluding(node: AnyNode): node is Lang['excluding'] {
+  return node.atom === 'excluding'
+}
+
 export const finding_base: z.ZodType<Lang['finding']> = z.lazy(() =>
   z.object({
     atom: z.literal('finding'),
     args: z.tuple([
-      snomed_concept_or_attribute_or_qualifier.optional(),
-      snomed_concept_or_attribute_or_qualifier.optional(),
-      snomed_concept_or_attribute_or_qualifier.optional(),
-      attribute_or_qualifier.optional(),
-      attribute_or_qualifier.optional(),
-      attribute_or_qualifier.optional(),
-      attribute_or_qualifier.optional(),
-      attribute_or_qualifier.optional(),
-      attribute_or_qualifier.optional(),
+      snomed_concept_or_attribute_or_qualifier_or_excluding.optional(),
+      snomed_concept_or_attribute_or_qualifier_or_excluding.optional(),
+      snomed_concept_or_attribute_or_qualifier_or_excluding.optional(),
+      attribute_or_qualifier_or_excluding.optional(),
+      attribute_or_qualifier_or_excluding.optional(),
+      attribute_or_qualifier_or_excluding.optional(),
+      attribute_or_qualifier_or_excluding.optional(),
+      attribute_or_qualifier_or_excluding.optional(),
+      attribute_or_qualifier_or_excluding.optional(),
     ]),
   }).transform(
     (
@@ -292,7 +330,10 @@ export const finding_base: z.ZodType<Lang['finding']> = z.lazy(() =>
         root_snomed_concept = null
       }
 
-      const [qualifiers, attributes] = partition(nodes, isQualifier)
+      const [qualifiers, non_qualifiers] = partition(nodes, isQualifier)
+      const [attributes, non_attributes] = partition(non_qualifiers, isAttribute)
+      const [excluding, unmatched] = partition(non_attributes, isExcluding)
+      assert(!unmatched.length, 'Only one excluding clause supported')
 
       return {
         atom,
@@ -301,6 +342,7 @@ export const finding_base: z.ZodType<Lang['finding']> = z.lazy(() =>
         value_snomed_concept,
         qualifiers,
         attributes,
+        excluding,
         exact: false,
         history: false,
         existence: 'Yes' as const,
@@ -315,14 +357,14 @@ export const clinical_finding: z.ZodType<NonNullableProperty<Lang['finding'], 'r
   z.object({
     atom: z.literal('clinical_finding'),
     args: z.tuple([
-      snomed_concept_or_attribute_or_qualifier.optional(),
-      snomed_concept_or_attribute_or_qualifier.optional(),
-      attribute_or_qualifier.optional(),
-      attribute_or_qualifier.optional(),
-      attribute_or_qualifier.optional(),
-      attribute_or_qualifier.optional(),
-      attribute_or_qualifier.optional(),
-      attribute_or_qualifier.optional(),
+      snomed_concept_or_attribute_or_qualifier_or_excluding.optional(),
+      snomed_concept_or_attribute_or_qualifier_or_excluding.optional(),
+      attribute_or_qualifier_or_excluding.optional(),
+      attribute_or_qualifier_or_excluding.optional(),
+      attribute_or_qualifier_or_excluding.optional(),
+      attribute_or_qualifier_or_excluding.optional(),
+      attribute_or_qualifier_or_excluding.optional(),
+      attribute_or_qualifier_or_excluding.optional(),
     ]),
   }).transform(
     (
@@ -349,7 +391,10 @@ export const clinical_finding: z.ZodType<NonNullableProperty<Lang['finding'], 'r
         specific_snomed_concept = null
       }
 
-      const [qualifiers, attributes] = partition(nodes, isQualifier)
+      const [qualifiers, non_qualifiers] = partition(nodes, isQualifier)
+      const [attributes, non_attributes] = partition(non_qualifiers, isAttribute)
+      const [excluding, unmatched] = partition(non_attributes, isExcluding)
+      assert(!unmatched.length, 'Only one excluding clause supported')
 
       return {
         atom: 'finding' as const,
@@ -362,6 +407,7 @@ export const clinical_finding: z.ZodType<NonNullableProperty<Lang['finding'], 'r
         value_snomed_concept,
         qualifiers,
         attributes,
+        excluding,
         exact: false,
         history: false,
         existence: 'Yes' as const,
@@ -424,7 +470,7 @@ export const insertable_finding_base: z.ZodType<InsertableFindingBase> = finding
 export const evaluates: z.ZodType<Lang['evaluates']> = z.lazy(() =>
   z.object({
     atom: z.literal('evaluates'),
-    args: z.tuple([any_query]),
+    args: z.tuple([any_query_single]),
   }).transform(({ atom, args: [expression] }) => ({
     atom,
     expression,
@@ -535,6 +581,18 @@ const attribute_base: z.ZodType<Lang['attribute']> = z.lazy(() =>
   }))
 ).describe('attribute_base')
 
+const excluding: z.ZodType<Lang['excluding']> = z.lazy(() =>
+  z.object({
+    atom: z.literal('excluding'),
+    args: z.tuple([finding.or(measurement)]),
+  }).transform((
+    { args: [finding] },
+  ) => ({
+    atom: 'excluding' as const,
+    finding,
+  }))
+).describe('excluding')
+
 const finding_site: z.ZodType<Lang['attribute']> = z.lazy(() =>
   z.object({
     atom: z.literal('finding_site'),
@@ -606,6 +664,7 @@ export const allergy: z.ZodType<InsertableFindingBase & { history: true }> = z.l
         category: ALLERGIC_CONDITION.category,
       },
       value_snomed_concept: null,
+      excluding: [],
       qualifiers: [],
       attributes: snomed_concept
         ? [{
@@ -844,7 +903,7 @@ export const task: z.ZodType<Lang['task']> = z.lazy(() =>
     args: z.tuple([
       z.string(),
       ages,
-      any_query,
+      any_query_evidence,
       procedure,
     ]),
   }).transform(({ atom, args: [description, ages, due_to, procedure] }) => ({
@@ -860,16 +919,18 @@ export const system_priority_evaluation: z.ZodType<Lang['system_priority_evaluat
   z.object({
     atom: z.literal('system_priority_evaluation'),
     args: z.tuple([
+      z.string(),
       ages,
       z.enum([
         'Emergency',
         'Very urgent',
         'Urgent',
       ]),
-      any_query,
+      any_query_evidence,
     ]),
-  }).transform(({ atom, args: [ages, priority, due_to] }) => ({
+  }).transform(({ atom, args: [description, ages, priority, due_to] }) => ({
     atom,
+    description,
     ages,
     priority,
     due_to,
@@ -883,7 +944,7 @@ export const insertable_finding: z.ZodType<InsertableFinding> = z.lazy(() => mea
 export const not: z.ZodType<Lang['not']> = z.lazy(() =>
   z.object({
     atom: z.literal('not'),
-    args: z.tuple([any_query]),
+    args: z.tuple([any_query_evidence]),
   }).transform(({ atom, args: [expression] }) => ({
     atom,
     expression,
@@ -893,7 +954,7 @@ export const not: z.ZodType<Lang['not']> = z.lazy(() =>
 export const or: z.ZodType<Lang['or']> = z.lazy(() =>
   z.object({
     atom: z.literal('or'),
-    args: z.array(any_query),
+    args: z.array(any_query_evidence),
   }).transform(({ atom, args }) => ({
     atom,
     expressions: args,
@@ -903,7 +964,7 @@ export const or: z.ZodType<Lang['or']> = z.lazy(() =>
 export const and: z.ZodType<Lang['and']> = z.lazy(() =>
   z.object({
     atom: z.literal('and'),
-    args: z.array(any_query),
+    args: z.array(any_query_evidence),
   }).transform(({ atom, args }) => ({
     atom,
     expressions: args,
@@ -913,7 +974,7 @@ export const and: z.ZodType<Lang['and']> = z.lazy(() =>
 export const any2: z.ZodType<Lang['any2']> = z.lazy(() =>
   z.object({
     atom: z.literal('any2'),
-    args: z.array(any_query),
+    args: z.array(any_query_evidence),
   }).transform(({ atom, args }) => ({
     atom,
     expressions: args,
@@ -937,16 +998,32 @@ export const diagnosis: z.ZodType<Lang['diagnosis']> = z.lazy(() =>
 export const system_diagnosis_rule: z.ZodType<Lang['system_diagnosis_rule']> = z.lazy(() =>
   z.object({
     atom: z.literal('system_diagnosis_rule'),
-    args: z.tuple([diagnosis, ages, any_query]),
-  }).transform(({ atom, args: [diagnosis, ages, due_to] }) => ({
+    args: z.tuple([z.string(), diagnosis, ages, any_query_evidence]),
+  }).transform(({ atom, args: [description, diagnosis, ages, due_to] }) => ({
     atom,
+    description,
     diagnosis,
     ages,
     due_to,
   }))
 ).describe('system_diagnosis_rule')
 
-export const any_query: z.ZodType<QueryableNode> = z.lazy(() =>
+export const any_query_single: z.ZodType<QueryableSingleNode> = z.lazy(() =>
+  z.union([
+    event,
+    finding,
+    evaluation,
+    procedure,
+    measurement,
+    active_condition,
+    measurement_comparator,
+    qualifier,
+    exact,
+    diagnosis,
+  ])
+).describe('any_query_single')
+
+export const any_query_evidence: z.ZodType<QueryableEvidenceNode> = z.lazy(() =>
   z.union([
     event,
     finding,
@@ -963,4 +1040,4 @@ export const any_query: z.ZodType<QueryableNode> = z.lazy(() =>
     any2,
     diagnosis,
   ])
-).describe('any_query')
+).describe('any_query_evidence')

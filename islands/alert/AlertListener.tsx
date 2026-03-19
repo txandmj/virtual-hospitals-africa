@@ -58,7 +58,7 @@ export function AlertListener({
   }, [])
 
   return (
-    <div className='fixed top-12 z-50 w-full place-items-center'>
+    <div id='alert-listener' className='fixed top-12 z-50 w-full place-items-center'>
       <AlertMessage alert={alert} />
     </div>
   )

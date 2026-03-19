@@ -1,5 +1,6 @@
 ;; Page 38 - Cough/Breathing: Pulmonary embolism likely with calf swelling and breathlessness
 (system_diagnosis_rule
+  "Diagnose possible pulmonary embolism"
   (diagnosis
     (snomed_concept "Pulmonary embolism" "disorder")
     possible
@@ -14,6 +15,7 @@
 )
 ;; Page 38 - Cough/Breathing: Tension pneumothorax likely with breathlessness, chest pain and hypotension
 (system_diagnosis_rule
+  "Diagnose probable tension pneumothorax"
   (diagnosis
     (snomed_concept "Tension pneumothorax" "disorder")
     probable

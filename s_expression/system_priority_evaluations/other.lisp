@@ -1,9 +1,11 @@
 (system_priority_evaluation
+  "Emergency: hypoglycaemia"
   all_ages
   Emergency
   (< (measurement (snomed_concept "Blood glucose status" "observable entity") mmol/L) 3)
 )
 (system_priority_evaluation
+  "Emergency: shock signs in children"
   (ages "older child" "younger child")
   Emergency
   (and
@@ -16,6 +18,7 @@
 )
 ;; Cross-cutting: Stroke/TIA signs (asymmetric weakness/numbness + speech or visual disturbance)
 (system_priority_evaluation
+  "Urgent: stroke or TIA signs"
   adult
   Urgent
   (and

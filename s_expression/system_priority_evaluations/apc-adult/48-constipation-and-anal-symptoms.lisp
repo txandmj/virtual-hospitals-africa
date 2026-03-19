@@ -1,5 +1,6 @@
 ;; Page 48 - Constipation: Urgent for bowel obstruction signs
 (system_priority_evaluation
+  "Urgent: constipation with bowel obstruction signs"
   adult
   Urgent
   (and
@@ -13,6 +14,7 @@
 )
 ;; Page 48 - Anal Symptoms: Urgent for painful lump or unable to pass stool
 (system_priority_evaluation
+  "Urgent: anal pain with lump or difficulty defecating"
   adult
   Urgent
   (and

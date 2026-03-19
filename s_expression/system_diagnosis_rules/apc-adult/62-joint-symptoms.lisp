@@ -1,5 +1,6 @@
 ;; Page 62 - Joint Symptoms: Infective arthritis likely with warm swollen painful joint
 (system_diagnosis_rule
+  "Diagnose probable infective arthritis"
   (diagnosis
     (snomed_concept "Infective arthritis" "disorder")
     probable

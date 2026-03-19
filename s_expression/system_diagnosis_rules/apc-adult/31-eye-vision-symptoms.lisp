@@ -1,5 +1,6 @@
 ;; Page 31 - Eye: Orbital cellulitis likely with swollen painful eyelid
 (system_diagnosis_rule
+  "Diagnose probable orbital cellulitis"
   (diagnosis
     (snomed_concept "Orbital cellulitis" "disorder")
     probable
@@ -12,6 +13,7 @@
 )
 ;; Page 31 - Eye: Acute angle-closure glaucoma with painful eye and haloes/blurred vision
 (system_diagnosis_rule
+  "Diagnose probable angle-closure glaucoma"
   (diagnosis
     (snomed_concept "Angle-closure glaucoma" "disorder")
     probable

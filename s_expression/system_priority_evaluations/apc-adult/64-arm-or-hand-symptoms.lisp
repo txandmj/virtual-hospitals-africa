@@ -1,5 +1,6 @@
 ;; Page 64 - Arm Symptoms: Urgent for fracture signs
 (system_priority_evaluation
+  "Urgent: arm pain with traumatic injury"
   adult
   Urgent
   (and

@@ -75,7 +75,6 @@ function baseQuery(trx: TrxOrDbOrQueryCreator, terms: SearchTerms) {
 }
 
 export const snomed_allergies = base({
-  verbose: true,
   top_level_table: 'snomed_inferred_canonical_name_and_category',
   baseQuery,
   formatResult: identity,

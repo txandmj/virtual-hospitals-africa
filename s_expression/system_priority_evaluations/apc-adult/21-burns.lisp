@@ -1,4 +1,5 @@
 (system_priority_evaluation
+  "Urgent: severe burn with danger signs"
   adult
   Urgent
   (and

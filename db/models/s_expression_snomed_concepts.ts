@@ -1,14 +1,13 @@
 import { Maybe } from '../../types.ts'
 import { ExpressionBuilder, RawBuilder, sql } from 'kysely'
 import { assert } from 'std/assert/assert.ts'
-import { isAtom, parseExpressionExpectingAtom, parseWithSchema } from '../../shared/s_expression.ts'
-import { any_query, AnyNode, Lang } from '../../shared/s_expression_schemas.ts'
-import { inverseSExpression } from '../../shared/s_expression_inverse.ts'
-import { STATUS_ATTRIBUTE, YES_QUALIFIER } from '../../shared/snomed_concepts.ts'
+import { isAtom, parseWithSchema } from '../../shared/s_expression.ts'
+import { any_query_single, AnyNode, Lang } from '../../shared/s_expression_schemas.ts'
 import type { DB } from '../../db.d.ts'
 import isKeyOf from '../../util/isKeyOf.ts'
+import { activeConditionAsOr } from '../../shared/s_expression_active_condition_as_or.ts'
 
-function snomedConceptIdPredicate(
+export function snomedConceptId(
   snomed_concept: Lang['snomed_concept'],
 ): string | RawBuilder<string> {
   assert(isAtom(snomed_concept, 'snomed_concept'))
@@ -27,7 +26,7 @@ function basePredicate(
   if (!specific_snomed_concept) {
     return sql<boolean>`true`
   }
-  const parent_id = snomedConceptIdPredicate(specific_snomed_concept)
+  const parent_id = snomedConceptId(specific_snomed_concept)
   return sql<boolean>`EXISTS (
     SELECT 1 FROM snomed_concept_active_descendants_realized
     WHERE ancestor_id = ${parent_id}::bigint
@@ -40,9 +39,9 @@ type PredicateAtom =
   | 'procedure'
   | 'evaluation'
   | 'measurement'
-  | 'not'
-  | 'or'
-  | 'and'
+  // | 'not'
+  // | 'or'
+  // | 'and'
   | 'active_condition'
 
 const PREDICATE_BUILDERS = {
@@ -65,44 +64,25 @@ const PREDICATE_BUILDERS = {
       specific_snomed_concept: snomed_concept,
     })
   },
-  not(column_ref, { expression }) {
-    const inner_predicate = internalBuildExpressionPredicate(
-      column_ref,
-      expression,
-    )
-    return sql<boolean>`NOT (${inner_predicate})`
-  },
-  or(column_ref, { expressions }) {
-    if (expressions.length === 0) return sql<boolean>`false`
-    const predicates = expressions.map((expr) => internalBuildExpressionPredicate(column_ref, expr))
-    return sql<boolean>`(${sql.join(predicates, sql` OR `)})`
-  },
-  and(column_ref, { expressions }) {
-    if (expressions.length === 0) return sql<boolean>`true`
-    const predicates = expressions.map((expr) => internalBuildExpressionPredicate(column_ref, expr))
-    return sql<boolean>`(${sql.join(predicates, sql` AND `)})`
-  },
-  active_condition(column_ref, { snomed_concept, possible }) {
-    const snomed_concept_s_expression = inverseSExpression(snomed_concept)
-    const disjuncts = [
-      `(clinical_finding ${snomed_concept_s_expression})`,
-      `(finding ${STATUS_ATTRIBUTE.s_expression} ${snomed_concept_s_expression} ${YES_QUALIFIER.s_expression})`,
-      `(diagnosis ${snomed_concept_s_expression} probable)`,
-      `(diagnosis ${snomed_concept_s_expression} definite)`,
-    ]
-    if (possible) {
-      disjuncts.push(
-        `(diagnosis ${snomed_concept_s_expression} equivocal)`,
-        `(diagnosis ${snomed_concept_s_expression} possible)`,
-      )
-    }
-    const or_expression = `(or ${disjuncts.join(' ')})`
-    console.log({ or_expression })
-    const expanded_expression = parseExpressionExpectingAtom(
-      or_expression,
-      'or',
-    )
-    return internalBuildExpressionPredicate(column_ref, expanded_expression)
+  // not(column_ref, { expression }) {
+  //   const inner_predicate = internalBuildExpressionPredicate(
+  //     column_ref,
+  //     expression,
+  //   )
+  //   return sql<boolean>`NOT (${inner_predicate})`
+  // },
+  // or(column_ref, { expressions }) {
+  //   if (expressions.length === 0) return sql<boolean>`false`
+  //   const predicates = expressions.map((expr) => internalBuildExpressionPredicate(column_ref, expr))
+  //   return sql<boolean>`(${sql.join(predicates, sql` OR `)})`
+  // },
+  // and(column_ref, { expressions }) {
+  //   if (expressions.length === 0) return sql<boolean>`true`
+  //   const predicates = expressions.map((expr) => internalBuildExpressionPredicate(column_ref, expr))
+  //   return sql<boolean>`(${sql.join(predicates, sql` AND `)})`
+  // },
+  active_condition(column_ref, active_condition) {
+    return internalBuildExpressionPredicate(column_ref, activeConditionAsOr(active_condition))
   },
 } satisfies {
   [T in PredicateAtom]: (
@@ -115,7 +95,7 @@ function internalBuildExpressionPredicate(
   column_ref: string,
   s_expression: AnyNode | string,
 ): RawBuilder<boolean> {
-  const node = typeof s_expression === 'string' ? parseWithSchema(s_expression, any_query) : s_expression
+  const node = typeof s_expression === 'string' ? parseWithSchema(s_expression, any_query_single) : s_expression
 
   if (!isKeyOf(node.atom, PREDICATE_BUILDERS)) {
     throw new Error(`${node.atom} is not supported as a predicate`)

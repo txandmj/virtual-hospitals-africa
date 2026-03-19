@@ -1,5 +1,6 @@
 ;; Page 24 - Fever: Urgent for other danger signs
 (system_priority_evaluation
+  "Urgent: fever with danger signs"
   adult
   Urgent
   (and

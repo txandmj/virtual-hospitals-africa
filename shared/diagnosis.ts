@@ -8,19 +8,19 @@ import {
   PROBABLE_DIAGNOSIS_CONTEXTUAL_QUALIFIER,
 } from './snomed_concepts.ts'
 
+export const CERTAINTY_QUALIFIER_TO_CONCEPT = {
+  'definite': DEFINITE,
+  'probable': PROBABLE_DIAGNOSIS_CONTEXTUAL_QUALIFIER,
+  'equivocal': EQUIVOCAL,
+  'possible': POSSIBLE_DIAGNOSIS_CONTEXTUAL_QUALIFIER,
+  'improbable': IMPROBABLE_DIAGNOSIS_CONTEXTUAL_QUALIFIER,
+} as const
+
 export function diagnosisToEvaluation(diagnosis: {
-  snomed_concept: Lang['snomed_concept']
+  snomed_concept?: Lang['snomed_concept']
   certainty_qualifier?: Lang['diagnosis']['certainty_qualifier']
 }): Lang['evaluation'] {
-  const certainty_qualifier_map = {
-    'definite': DEFINITE,
-    'probable': PROBABLE_DIAGNOSIS_CONTEXTUAL_QUALIFIER,
-    'equivocal': EQUIVOCAL,
-    'possible': POSSIBLE_DIAGNOSIS_CONTEXTUAL_QUALIFIER,
-    'improbable': IMPROBABLE_DIAGNOSIS_CONTEXTUAL_QUALIFIER,
-  } as const
-
-  const certainty_qualifier_concept = diagnosis.certainty_qualifier ? certainty_qualifier_map[diagnosis.certainty_qualifier] : null
+  const certainty_qualifier_concept = diagnosis.certainty_qualifier ? CERTAINTY_QUALIFIER_TO_CONCEPT[diagnosis.certainty_qualifier] : null
 
   return {
     atom: 'evaluation',
@@ -29,7 +29,7 @@ export function diagnosisToEvaluation(diagnosis: {
       name: DIAGNOSIS.name,
       category: DIAGNOSIS.category,
     },
-    specific_snomed_concept: diagnosis.snomed_concept,
+    specific_snomed_concept: diagnosis.snomed_concept || null,
     value_snomed_concept: certainty_qualifier_concept && {
       atom: 'snomed_concept',
       name: certainty_qualifier_concept.name,

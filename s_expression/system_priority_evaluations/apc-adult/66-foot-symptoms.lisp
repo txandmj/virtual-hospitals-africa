@@ -1,5 +1,6 @@
 ;; Page 66 - Foot Symptoms: Urgent for ischaemia and fracture signs
 (system_priority_evaluation
+  "Urgent: foot pain with ischaemic or traumatic signs"
   adult
   Urgent
   (and

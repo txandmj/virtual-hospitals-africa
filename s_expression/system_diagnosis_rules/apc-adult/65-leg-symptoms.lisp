@@ -1,5 +1,6 @@
 ;; Page 65 - Leg Symptoms: Deep venous thrombosis likely with swollen painful calf
 (system_diagnosis_rule
+  "Diagnose possible deep venous thrombosis"
   (diagnosis
     (snomed_concept "Deep venous thrombosis" "disorder")
     possible
@@ -12,6 +13,7 @@
 )
 ;; Page 65 - Leg Symptoms: Acute lower limb ischemia likely with pain, absent pulse and neurological signs
 (system_diagnosis_rule
+  "Diagnose possible acute lower limb ischemia"
   (diagnosis
     (snomed_concept "Acute lower limb ischemia" "disorder")
     possible

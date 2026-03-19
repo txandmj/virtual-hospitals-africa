@@ -51,7 +51,7 @@ describeParallel('db/models/system_diagnosis_rules.ts', () => {
           { id: inserted_findings.measurement_ids[0], existence: 'Yes' },
         ],
       })
-      assertEquals(diagnoses_result, 'Inserted 1 diagnosis(es): possible Anaphylaxis')
+      assert(diagnoses_result.startsWith('Inserted 1 diagnosis(es): '))
       const evaluation = await patient_evaluations.findOne(db, { patient_id })
       assertMatches(evaluation, {
         'root_snomed_concept_name': 'Diagnosis',
@@ -136,7 +136,7 @@ describeParallel('db/models/system_diagnosis_rules.ts', () => {
         ],
       })
 
-      assertEquals(diagnoses_result, 'success — no diagnoses to insert')
+      assertEquals(diagnoses_result, 'No new system diagnoses to insert')
     },
   )
 

@@ -45,6 +45,7 @@ export function inverseSExpression(node: AnyNode): string {
       }
       for (const attr of node.attributes) parts.push(inverseSExpression(attr))
       for (const qual of node.qualifiers) parts.push(inverseSExpression(qual))
+      for (const excluding of node.excluding) parts.push(inverseSExpression(excluding))
       return `(${parts.join(' ')})`
     }
 
@@ -126,7 +127,9 @@ export function inverseSExpression(node: AnyNode): string {
     }
 
     case 'active_condition': {
-      return `(active_condition ${snomedConceptToString(node.snomed_concept)})`
+      const parts: string[] = ['active_condition', snomedConceptToString(node.snomed_concept)]
+      if (node.possible) parts.push('possible')
+      return `(${parts.join(' ')})`
     }
 
     case 'timestamp': {
@@ -135,6 +138,10 @@ export function inverseSExpression(node: AnyNode): string {
 
     case 'time_ago': {
       return `(time_ago ${node.value} ${node.units})`
+    }
+
+    case 'excluding': {
+      return `(excluding ${inverseSExpression(node.finding)})`
     }
 
     case '>':
@@ -172,7 +179,7 @@ export function inverseSExpression(node: AnyNode): string {
     }
 
     case 'system_priority_evaluation': {
-      return `(system_priority_evaluation ${ages(node)} ${quoted(node.priority)} ${inverseSExpression(node.due_to)})`
+      return `(system_priority_evaluation ${quoted(node.description)} ${ages(node)} ${quoted(node.priority)} ${inverseSExpression(node.due_to)})`
     }
 
     case 'diagnosis': {
@@ -180,7 +187,7 @@ export function inverseSExpression(node: AnyNode): string {
     }
 
     case 'system_diagnosis_rule': {
-      return `(system_diagnosis_rule ${inverseSExpression(node.diagnosis)} ${ages(node)} ${inverseSExpression(node.due_to)})`
+      return `(system_diagnosis_rule ${quoted(node.description)} ${inverseSExpression(node.diagnosis)} ${ages(node)} ${inverseSExpression(node.due_to)})`
     }
 
     default: {

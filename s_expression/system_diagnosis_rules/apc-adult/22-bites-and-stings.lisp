@@ -1,5 +1,6 @@
 ;; Page 22 - Bites and Stings: snake bite poisoning
 (system_diagnosis_rule
+  "Diagnose possible snake bite poisoning"
   (diagnosis
     (snomed_concept "Poisoning caused by venomous snake" "disorder")
     possible

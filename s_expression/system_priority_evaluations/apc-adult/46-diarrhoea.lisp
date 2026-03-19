@@ -1,5 +1,6 @@
 ;; Page 46 - Diarrhoea: Urgent for dehydration signs
 (system_priority_evaluation
+  "Urgent: diarrhoea with dehydration or haemodynamic compromise"
   adult
   Urgent
   (and

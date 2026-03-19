@@ -33,11 +33,3 @@
     (clinical_finding (snomed_concept "Pleuritic pain" "finding"))
   )
 )
-(task
-  "Check for urgent chest pain conditions"
-  adult
-  (clinical_finding (snomed_concept "Chest pain" "finding"))
-  (measure
-    (measurement (snomed_concept "Heart rate measured at systemic artery" "observable entity") bpm)
-  )
-)

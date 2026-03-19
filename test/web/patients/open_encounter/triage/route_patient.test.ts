@@ -6,7 +6,6 @@ import { asVitalAssessmentFormValues, asVitalMeasurementFormValues, asWarningSig
 import randomDemographics from '../../../../../mocks/randomDemographics.ts'
 import { events } from '../../../../../db/models/events.ts'
 import { getFormLabels, getFormOptions, getFormValues } from 'test/_helpers/form.ts'
-import { logReadableJson } from '../../../../../util/humanReadableJson.ts'
 import { assertEquals } from 'std/assert/assert_equals.ts'
 import { patient_encounters } from '../../../../../db/models/patient_encounters.ts'
 import { assert } from 'std/assert/assert.ts'
@@ -96,16 +95,14 @@ describeParallel('triage/additional_tasks_and_investigations', () => {
       assertEquals(anaphylaxis_diagnosis.value.name, 'Probable diagnosis (contextual qualifier)')
 
       const route_patient_form_values = getFormValues($route_patient)
-      const route_patient_form_labels = getFormLabels($route_patient)
-      const route_patient_form_options = getFormOptions($route_patient)
+      const _route_patient_form_labels = getFormLabels($route_patient)
+      const _route_patient_form_options = getFormOptions($route_patient)
+
       assertMatches(route_patient_form_values, {
         'next_step': 'hand_over' as const,
         'health_worker_ids_to_be_notified': [shcp.id],
         'notes': null,
       }, { strict: true })
-
-      logReadableJson({ route_patient_form_labels })
-      logReadableJson({ route_patient_form_options })
 
       const $referral_placed = await postStep({
         route_patient: route_patient_form_values,

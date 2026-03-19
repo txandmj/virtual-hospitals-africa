@@ -1,5 +1,6 @@
 ;; Page 25 - Lump/Swelling in Neck, Axilla or Groin
 (system_priority_evaluation
+  "Urgent: groin mass with obstruction or vascular signs"
   adult
   Urgent
   (and

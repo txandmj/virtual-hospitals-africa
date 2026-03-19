@@ -24,7 +24,6 @@
     (clinical_finding (snomed_concept "Abdominal pain" "finding"))
     (clinical_finding (snomed_concept "Finding of vomiting" "finding"))
     (finding (snomed_concept "Exposure to (contextual qualifier)" "qualifier value") (snomed_concept "Substance" "substance"))
-    (clinical_finding (snomed_concept "Traumatic or non-traumatic injury" "disorder") (qualifier (snomed_concept "Recent" "qualifier value")))
     (clinical_finding (snomed_concept "Family history with explicit context" "situation"))
     (clinical_finding (snomed_concept "Family history of sudden death" "situation"))
     (clinical_finding (snomed_concept "Electrocardiogram abnormal" "finding"))

@@ -145,13 +145,23 @@ describeParallel('db/models/employees.ts', () => {
     itParallel(
       'returns providers matching a search with their employment information',
       async () => {
+        const clinic = await createTestOrganization(db)
         const health_worker = await addTestEmployee(db, {
           role: 'nurse',
+          organization_id: clinic.id,
+        })
+        await addTestEmployee(db, {
+          role: 'nurse',
+          health_worker_attrs: {
+            name: `${generateUUID()} ${generateUUID()}`,
+          },
+          organization_id: clinic.id,
         })
 
         const { results } = await employees.search(db, {
           search: health_worker.name,
         })
+
         assertEquals(results.length, 1)
         const [result] = results
         assertLength(result.organizations[0].in_departments, 3)
