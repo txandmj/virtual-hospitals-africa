@@ -3,7 +3,7 @@ import { Names, Priority } from '../../types.ts'
 import assertOneOf from '../../util/assertOneOf.ts'
 import capitalize from '../../util/capitalize.ts'
 import compact from '../../util/compact.ts'
-import { ArrowTrendingUpIcon, AtSymbolIcon, ClockIcon, ReceiptRefundIcon } from './icons/heroicons/outline.tsx'
+import { ArrowTrendingUpIcon, AtSymbolIcon, ClockIcon } from './icons/heroicons/outline.tsx'
 import { ActionsRadioGroupSelect } from './ActionsRadioGroupSelect.tsx'
 import { objectPronoun, posessivePronoun, pronoun } from '../../shared/sex_and_gender.ts'
 

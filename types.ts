@@ -323,7 +323,8 @@ export type RenderedPatient = {
   age_days: Maybe<number>
   avatar_url: string | null
   preferred_language_code_iso_639_2_b: string | null
-  most_recent_height_cm_measurement: string | null
+  most_recent_height: null | { cm: string; taken_at: Date | string }
+  most_recent_weight: null | { kg: string; taken_at: Date | string }
 }
 
 export type RenderedPatientCompletedPersonal =

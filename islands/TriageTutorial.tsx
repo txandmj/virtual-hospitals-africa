@@ -14,7 +14,7 @@ import { WORKFLOW_NAV_LINKS } from '../shared/workflow.ts'
 
 // Tutorial imports
 import { TutorialOverlay } from './tutorial/TutorialOverlay.tsx'
-import type { ScriptItem, TutorialHashState, TutorialStep } from '../shared/tutorial/types.ts'
+import type { TutorialHashState, TutorialStep } from '../shared/tutorial/types.ts'
 import { isTutorialState } from '../shared/tutorial/types.ts'
 import { getCompletedSteps, getItem, initialState, parseIndex } from '../shared/tutorial/state.ts'
 import { buildSidebarDiagnoses, buildSidebarFindings, EMPTY_PATIENT_HISTORY } from '../shared/tutorial/mock-data.ts'

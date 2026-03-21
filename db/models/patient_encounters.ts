@@ -36,6 +36,7 @@ import { base, QueryResult } from './_base.ts'
 import { assertDepartment } from '../../shared/departments.ts'
 import { arrayIsEmpty, arrayIsNonEmpty, assertArrayEmpty, assertArrayNonEmpty } from '../../util/arraySize.ts'
 import { canPerform, isWorkflow, WORKFLOW_STEPS } from '../../shared/workflow.ts'
+
 import { assertAll } from '../../util/assertAll.ts'
 import first from '../../util/first.ts'
 
@@ -514,7 +515,7 @@ export const patient_encounters = base({
     )
 
     const workflows: Workflow[] = ['triage', 'consultation']
-    const patient_workflows = workflows.map((workflow) => ({
+    const workflow_rows = workflows.map((workflow) => ({
       id: generateUUID(),
       patient_encounter_id,
       workflow,
@@ -591,7 +592,7 @@ export const patient_encounters = base({
         'inserting_patient_workflows',
         (qb) =>
           qb.insertInto('patient_workflows')
-            .values(patient_workflows),
+            .values(workflow_rows),
       )
       .with(
         'inserting_patient_workflows_started',
@@ -599,7 +600,7 @@ export const patient_encounters = base({
           employed_in_workflow_department
             ? qb.insertInto('patient_workflows_started')
               .values({
-                patient_workflow_id: patient_workflows[0].id,
+                patient_workflow_id: workflow_rows[0].id,
                 patient_encounter_employee_id,
               })
             : blankSelection(qb),
@@ -627,6 +628,7 @@ export const patient_encounters = base({
       completed_registration,
       "Supplied patient_id for patient that hasn't completed registration",
     )
+
     return inserted_patient_presence
   },
   /*

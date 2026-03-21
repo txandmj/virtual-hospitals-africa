@@ -114,7 +114,7 @@ function findMatchingMedicines(medicines: Medicine[], query: ParsedPatientCase):
 
   const age_determination = patientAgeDetermination({
     age_years: getAgeInYears(query.dob),
-    most_recent_height_cm_measurement: String(query.height_cm),
+    most_recent_height: { cm: String(query.height_cm) },
   })
 
   const patient_is_adult = age_determination === 'adult'

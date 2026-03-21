@@ -63,7 +63,8 @@ describeParallel('db/models/patient_encounters.ts', () => {
       age_years: null,
       age_days: null,
       preferred_language_code_iso_639_2_b: null,
-      most_recent_height_cm_measurement: null,
+      most_recent_height: null,
+      most_recent_weight: null,
     }
 
     assertArrayNonEmpty(
