@@ -58,6 +58,7 @@ export function AddPatientSearch({
       label=''
       Option={PatientOption}
       placeholder='Search existing patients'
+      skip_blank_search
     />
   )
 }

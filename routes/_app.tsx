@@ -14,11 +14,13 @@ export default function App({ Component, ...props }: PageProps) {
           href='https://fonts.gstatic.com'
           crossOrigin='anonymous'
         />
-        <link
+        {
+          /* <link
           rel='preconnect'
           href='https://cdn.fontshare.com'
           crossOrigin='anonymous'
-        />
+        /> */
+        }
         <link rel='stylesheet' href='/styles.css' />
         <link
           rel='stylesheet'
@@ -27,25 +29,16 @@ export default function App({ Component, ...props }: PageProps) {
           // @ts-ignore - onload is valid on link elements
           onload="this.media='all'"
         />
-        <noscript>
-          <link
-            rel='stylesheet'
-            href='https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Ubuntu:wght@300;400;500;600;700;800&family=Roboto&display=swap'
-          />
-        </noscript>
-        <link
+        {
+          /* <link
           rel='stylesheet'
           href='https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@800,500,700&display=swap'
           media='print'
           // @ts-ignore - onload is valid on link elements
+          id="fonts-fontshare"
           onload="this.media='all'"
-        />
-        <noscript>
-          <link
-            rel='stylesheet'
-            href='https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@800,500,700&display=swap'
-          />
-        </noscript>
+        /> */
+        }
         {props.route === '/' && (
           <>
             <meta
@@ -68,7 +61,7 @@ export default function App({ Component, ...props }: PageProps) {
               content='https://virtualhospitalsafrica.org/images/ogimage.png'
             />
 
-            <meta property='og:image:type' content={`image/png`} />
+            <meta property='og:image:type' content='image/png' />
             <meta property='og:image:width' content='256' />
             <meta property='og:image:height' content='256' />
 
@@ -81,11 +74,40 @@ export default function App({ Component, ...props }: PageProps) {
             <link
               rel='apple-touch-icon'
               sizes='180x180'
-              href='https://virtualhospitalsafrica.org/images/ogimage.png'
+              href='https://za.virtualhospitalsafrica.org/images/ogimage.png'
             />
             <script
               src='https://youtube.com/iframe_api'
               async
+            />
+          </>
+        )}
+        {props.route === '/tutorial' && (
+          <>
+            <meta
+              name='description'
+              content='Guided tour of a digital health platform connecting African health workers'
+            />
+            <meta property='og:type' content='website' />
+            <meta property='og:title' content='Virtual Hospitals Africa Tutorial' />
+            <meta
+              property='og:description'
+              content='Guided tour of a digital health platform connecting African health workers'
+            />
+            <meta property='og:local' content='en_GB' />
+            <meta
+              property='og:image'
+              content='https://za.virtualhospitalsafrica.org/images/ogimage-tutorial.png'
+            />
+
+            <meta property='og:image:type' content='image/png' />
+            <meta property='og:image:width' content='1200' />
+            <meta property='og:image:height' content='630' />
+
+            <meta property='og:site_name' content='Virtual Hospitals Africa Tutorial' />
+            <meta
+              property='og:url'
+              content='https://za.virtualhospitalsafrica.org/tutorial'
             />
           </>
         )}

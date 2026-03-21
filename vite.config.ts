@@ -9,6 +9,14 @@ export default defineConfig({
     fresh(),
     tailwindcss(),
   ],
+  resolve: {
+    alias: {
+      // preact/debug throws on string event handlers (e.g. onload="...") which is
+      // valid HTML for SSR but rejected in dev-only validation. Alias it to preact
+      // itself to skip the debug layer without affecting any other functionality.
+      'preact/debug': 'preact',
+    },
+  },
   server: {
     port: parseInt(PORT, 10),
   },

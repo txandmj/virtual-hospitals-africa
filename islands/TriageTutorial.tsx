@@ -14,8 +14,7 @@ import { WORKFLOW_NAV_LINKS } from '../shared/workflow.ts'
 
 // Tutorial imports
 import { TutorialOverlay } from './tutorial/TutorialOverlay.tsx'
-import { TUTORIAL_SCRIPT } from '../shared/tutorial/script.ts'
-import type { TutorialHashState, TutorialStep } from '../shared/tutorial/types.ts'
+import type { ScriptItem, TutorialHashState, TutorialStep } from '../shared/tutorial/types.ts'
 import { isTutorialState } from '../shared/tutorial/types.ts'
 import { getCompletedSteps, getItem, initialState, parseIndex } from '../shared/tutorial/state.ts'
 import { buildSidebarDiagnoses, buildSidebarFindings, EMPTY_PATIENT_HISTORY } from '../shared/tutorial/mock-data.ts'
@@ -37,6 +36,7 @@ import { TUTORIAL_WAITING_ROOM } from '../shared/tutorial/mock-data.ts'
 import WaitingRoomView from '../components/waiting_room/View.tsx'
 import { EmergencyCallButton } from './EmergencyCallButton.tsx'
 import { SidebarHealthWorkerMenu } from './sidebar/HealthWorkerMenu.tsx'
+import { TUTORIAL_SCRIPT } from '../shared/tutorial/script.ts'
 
 const TUTORIAL_NAV_LINKS = WORKFLOW_NAV_LINKS.triage.map((link) => ({
   ...link,
