@@ -76,9 +76,40 @@ function baseQuery(trx: TrxOrDbOrQueryCreator, opts: { search?: string | null; h
           VITAL_MEASUREMENTS_SNOMED_CONCEPTS.height.id,
         )
         .orderBy('patient_records_aggregated.created_at', 'desc')
-        .select('patient_measurements.value')
+        .select((eb2) => [
+          jsonBuildNullableObject(eb2.ref('patient_measurements.value'), {
+            cm: eb2.ref('patient_measurements.value').$notNull(),
+            taken_at: eb2.ref('patient_records_aggregated.created_at').$castTo<Date | string>(),
+          }).as('v'),
+        ])
         .limit(1)
-        .as('most_recent_height_cm_measurement'),
+        .as('most_recent_height'),
+      eb.selectFrom('patient_records_aggregated')
+        .innerJoin('patient_records_still_valid', 'patient_records_still_valid.id', 'patient_records_aggregated.id')
+        .innerJoin(
+          'patient_measurements',
+          'patient_records_aggregated.id',
+          'patient_measurements.id',
+        )
+        .where(
+          'patient_records_aggregated.patient_id',
+          '=',
+          eb.ref('patients.id'),
+        )
+        .where(
+          'patient_records_aggregated.specific_snomed_concept_id',
+          '=',
+          VITAL_MEASUREMENTS_SNOMED_CONCEPTS.weight.id,
+        )
+        .orderBy('patient_records_aggregated.created_at', 'desc')
+        .select((eb2) => [
+          jsonBuildNullableObject(eb2.ref('patient_measurements.value'), {
+            kg: eb2.ref('patient_measurements.value').$notNull(),
+            taken_at: eb2.ref('patient_records_aggregated.created_at').$castTo<Date | string>(),
+          }).as('v'),
+        ])
+        .limit(1)
+        .as('most_recent_weight'),
     ])
     .orderBy(
       'name',

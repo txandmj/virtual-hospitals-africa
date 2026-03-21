@@ -4,14 +4,13 @@ import { AgeDetermination, Maybe } from '../types.ts'
 export function patientAgeDetermination(
   patient: {
     age_years?: Maybe<number>
-    most_recent_height_cm_measurement?: Maybe<string>
+    most_recent_height?: Maybe<{ cm: string }>
   },
 ): AgeDetermination {
   assert(typeof patient.age_years === 'number')
   assert(patient.age_years >= 0)
-  // assert(patient.most_recent_height_cm_measurement != null)
 
-  const height_cm = parseFloat(patient.most_recent_height_cm_measurement || 'NaN')
+  const height_cm = parseFloat(patient.most_recent_height?.cm || 'NaN')
 
   if (height_cm >= 150) {
     return 'adult'

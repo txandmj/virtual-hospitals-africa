@@ -58,7 +58,8 @@ export const TUTORIAL_PATIENT: RenderedPatientCompletedRegistration = {
   age_days: 12410,
   avatar_url: '/duduzile.png',
   preferred_language_code_iso_639_2_b: 'eng',
-  most_recent_height_cm_measurement: '165',
+  most_recent_height: { cm: '165', taken_at: '2024-01-01T00:00:00.000Z' },
+  most_recent_weight: null,
 }
 
 /**

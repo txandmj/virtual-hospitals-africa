@@ -387,7 +387,8 @@ const BREAST_CANCER_PATIENT: MockPatientCase = {
     age_days: 17532,
     avatar_url: '/images/avatars/random/female/8.png',
     preferred_language_code_iso_639_2_b: 'eng',
-    most_recent_height_cm_measurement: '162',
+    most_recent_height: { cm: '162', taken_at: '2024-01-01T00:00:00.000Z' },
+    most_recent_weight: null,
   },
   priority: 'Urgent',
   patient_history: {
@@ -485,7 +486,8 @@ const DIABETIC_FOOT_PATIENT: MockPatientCase = {
     age_days: 22645,
     avatar_url: '/images/avatars/random/male/5.png',
     preferred_language_code_iso_639_2_b: 'zul',
-    most_recent_height_cm_measurement: '175',
+    most_recent_height: { cm: '175', taken_at: '2024-01-01T00:00:00.000Z' },
+    most_recent_weight: null,
   },
   priority: 'Very urgent',
   patient_history: {
@@ -573,7 +575,8 @@ const HIGH_RISK_PREGNANCY_PATIENT: MockPatientCase = {
     age_days: 11684,
     avatar_url: '/images/avatars/random/female/4.png',
     preferred_language_code_iso_639_2_b: 'eng',
-    most_recent_height_cm_measurement: '158',
+    most_recent_height: { cm: '158', taken_at: '2024-01-01T00:00:00.000Z' },
+    most_recent_weight: null,
   },
   priority: 'Very urgent',
   patient_history: {
@@ -671,7 +674,8 @@ const HIV_ART_PATIENT: MockPatientCase = {
     age_days: 12780,
     avatar_url: '/images/avatars/random/male/4.png',
     preferred_language_code_iso_639_2_b: 'zul',
-    most_recent_height_cm_measurement: '178',
+    most_recent_height: { cm: '178', taken_at: '2024-01-01T00:00:00.000Z' },
+    most_recent_weight: null,
   },
   priority: 'Non-urgent',
   patient_history: {
@@ -753,7 +757,8 @@ const PEDIATRIC_ASTHMA_PATIENT: MockPatientCase = {
     age_days: 2920,
     avatar_url: '/images/avatars/random/male/1.png',
     preferred_language_code_iso_639_2_b: 'sot',
-    most_recent_height_cm_measurement: '128',
+    most_recent_height: { cm: '128', taken_at: '2024-01-01T00:00:00.000Z' },
+    most_recent_weight: null,
   },
   priority: 'Emergency',
   patient_history: {
@@ -845,7 +850,8 @@ const ELDERLY_MULTIMORBID_PATIENT: MockPatientCase = {
     age_days: 28490,
     avatar_url: '/images/avatars/random/female/9.png',
     preferred_language_code_iso_639_2_b: 'tsn',
-    most_recent_height_cm_measurement: '155',
+    most_recent_height: { cm: '155', taken_at: '2024-01-01T00:00:00.000Z' },
+    most_recent_weight: null,
   },
   priority: 'Urgent',
   patient_history: {
@@ -971,7 +977,8 @@ const MENTAL_HEALTH_PATIENT: MockPatientCase = {
     age_days: 10224,
     avatar_url: '/images/avatars/random/female/10.png',
     preferred_language_code_iso_639_2_b: 'eng',
-    most_recent_height_cm_measurement: '165',
+    most_recent_height: { cm: '165', taken_at: '2024-01-01T00:00:00.000Z' },
+    most_recent_weight: null,
   },
   priority: 'Non-urgent',
   patient_history: {
@@ -1046,7 +1053,8 @@ const TUBERCULOSIS_PATIENT: MockPatientCase = {
     age_days: 16436,
     avatar_url: '/images/avatars/random/male/6.png',
     preferred_language_code_iso_639_2_b: 'zul',
-    most_recent_height_cm_measurement: '172',
+    most_recent_height: { cm: '172', taken_at: '2024-01-01T00:00:00.000Z' },
+    most_recent_weight: null,
   },
   priority: 'Non-urgent',
   patient_history: {
@@ -1118,7 +1126,8 @@ const POST_SURGICAL_PATIENT: MockPatientCase = {
     age_days: 20093,
     avatar_url: '/images/avatars/random/male/7.png',
     preferred_language_code_iso_639_2_b: 'afr',
-    most_recent_height_cm_measurement: '180',
+    most_recent_height: { cm: '180', taken_at: '2024-01-01T00:00:00.000Z' },
+    most_recent_weight: null,
   },
   priority: 'Non-urgent',
   patient_history: {
@@ -1190,7 +1199,8 @@ const TRAUMA_PATIENT: MockPatientCase = {
     age_days: 8035,
     avatar_url: '/images/avatars/random/male/10.png',
     preferred_language_code_iso_639_2_b: 'nso',
-    most_recent_height_cm_measurement: '176',
+    most_recent_height: { cm: '176', taken_at: '2024-01-01T00:00:00.000Z' },
+    most_recent_weight: null,
   },
   priority: 'Emergency',
   patient_history: {
