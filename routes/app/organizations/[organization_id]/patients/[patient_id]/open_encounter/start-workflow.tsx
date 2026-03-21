@@ -110,11 +110,9 @@ export async function startWorkflow<T>(
       if (!most_recent_height || !most_recent_weight) return true
       const one_year_ago = new Date()
       one_year_ago.setFullYear(one_year_ago.getFullYear() - 1)
-      const height_taken_within_one_year = new Date(most_recent_height.taken_at) <= one_year_ago
-      if (!height_taken_within_one_year) return true
-      const weight_taken_within_one_year = new Date(most_recent_height.taken_at) <= one_year_ago
-      if (!weight_taken_within_one_year) return true
-      return false
+      const height_taken_within_one_year = new Date(most_recent_height.taken_at) >= one_year_ago
+      const weight_taken_within_one_year = new Date(most_recent_height.taken_at) >= one_year_ago
+      return !(height_taken_within_one_year && weight_taken_within_one_year)
     }
   }
 

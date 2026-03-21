@@ -20,9 +20,6 @@ TODO
 - Create a script that sets up a mock patient exercises each test case
   - This way Dr. Skhu can log in and the patients are already set up and you can go manually review
 
-
-- disable triage if already in triage
-
 Triage Route Patient Next Steps
   3 Options
     - [Always shows] Non-urgent => default is await consultation
