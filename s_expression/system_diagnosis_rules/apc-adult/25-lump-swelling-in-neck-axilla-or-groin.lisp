@@ -1,5 +1,6 @@
 ;; Page 25 - Strangulated inguinal hernia likely with groin mass + bowel obstruction signs
 (system_diagnosis_rule
+  "Diagnose probable strangulated inguinal hernia"
   (diagnosis
     (snomed_concept "Strangulated inguinal hernia" "disorder")
     probable
@@ -16,6 +17,7 @@
 )
 ;; Page 25 - Aneurysm likely with pulsatile groin mass
 (system_diagnosis_rule
+  "Diagnose possible aneurysm"
   (diagnosis
     (snomed_concept "Aneurysm" "disorder")
     possible

@@ -1,5 +1,6 @@
 ;; Page 44 - Abdominal Pain: Peritonitis likely with guarding, rigidity or rebound tenderness
 (system_diagnosis_rule
+  "Diagnose probable peritonitis"
   (diagnosis
     (snomed_concept "Peritonitis" "disorder")
     probable
@@ -16,6 +17,7 @@
 )
 ;; Page 44 - Abdominal Pain: Acute cholecystitis likely with RUQ tenderness and nausea/fever/anorexia
 (system_diagnosis_rule
+  "Diagnose probable acute cholecystitis"
   (diagnosis
     (snomed_concept "Acute cholecystitis" "disorder")
     probable
@@ -34,6 +36,7 @@
 )
 ;; Page 44 - Abdominal Pain: Acute pancreatitis likely with upper abdominal pain spreading to back
 (system_diagnosis_rule
+  "Diagnose probable acute pancreatitis"
   (diagnosis
     (snomed_concept "Acute pancreatitis" "disorder")
     probable
@@ -50,6 +53,7 @@
 )
 ;; Page 44 - Abdominal Pain: Abdominal aortic aneurysm likely with pulsatile abdominal mass
 (system_diagnosis_rule
+  "Diagnose possible abdominal aortic aneurysm"
   (diagnosis
     (snomed_concept "Abdominal aortic aneurysm" "disorder")
     possible

@@ -1,5 +1,6 @@
 ;; Page 26 - Heart failure likely with orthopnea and leg swelling
 (system_diagnosis_rule
+  "Diagnose probable heart failure"
   (diagnosis
     (snomed_concept "Heart failure" "disorder")
     probable

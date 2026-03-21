@@ -1,5 +1,6 @@
 ;; Page 59 - Urinary Symptoms: Kidney stone likely with blood in urine and flank pain
 (system_diagnosis_rule
+  "Diagnose possible kidney stone"
   (diagnosis
     (snomed_concept "Kidney stone" "disorder")
     possible
@@ -12,6 +13,7 @@
 )
 ;; Page 59 - Urinary Symptoms: Acute pyelonephritis likely with flank pain, fever and systemic signs
 (system_diagnosis_rule
+  "Diagnose possible acute pyelonephritis"
   (diagnosis
     (snomed_concept "Acute pyelonephritis" "disorder")
     possible

@@ -14,6 +14,7 @@ import { exists } from '../../util/exists.ts'
 import { describeParallel, itParallel } from 'test/_helpers/testParallel.ts'
 import { z } from 'zod'
 import { assertMatches } from '../../util/assertMatches.ts'
+import omit from '../../util/omit.ts'
 
 describeParallel('db/models/patient_encounters.ts', () => {
   afterAll(() => db.destroy())
@@ -145,7 +146,7 @@ describeParallel('db/models/patient_encounters.ts', () => {
         href: `/app/organizations/${organization_id}/patients/${patient.id}/open_encounter/start-workflow?workflow=registration`,
       }],
       present_employees: [
-        open_encounter.all_employees_seen[0],
+        omit(open_encounter.all_employees_seen[0], ['health_worker_id']),
       ],
       reason: null,
       priority: null,

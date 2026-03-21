@@ -1,5 +1,6 @@
 ;; Page 37 - Chest Pain: Emergency for cardiac signs
 (system_priority_evaluation
+  "Emergency: chest pain with cardiac signs"
   adult
   Emergency
   (and

@@ -1,5 +1,6 @@
 ;; Page 62 - Joint Symptoms: Urgent for septic arthritis, fracture and fever signs
 (system_priority_evaluation
+  "Urgent: joint pain with septic, traumatic or systemic signs"
   adult
   Urgent
   (and

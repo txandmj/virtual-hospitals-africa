@@ -1,5 +1,6 @@
 ;; Page 38 - Cough/Breathing: Urgent for other signs
 (system_priority_evaluation
+  "Urgent: cough or breathlessness with danger signs"
   adult
   Urgent
   (and

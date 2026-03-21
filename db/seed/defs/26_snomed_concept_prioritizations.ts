@@ -4,7 +4,7 @@ import type { TrxOrDb, UnwrappedGenerator, WarningSign } from '../../../types.ts
 import { define } from '../define.ts'
 import { findingQueryExpression, WARNING_SIGNS } from '../../../shared/warning_signs.ts'
 import { isAtom, parseWithSchema } from '../../../shared/s_expression.ts'
-import { any_query } from '../../../shared/s_expression_schemas.ts'
+import { any_query_single } from '../../../shared/s_expression_schemas.ts'
 import { literalString } from '../../helpers.ts'
 import { forEach } from '../../../util/inParallel.ts'
 import { nameAndCategorySnomedConceptBase } from '../../models/s_expression.ts'
@@ -17,13 +17,12 @@ const AGE_DETERMINATIONS: AgeDetermination[] = ['adult', 'older child', 'younger
 
 // In practice prompt_when_s_expression is only used for showing/not show
 function signAppliesForPregnancyValues(sign: WarningSign): boolean[] {
-  if (!sign.prompt_when_s_expression) return [true, false]
+  if (!sign.prompt_when_s_expression && !sign.prompt_when_not_s_expression) return [true, false]
   assert(
     sign.prompt_when_s_expression === '(active_condition (snomed_concept "Pregnancy" "finding"))' ||
-      sign.prompt_when_s_expression === '(not (active_condition (snomed_concept "Pregnancy" "finding")))',
+      sign.prompt_when_not_s_expression === '(active_condition (snomed_concept "Pregnancy" "finding"))',
   )
-  const parsed = parseWithSchema(sign.prompt_when_s_expression, any_query)
-  return isAtom(parsed, 'not') ? [false] : [true]
+  return [!!sign.prompt_when_s_expression]
 }
 
 function* signs() {
@@ -33,7 +32,7 @@ function* signs() {
     for (const sign of signs) {
       // Parse the clinical_finding_s_expression to get the root SNOMED concept.
       // clinical_finding always parses to a finding node with root_snomed_concept = CLINICAL_FINDING.
-      const parsed = parseWithSchema(sign.clinical_finding_s_expression, any_query)
+      const parsed = parseWithSchema(sign.clinical_finding_s_expression, any_query_single)
       if (!isAtom(parsed, 'finding')) continue
 
       // Qualifiers can't be evaluated at concept level — these signs match nothing in this table.

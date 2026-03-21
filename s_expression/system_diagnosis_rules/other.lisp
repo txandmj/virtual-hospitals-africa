@@ -1,5 +1,6 @@
 ;; Cross-cutting: Stroke/TIA signs
 (system_diagnosis_rule
+  "Diagnose possible stroke or TIA"
   (diagnosis
     (snomed_concept "Cerebrovascular accident" "disorder")
     possible

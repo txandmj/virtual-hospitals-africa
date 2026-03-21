@@ -908,7 +908,7 @@ describeParallel('triage/warning_signs', () => {
 
         const findings = await patient_findings.findAll(db, {
           patient_id,
-          s_expression: `(not (finding ${STATUS_ATTRIBUTE.s_expression}))`,
+          s_expression: `(finding (excluding (finding ${STATUS_ATTRIBUTE.s_expression})))`,
         })
         assertLength(findings, 1)
 
@@ -1063,6 +1063,7 @@ describeParallel('triage/warning_signs', () => {
     }
 
     /* Singletons to test */
+    // testRoundTrip(KEYED_WARNING_SIGNS['Dislocation of larger joint'], false, { only: true })
 
     // Exercises s_expression
     // testRoundTrip(KEYED_WARNING_SIGNS['Burn Other'], false, { only: true })

@@ -490,6 +490,7 @@ export function asNormalFormSExpression<Rest>(
           value_snomed_concept,
           qualifiers,
           attributes,
+          excluding: [],
           exact: false,
           history: false,
           existence: record.existence,

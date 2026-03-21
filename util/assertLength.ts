@@ -8,9 +8,10 @@ export default function assertLength<
 >(
   array: T,
   length: number,
+  message?: string,
 ) {
   assert(
     array.length === length,
-    `Expected array to be length ${length}. Actual length ${array.length}. Actual value\n${humanReadableJson(array)}`,
+    message || `Expected array to be length ${length}. Actual length ${array.length}. Actual value\n${humanReadableJson(array)}`,
   )
 }

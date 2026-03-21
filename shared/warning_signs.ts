@@ -234,8 +234,10 @@ const WARNING_SIGN_DEFS = [
   {
     key: 'Dislocation of larger joint' as const,
     clinical_finding_s_expression: '(clinical_finding (snomed_concept "Dislocation" "morphologic abnormality"))',
-    excluding_s_expression:
-      '(or (finding (snomed_concept "Finding site" "attribute") (snomed_concept "Finger structure" "body structure")) (finding (snomed_concept "Finding site" "attribute") (snomed_concept "Toe structure" "body structure")))',
+    excluding_s_expressions: [
+      `(finding (finding_site (snomed_concept "Finger structure" "body structure")))`,
+      `(finding (finding_site (snomed_concept "Toe structure" "body structure")))`,
+    ],
     name: 'Dislocation of larger joint',
     description: 'not finger or toe',
     priority: 'Very urgent' as const,
@@ -394,8 +396,12 @@ const WARNING_SIGN_DEFS = [
   {
     key: 'Burn Other' as const,
     clinical_finding_s_expression: '(clinical_finding (snomed_concept "Burn" "disorder"))',
-    excluding_s_expression:
-      '(or (clinical_finding (snomed_concept "Burn" "disorder") (qualifier (snomed_concept "Circumferential" "qualifier value"))) (clinical_finding (snomed_concept "Inhalation burn due to hot gas" "disorder")) (clinical_finding (snomed_concept "Chemical burn" "disorder")) (clinical_finding (snomed_concept "Burn of face" "disorder")))',
+    excluding_s_expressions: [
+      `(clinical_finding (snomed_concept "Burn" "disorder") (qualifier (snomed_concept "Circumferential" "qualifier value")))`,
+      `(clinical_finding (snomed_concept "Inhalation burn due to hot gas" "disorder"))`,
+      `(clinical_finding (snomed_concept "Chemical burn" "disorder"))`,
+      `(clinical_finding (snomed_concept "Burn of face" "disorder"))`,
+    ],
     name: 'Burn',
     description: 'Other',
     priority: 'Urgent' as const,
@@ -423,7 +429,7 @@ const WARNING_SIGN_DEFS = [
     name: 'Abdominal pain',
     description: null,
     priority: 'Urgent' as const,
-    prompt_when_s_expression: '(not (active_condition (snomed_concept "Pregnancy" "finding")))',
+    prompt_when_not_s_expression: '(active_condition (snomed_concept "Pregnancy" "finding"))',
     category: 'Urgent' as const,
   },
 
@@ -680,8 +686,10 @@ const WARNING_SIGN_DEFS = [
   {
     key: 'Dislocation of larger joint (not finger or toe)' as const,
     clinical_finding_s_expression: '(clinical_finding (snomed_concept "Dislocation" "morphologic abnormality"))',
-    excluding_s_expression:
-      '(or (finding (snomed_concept "Finding site" "attribute") (snomed_concept "Finger structure" "body structure")) (finding (snomed_concept "Finding site" "attribute") (snomed_concept "Toe structure" "body structure")))',
+    excluding_s_expressions: [
+      `(finding (finding_site (snomed_concept "Finger structure" "body structure")))`,
+      `(finding (finding_site (snomed_concept "Toe structure" "body structure")))`,
+    ],
     name: 'Dislocation of larger joint (not finger or toe)',
     description: null,
     priority: 'Very urgent' as const,
@@ -789,8 +797,12 @@ const WARNING_SIGN_DEFS = [
   {
     key: 'Any other burn less than 10%' as const,
     clinical_finding_s_expression: '(clinical_finding (snomed_concept "Burn" "disorder"))',
-    excluding_s_expression:
-      '(or (clinical_finding (snomed_concept "Burn" "disorder") (qualifier (snomed_concept "Circumferential" "qualifier value"))) (clinical_finding (snomed_concept "Inhalation burn due to hot gas" "disorder")) (clinical_finding (snomed_concept "Chemical burn" "disorder")) (clinical_finding (snomed_concept "Burn of face" "disorder")))',
+    excluding_s_expressions: [
+      `(clinical_finding (snomed_concept "Burn" "disorder") (qualifier (snomed_concept "Circumferential" "qualifier value")))`,
+      `(clinical_finding (snomed_concept "Inhalation burn due to hot gas" "disorder"))`,
+      `(clinical_finding (snomed_concept "Chemical burn" "disorder"))`,
+      `(clinical_finding (snomed_concept "Burn of face" "disorder"))`,
+    ],
     name: 'Any other burn less than 10%',
     description: null,
     priority: 'Urgent' as const,
@@ -816,8 +828,9 @@ function buildNormalizedSign<T extends typeof WARNING_SIGN_DEFS[number]>(
     ...sign,
     ...overrides,
     clinical_finding_s_expression: normalForm(sign.clinical_finding_s_expression),
-    excluding_s_expression: sign.excluding_s_expression && normalForm(sign.excluding_s_expression),
+    excluding_s_expressions: sign.excluding_s_expressions && sign.excluding_s_expressions.map(normalForm),
     prompt_when_s_expression: sign.prompt_when_s_expression && normalForm(sign.prompt_when_s_expression),
+    prompt_when_not_s_expression: sign.prompt_when_not_s_expression && normalForm(sign.prompt_when_not_s_expression),
   }) as WarningSign
 }
 
@@ -872,8 +885,10 @@ export const WARNING_SIGNS: {
 export const KEYED_WARNING_SIGNS = keyBy(WARNING_SIGNS.adult, 'key')
 
 export function findingQueryExpression(
-  { excluding_s_expression, clinical_finding_s_expression }: WarningSign,
+  { excluding_s_expressions, clinical_finding_s_expression }: WarningSign,
 ): string {
-  if (!excluding_s_expression) return clinical_finding_s_expression
-  return `(and ${clinical_finding_s_expression} (not ${excluding_s_expression}))`
+  return (excluding_s_expressions || []).reduce(
+    (finding_query_expression, excluding) => finding_query_expression.replace(/\)$/, ` (excluding ${excluding}))`),
+    clinical_finding_s_expression,
+  )
 }

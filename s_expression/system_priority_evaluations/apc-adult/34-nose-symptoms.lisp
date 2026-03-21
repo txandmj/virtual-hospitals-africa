@@ -1,5 +1,6 @@
 ;; Page 34 - Nose: Head injury with nose symptoms (possible CSF leak)
 (system_priority_evaluation
+  "Urgent: head injury with nasal symptoms"
   adult
   Urgent
   (and

@@ -1,5 +1,6 @@
 ;; Page 32 - Face: Facial cellulitis likely with painful swelling and fever
 (system_diagnosis_rule
+  "Diagnose probable facial cellulitis"
   (diagnosis
     (snomed_concept "Cellulitis of face" "disorder")
     probable
@@ -12,6 +13,7 @@
 )
 ;; Page 32 - Face: Kidney disease likely with facial swelling and blood/protein in urine
 (system_diagnosis_rule
+  "Diagnose possible kidney disease"
   (diagnosis
     (snomed_concept "Kidney disease" "disorder")
     possible

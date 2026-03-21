@@ -289,10 +289,8 @@ class BaseModel<
     id: string | IdSelection,
     ...maybe_search_terms: MaybeOptionalArgs<SearchTerms>
   ): Promise<RenderedResult | null> {
-    console.log(`${this.top_level_table} getByIdOptional xx`)
     const cache_result = this.lru?.get(id)
     if (cache_result) {
-      console.log(`cache hit ${this.top_level_table}`)
       return cache_result
     }
     const query = this.buildQuery(trx, maybe_search_terms[0] || {} as SearchTerms, (qb) =>
@@ -304,14 +302,12 @@ class BaseModel<
         .limit(2))
 
     const results = await query.execute()
-    console.log(`${this.top_level_table} getByIdOptional results`)
     if (results.length === 0) return null
     if (results.length > 1) {
       console.error(asCompiledSql(query))
       throw new Error('Expected query to return a unique result')
     }
     const db_result = this.formatResult(results[0])
-    console.log(`${this.top_level_table} getByIdOptional formatted`)
     this.lru?.set(id, db_result)
     return db_result
   }

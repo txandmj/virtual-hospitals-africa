@@ -183,6 +183,10 @@ export function fastNormalize([atom, ...rest]: Exclude<SExpressionSimpleNode, st
     if (atom === 'time_ago' && index === 1) {
       return item
     }
+    if (atom === 'active_condition' && index === 1) {
+      assert(item === 'possible')
+      return item
+    }
     if (isString(item)) return `"${item}"`
     throw new Error(`Unable to normalize ${item}`)
   }).join(' ')

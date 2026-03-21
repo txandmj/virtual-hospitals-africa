@@ -68,16 +68,6 @@ describeParallel('/app/snomed/warning-signs', () => {
               'priority': null,
               'priority_by_virtue_of_matching_warning_sign': null,
             },
-            {
-              'clinical_finding_s_expression': '(clinical_finding (snomed_concept "Aching pain" "finding"))',
-              'snomed_concept_id': '27635008',
-              'name': 'Aching pain',
-              'description': 'finding',
-              'category': 'Search Results',
-              'best_similarity': 0.3,
-              'priority': null,
-              'priority_by_virtue_of_matching_warning_sign': null,
-            },
           ],
           'has_next_page': false,
           'search_terms': {

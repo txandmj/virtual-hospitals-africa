@@ -14,6 +14,8 @@ export type ChatbotName = 'patient' | 'pharmacist'
 
 export type Comparator = '<' | '<=' | '=' | '>' | '>='
 
+export type DiagnosisCertainty = 'definite' | 'equivocal' | 'improbable' | 'possible' | 'probable'
+
 export type DurationUnits = 'days' | 'hours' | 'indefinitely' | 'minutes' | 'months' | 'weeks' | 'years'
 
 export type EmergencyContactRelationship = 'Child' | 'Friend' | 'Guardian' | 'Other' | 'Parent' | 'Sibling' | 'Spouse'
@@ -80,6 +82,7 @@ export type MedicationFrequency =
   | 'q2h'
   | 'q30'
   | 'q30h'
+  | 'q3h'
   | 'q48h'
   | 'q4h'
   | 'q6h'
@@ -1255,10 +1258,10 @@ export interface PatientWorkflowStepsCompleted {
 }
 
 export interface PgStatStatements {
+  blk_read_time: number | null
+  blk_write_time: number | null
   calls: Int8 | null
   dbid: number | null
-  jit_deform_count: Int8 | null
-  jit_deform_time: number | null
   jit_emission_count: Int8 | null
   jit_emission_time: number | null
   jit_functions: Int8 | null
@@ -1267,8 +1270,6 @@ export interface PgStatStatements {
   jit_inlining_time: number | null
   jit_optimization_count: Int8 | null
   jit_optimization_time: number | null
-  local_blk_read_time: number | null
-  local_blk_write_time: number | null
   local_blks_dirtied: Int8 | null
   local_blks_hit: Int8 | null
   local_blks_read: Int8 | null
@@ -1279,18 +1280,14 @@ export interface PgStatStatements {
   mean_plan_time: number | null
   min_exec_time: number | null
   min_plan_time: number | null
-  minmax_stats_since: Timestamp | null
   plans: Int8 | null
   query: string | null
   queryid: Int8 | null
   rows: Int8 | null
-  shared_blk_read_time: number | null
-  shared_blk_write_time: number | null
   shared_blks_dirtied: Int8 | null
   shared_blks_hit: Int8 | null
   shared_blks_read: Int8 | null
   shared_blks_written: Int8 | null
-  stats_since: Timestamp | null
   stddev_exec_time: number | null
   stddev_plan_time: number | null
   temp_blk_read_time: number | null
@@ -1370,6 +1367,44 @@ export interface RegulatoryAgencies {
   id: Generated<string>
   name: string
   updated_at: Generated<Timestamp>
+}
+
+export interface RuleDueToFindings {
+  always_applies_if_present: boolean
+  created_at: Generated<Timestamp>
+  id: Generated<string>
+  root_snomed_concept_id: Int8 | null
+  rule_id: string
+  s_expression: string
+  specific_snomed_concept_id: Int8
+  updated_at: Generated<Timestamp>
+  value_snomed_concept_id: Int8 | null
+}
+
+export interface RuleDueToFindingSites {
+  always_applies_if_present: boolean
+  created_at: Generated<Timestamp>
+  id: Generated<string>
+  rule_id: string
+  updated_at: Generated<Timestamp>
+  value_snomed_concept_id: Int8
+}
+
+export interface RuleDueToMeasurements {
+  always_applies_if_present: boolean
+  comparator: Comparator
+  created_at: Generated<Timestamp>
+  id: Generated<string>
+  rule_id: string
+  specific_snomed_concept_id: Int8
+  updated_at: Generated<Timestamp>
+  value: Numeric
+}
+
+export interface Rules {
+  age_determinations: ArrayType<AgeDetermination>
+  due_to_s_expression: string
+  id: string
 }
 
 export interface SatsPriorityLevels {
@@ -1705,6 +1740,22 @@ export interface SpeechTranscriptions {
   updated_at: Generated<Timestamp>
 }
 
+export interface SystemDiagnosisRules {
+  certainty: DiagnosisCertainty
+  id: string
+  snomed_concept_id: Int8
+}
+
+export interface SystemPriorityEvaluations {
+  id: string
+  priority: WarningSignPriority
+}
+
+export interface Tasks {
+  id: string
+  procedure_s_expression: string
+}
+
 export interface WhatsappMessagesReceived {
   body: string | null
   chatbot_name: ChatbotName
@@ -1876,6 +1927,10 @@ export interface DB {
   procurers: Procurers
   regulators: Regulators
   regulatory_agencies: RegulatoryAgencies
+  rule_due_to_finding_sites: RuleDueToFindingSites
+  rule_due_to_findings: RuleDueToFindings
+  rule_due_to_measurements: RuleDueToMeasurements
+  rules: Rules
   sats_priority_levels: SatsPriorityLevels
   sats_triage_assessment_options: SatsTriageAssessmentOptions
   sats_triage_assessments: SatsTriageAssessments
@@ -1908,6 +1963,9 @@ export interface DB {
   snomed_text_definition: SnomedTextDefinition
   spatial_ref_sys: SpatialRefSys
   speech_transcriptions: SpeechTranscriptions
+  system_diagnosis_rules: SystemDiagnosisRules
+  system_priority_evaluations: SystemPriorityEvaluations
+  tasks: Tasks
   whatsapp_messages_received: WhatsappMessagesReceived
   whatsapp_messages_sent: WhatsappMessagesSent
   workflow_steps: WorkflowSteps

@@ -1,0 +1,72 @@
+import { Kysely, sql } from 'kysely'
+import type { DB } from '../../db.d.ts'
+import { createPointerTable, createStandardTable } from '../createTable.ts'
+
+export async function up(db: Kysely<DB>) {
+  await db.schema.createTable('rules')
+    .addColumn('id', 'varchar(255)', (col) => col.notNull().primaryKey())
+    .addColumn('age_determinations', sql`age_determination[]`, (col) => col.notNull())
+    .addColumn('due_to_s_expression', 'text', (col) => col.notNull())
+    .execute()
+
+  await createPointerTable(db, 'tasks', {
+    references: 'rules',
+    primary_key_type: 'varchar(255)',
+  }, (qb) => qb.addColumn('procedure_s_expression', 'text', (col) => col.notNull()))
+
+  await db.schema.createType('diagnosis_certainty')
+    .asEnum([
+      'definite',
+      'probable',
+      'equivocal',
+      'possible',
+      'improbable',
+    ]).execute()
+
+  await createPointerTable(db, 'system_diagnosis_rules', {
+    references: 'rules',
+    primary_key_type: 'varchar(255)',
+  }, (qb) =>
+    qb
+      .addColumn('snomed_concept_id', 'bigint', (col) => col.notNull().references('snomed_concept.id').onDelete('cascade'))
+      .addColumn('certainty', sql`diagnosis_certainty`, (col) => col.notNull()))
+
+  await createPointerTable(db, 'system_priority_evaluations', {
+    references: 'rules',
+    primary_key_type: 'varchar(255)',
+  }, (qb) => qb.addColumn('priority', sql`warning_sign_priority`, (col) => col.notNull()))
+
+  await createStandardTable(db, 'rule_due_to_findings', (qb) =>
+    qb
+      .addColumn('rule_id', 'varchar(255)', (col) => col.notNull().references('rules.id').onDelete('cascade'))
+      .addColumn('root_snomed_concept_id', 'bigint', (col) => col.references('snomed_concept.id').onDelete('cascade'))
+      .addColumn('specific_snomed_concept_id', 'bigint', (col) => col.notNull().references('snomed_concept.id').onDelete('cascade'))
+      .addColumn('value_snomed_concept_id', 'bigint', (col) => col.references('snomed_concept.id').onDelete('cascade'))
+      .addColumn('s_expression', 'text', (col) => col.notNull())
+      .addColumn('always_applies_if_present', 'boolean', (col) => col.notNull()))
+
+  await createStandardTable(db, 'rule_due_to_finding_sites', (qb) =>
+    qb
+      .addColumn('rule_id', 'varchar(255)', (col) => col.notNull().references('rules.id').onDelete('cascade'))
+      .addColumn('value_snomed_concept_id', 'bigint', (col) => col.notNull().references('snomed_concept.id').onDelete('cascade'))
+      .addColumn('always_applies_if_present', 'boolean', (col) => col.notNull()))
+
+  await createStandardTable(db, 'rule_due_to_measurements', (qb) =>
+    qb
+      .addColumn('rule_id', 'varchar(255)', (col) => col.notNull().references('rules.id').onDelete('cascade'))
+      .addColumn('specific_snomed_concept_id', 'bigint', (col) => col.notNull().references('snomed_concept.id').onDelete('cascade'))
+      .addColumn('comparator', sql`comparator`, (col) => col.notNull().check(sql`comparator != '='`))
+      .addColumn('value', 'decimal', (col) => col.notNull())
+      .addColumn('always_applies_if_present', 'boolean', (col) => col.notNull()))
+}
+
+export async function down(db: Kysely<DB>) {
+  await db.schema.dropTable('rule_due_to_measurements').execute()
+  await db.schema.dropTable('rule_due_to_finding_sites').execute()
+  await db.schema.dropTable('rule_due_to_findings').execute()
+  await db.schema.dropTable('system_priority_evaluations').execute()
+  await db.schema.dropTable('system_diagnosis_rules').execute()
+  await db.schema.dropType('diagnosis_certainty').execute()
+  await db.schema.dropTable('tasks').execute()
+  await db.schema.dropTable('rules').execute()
+}

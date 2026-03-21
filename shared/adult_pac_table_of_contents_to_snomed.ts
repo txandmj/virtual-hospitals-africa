@@ -622,7 +622,7 @@ export const ADULT_PAC_SYMPTOMS_TABLE_OF_CONTENTS_TO_SNOMED = {
   'Injured patient': [
     {
       'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Traumatic or non-traumatic injury" "finding") possible)',
+      's_expression': '(active_condition (snomed_concept "Traumatic or non-traumatic injury" "disorder") possible)',
       'snomed_concept_id': '417163006',
       'name': 'Traumatic or non-traumatic injury',
       'category': 'disorder',
@@ -1000,8 +1000,8 @@ export const ADULT_PAC_SYMPTOMS_TABLE_OF_CONTENTS_TO_SNOMED = {
     {
       'type': 'specific_concept',
       's_expression': `
-        (and (active_condition (snomed_concept "Wound" "disorder") possible)
-             (not (active_condition (snomed_concept "Bite - wound" "disorder") possible))
+        (clinical_finding (snomed_concept "Wound" "disorder")
+          (excluding (clinical_finding (snomed_concept "Bite - wound" "disorder")))
         )
       `,
       'snomed_concept_id': '416462003',

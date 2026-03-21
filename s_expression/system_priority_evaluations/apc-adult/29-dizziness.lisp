@@ -1,5 +1,6 @@
 ;; Page 29 - Dizziness
 (system_priority_evaluation
+  "Urgent: dizziness with cardiac or neurological signs"
   adult
   Urgent
   (and

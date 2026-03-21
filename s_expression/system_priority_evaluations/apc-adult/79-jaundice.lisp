@@ -1,5 +1,6 @@
 ;; Page 79 - Jaundice: Urgent for danger signs
 (system_priority_evaluation
+  "Urgent: jaundice with haemodynamic or hepatic danger signs"
   adult
   Urgent
   (and

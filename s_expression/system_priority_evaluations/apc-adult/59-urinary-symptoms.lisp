@@ -1,5 +1,6 @@
 ;; Page 59 - Urinary Symptoms: Urgent for retention with distension
 (system_priority_evaluation
+  "Urgent: urinary retention with abdominal distension"
   adult
   Urgent
   (and
@@ -9,6 +10,7 @@
 )
 ;; Page 59 - Urinary Symptoms: Urgent for kidney stone signs
 (system_priority_evaluation
+  "Urgent: haematuria with flank pain"
   adult
   Urgent
   (and
@@ -18,6 +20,7 @@
 )
 ;; Page 59 - Urinary Symptoms: Urgent for complicated pyelonephritis signs
 (system_priority_evaluation
+  "Urgent: flank pain with fever and systemic signs"
   adult
   Urgent
   (and

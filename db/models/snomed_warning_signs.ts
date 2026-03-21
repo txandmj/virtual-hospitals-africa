@@ -12,7 +12,6 @@ type SearchTerms = {
 }
 
 export const snomed_warning_signs = base({
-  verbose: true,
   top_level_table: 'snomed_concept_finding_like',
   baseQuery(trx: TrxOrDbOrQueryCreator, { age_determination, pregnancy, ...terms }: SearchTerms) {
     return trx.selectFrom(

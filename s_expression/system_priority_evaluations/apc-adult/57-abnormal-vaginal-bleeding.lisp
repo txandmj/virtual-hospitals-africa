@@ -1,5 +1,6 @@
 ;; Page 57 - Abnormal Vaginal Bleeding: Urgent for haemodynamic signs
 (system_priority_evaluation
+  "Urgent: abnormal vaginal bleeding with haemodynamic compromise"
   adult
   Urgent
   (and

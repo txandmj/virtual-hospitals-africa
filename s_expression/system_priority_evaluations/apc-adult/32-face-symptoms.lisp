@@ -1,5 +1,6 @@
 ;; Page 32 - Face: Facial cellulitis with fever
 (system_priority_evaluation
+  "Urgent: facial cellulitis with fever"
   adult
   Urgent
   (and
@@ -9,6 +10,7 @@
 )
 ;; Page 32 - Face: Kidney disease signs with facial swelling
 (system_priority_evaluation
+  "Urgent: facial swelling with renal signs"
   adult
   Urgent
   (and

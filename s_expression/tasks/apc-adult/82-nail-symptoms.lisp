@@ -1,6 +1,6 @@
 ;; Page 32 - Face Symptoms
 (task
-  "Check for urgent ear symptom conditions"
+  "Check for urgent nail symptom conditions"
   adult
   (clinical_finding (finding_site (snomed_concept "Nail unit structure" "body structure")))
   (check_for

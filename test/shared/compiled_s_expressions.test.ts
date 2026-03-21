@@ -1,20 +1,23 @@
 import { afterAll, describe, it } from 'std/testing/bdd.ts'
 import { parseWithSchema } from '../../shared/s_expression.ts'
 import { TASKS_LISP } from '../../s_expression/tasks.ts'
-import { QueryableNode, SnomedConcept, system_diagnosis_rule, system_priority_evaluation, task } from '../../shared/s_expression_schemas.ts'
+import { QueryableEvidenceNode, SnomedConcept, system_diagnosis_rule, system_priority_evaluation, task } from '../../shared/s_expression_schemas.ts'
 import db from '../../db/db.ts'
 import { filter } from '../../util/inParallel.ts'
 import { assertArrayEmpty } from '../../util/arraySize.ts'
 import { SYSTEM_PRIORITY_EVALUATIONS_LISP } from '../../s_expression/system_priority_evaluations.ts'
 import { SYSTEM_DIAGNOSIS_RULES_LISP } from '../../s_expression/system_diagnosis_rules.ts'
 
-export function* allConceptsToLookFor(node: QueryableNode): Generator<SnomedConcept> {
+export function* allConceptsToLookFor(node: QueryableEvidenceNode): Generator<SnomedConcept> {
   switch (node.atom) {
     case 'qualifier':
       if (node.specific_snomed_concept) yield node.specific_snomed_concept
       for (const qualifier of node.qualifiers) {
         yield* allConceptsToLookFor(qualifier)
       }
+      break
+    case 'attribute':
+      if (node.specific_snomed_concept) yield node.specific_snomed_concept
       break
     case 'finding':
     case 'evaluation':
@@ -23,6 +26,14 @@ export function* allConceptsToLookFor(node: QueryableNode): Generator<SnomedConc
       if (node.value_snomed_concept) yield node.value_snomed_concept
       for (const qualifier of node.qualifiers) {
         yield* allConceptsToLookFor(qualifier)
+      }
+      for (const attribute of node.attributes) {
+        yield* allConceptsToLookFor(attribute)
+      }
+      if ('excluding' in node) {
+        for (const excluding of node.excluding) {
+          yield* allConceptsToLookFor(excluding.finding)
+        }
       }
       break
     case 'procedure':

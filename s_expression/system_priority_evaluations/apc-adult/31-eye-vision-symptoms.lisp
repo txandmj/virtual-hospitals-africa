@@ -1,5 +1,6 @@
 ;; Page 31 - Eye/Vision: Urgent for standalone urgent eye conditions
 (system_priority_evaluation
+  "Urgent: serious eye condition requiring immediate assessment"
   adult
   Urgent
   (or

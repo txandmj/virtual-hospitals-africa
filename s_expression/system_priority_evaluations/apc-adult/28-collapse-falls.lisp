@@ -1,5 +1,6 @@
 ;; Page 28 - Collapse/Falls: Urgent for other danger signs
 (system_priority_evaluation
+  "Urgent: collapse with cardiac, haemorrhagic or neurological signs"
   adult
   Urgent
   (and

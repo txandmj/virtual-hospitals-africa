@@ -1,5 +1,6 @@
 ;; Page 67 - Skin Symptoms: Urgent for meningococcal disease signs
 (system_priority_evaluation
+  "Urgent: purpuric rash with meningococcal signs"
   adult
   Urgent
   (and
@@ -15,6 +16,7 @@
 )
 ;; Page 67 - Skin Symptoms: Urgent for serious drug reaction signs
 (system_priority_evaluation
+  "Urgent: drug eruption with systemic signs"
   adult
   Urgent
   (and

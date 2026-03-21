@@ -569,9 +569,10 @@ describeParallel('triage/measure_vitals', () => {
           {
             patient_id: encounter.patient.id,
             s_expression: `
-              (and (finding ${MEASUREMENT_FINDING.s_expression})
-                   (not (measurement ${VITAL_MEASUREMENTS_SNOMED_CONCEPTS.height.s_expression} ${VITAL_MEASUREMENTS_UNITS.height}))
-                   (not (measurement ${VITAL_MEASUREMENTS_SNOMED_CONCEPTS.weight.s_expression} ${VITAL_MEASUREMENTS_UNITS.weight})))
+              (finding ${MEASUREMENT_FINDING.s_expression}
+                (excluding (measurement ${VITAL_MEASUREMENTS_SNOMED_CONCEPTS.height.s_expression} ${VITAL_MEASUREMENTS_UNITS.height}))
+                (excluding (measurement ${VITAL_MEASUREMENTS_SNOMED_CONCEPTS.weight.s_expression} ${VITAL_MEASUREMENTS_UNITS.weight}))
+              )
             `,
           },
         )

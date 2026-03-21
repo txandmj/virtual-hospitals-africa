@@ -1,5 +1,6 @@
 ;; Page 27 - Pallor and Anaemia
 (system_priority_evaluation
+  "Urgent: anaemia with haemodynamic or bleeding signs"
   adult
   Urgent
   (and

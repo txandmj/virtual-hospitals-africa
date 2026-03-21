@@ -634,3 +634,8 @@ export const HANDOFF_COMMUNICATION = asConcept({
   name: 'Handoff communication',
   category: 'procedure' as const,
 })
+export const FINDING_SITE = asConcept({
+  id: '363698007',
+  name: 'Finding site',
+  category: 'attribute' as const,
+})

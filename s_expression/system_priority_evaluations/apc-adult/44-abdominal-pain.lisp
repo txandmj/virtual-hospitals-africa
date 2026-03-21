@@ -1,5 +1,6 @@
 ;; Page 44 - Abdominal Pain: Urgent for danger signs
 (system_priority_evaluation
+  "Urgent: abdominal pain with peritoneal, obstructive or metabolic signs"
   adult
   Urgent
   (and

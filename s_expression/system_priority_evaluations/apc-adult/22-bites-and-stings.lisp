@@ -1,5 +1,6 @@
 ;; Page 22 - Bites and Stings
 (system_priority_evaluation
+  "Urgent: bite with danger signs"
   adult
   Urgent
   (and

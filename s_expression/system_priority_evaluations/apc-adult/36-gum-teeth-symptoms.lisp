@@ -1,5 +1,6 @@
 ;; Page 36 - Gum/Teeth: Urgent dental conditions
 (system_priority_evaluation
+  "Urgent: toothache with fever and swelling or unable to eat"
   adult
   Urgent
   (and

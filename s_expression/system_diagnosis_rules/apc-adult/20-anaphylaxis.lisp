@@ -1,4 +1,5 @@
 (system_diagnosis_rule
+  "Diagnose probable anaphylaxis"
   (diagnosis
     (snomed_concept "Anaphylaxis" "disorder")
     probable
@@ -57,6 +58,7 @@
   )
 )
 (system_diagnosis_rule
+  "Diagnose possible anaphylaxis"
   (diagnosis
     (snomed_concept "Anaphylaxis" "disorder")
     possible

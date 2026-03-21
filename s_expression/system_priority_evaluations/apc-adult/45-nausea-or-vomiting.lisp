@@ -1,5 +1,6 @@
 ;; Page 45 - Nausea/Vomiting: Urgent for danger signs
 (system_priority_evaluation
+  "Urgent: nausea or vomiting with haemorrhagic, peritoneal or systemic signs"
   adult
   Urgent
   (and

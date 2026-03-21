@@ -3,10 +3,11 @@ import { assertEquals } from 'std/assert/assert_equals.ts'
 import { normalForm, parseExpressionExpectingAtom } from '../../shared/s_expression.ts'
 import * as schemas from '../../shared/s_expression_schemas.ts'
 import { inverseSExpression } from '../../shared/s_expression_inverse.ts'
-import { CLINICAL_FINDING, HEMOGLOBIN_SATURATION_WITH_OXYGEN } from '../../shared/snomed_concepts.ts'
+import { CLINICAL_FINDING, HEMOGLOBIN_SATURATION_WITH_OXYGEN, STATUS_ATTRIBUTE } from '../../shared/snomed_concepts.ts'
 import { assertMatches } from '../../util/assertMatches.ts'
 import { positive_decimal } from '../../util/validators.ts'
 import { assert } from 'std/assert/assert.ts'
+import assertLength from '../../util/assertLength.ts'
 
 describe('shared/s_expression.ts', () => {
   it('has schemas with proper casing', () => {
@@ -41,6 +42,7 @@ describe('shared/s_expression.ts', () => {
       'history': false,
       'existence': 'Yes',
       'qualifiers': [],
+      'excluding': [],
       'attributes': [
         {
           'atom': 'attribute',
@@ -81,6 +83,7 @@ describe('shared/s_expression.ts', () => {
           'value_snomed_concept': null,
           'qualifiers': [],
           'attributes': [],
+          'excluding': [],
           'exact': false,
           'history': false,
           'existence': 'Yes',
@@ -121,5 +124,10 @@ describe('shared/s_expression.ts', () => {
       normal_for_age,
       '(finding (snomed_concept "Clinical finding" "finding") (snomed_concept "Ability to move" "observable entity") (snomed_concept "Normal" "qualifier value") (qualifier (snomed_concept "For" "qualifier value") (qualifier (snomed_concept "Age" "qualifier value"))))',
     )
+  })
+
+  it('parses excluding', () => {
+    const parsed = parseExpressionExpectingAtom(`(finding (excluding (finding ${STATUS_ATTRIBUTE.s_expression})))`, 'finding')
+    assertLength(parsed.excluding, 1)
   })
 })

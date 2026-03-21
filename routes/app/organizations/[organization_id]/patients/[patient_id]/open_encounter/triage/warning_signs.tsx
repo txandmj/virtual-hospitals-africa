@@ -226,7 +226,7 @@ export async function getWarningSignsForPatient(
   const signs = WARNING_SIGNS[patient_age_determination || 'adult']
   const [having_prompt_when, no_prompt_when] = partition(
     signs,
-    (sign) => !!sign.prompt_when_s_expression,
+    (sign) => !!sign.prompt_when_s_expression || !!sign.prompt_when_not_s_expression,
   )
   const satisfying_prompt_when = await filter(having_prompt_when, promptWhen)
   const warning_signs_for_patient = [...no_prompt_when, ...satisfying_prompt_when]
@@ -236,13 +236,13 @@ export async function getWarningSignsForPatient(
     (sign) => signs.indexOf(sign),
   )
 
-  async function promptWhen({ prompt_when_s_expression }: WarningSign) {
-    assert(prompt_when_s_expression)
+  async function promptWhen({ prompt_when_s_expression, prompt_when_not_s_expression }: WarningSign) {
+    assert(Number(!!prompt_when_s_expression) + Number(!!prompt_when_not_s_expression) === 1)
     const { satisfies } = await satisfyingSExpression(trx, {
       patient_id,
-      s_expression: prompt_when_s_expression,
+      s_expression: prompt_when_s_expression || prompt_when_not_s_expression!,
     })
-    return satisfies
+    return prompt_when_s_expression ? satisfies : !satisfies
   }
 }
 

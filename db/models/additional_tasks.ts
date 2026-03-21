@@ -1,11 +1,10 @@
-import { TASKS } from '../../shared/tasks.ts'
 import { pMap } from '../../util/inParallel.ts'
 import { patient_evaluations } from './patient_evaluations.ts'
 
 import { buildExpression } from './s_expression.ts'
 import generateUUID from '../../util/uuid.ts'
 import {
-  AgeDetermination,
+  NewRecordsToConsider,
   RecordValueMeasurement,
   RenderedEvaluationRelativeToHealthWorker,
   RenderedFindingRelativeToHealthWorker,
@@ -15,7 +14,7 @@ import {
   TrxOrDbOrQueryCreator,
 } from '../../types.ts'
 import { exists } from '../../util/exists.ts'
-import { debugLog, jsonArrayFromColumn, literalString, success_true } from '../helpers.ts'
+import { literalString, success_true } from '../helpers.ts'
 import { arrayIsEmpty } from '../../util/arraySize.ts'
 import assertLength from '../../util/assertLength.ts'
 import { assertEquals } from 'std/assert/assert_equals.ts'
@@ -25,113 +24,70 @@ import { groupBy } from '../../util/groupBy.ts'
 import { patient_record_providers } from './patient_record_providers.ts'
 
 import { ACTION_STATUS, DONE, DUE_TO, RELATIONSHIP, TO_BE_DONE } from '../../shared/snomed_concepts.ts'
-import zip from '../../util/zip.ts'
 
 import { assert } from 'std/assert/assert.ts'
 import { inverseSExpression } from '../../shared/s_expression_inverse.ts'
 import { formatRecord, toDisplayableRecord } from '../../shared/patient_records.ts'
 import { patient_findings } from './patient_findings.ts'
 import { parseWithSchema } from '../../shared/s_expression.ts'
-import { investigation, Lang } from '../../shared/s_expression_schemas.ts'
+import { investigation, Lang, procedure, QueryableEvidenceNode } from '../../shared/s_expression_schemas.ts'
 import isObjectLike from '../../util/isObjectLike.ts'
 import compactMap from '../../util/compactMap.ts'
 import isString from '../../util/isString.ts'
 
-type NewRecordsToConsider = {
-  patient_id: string
-  patient_encounter_id: string
-  // procedure_id: string
-  patient_age_determination: AgeDetermination | null
-  records: {
-    id: string
-    existence: 'Yes' | 'No' | 'Unknown'
-  }[]
+import compact from '../../util/compact.ts'
+import { humanReadableJson } from '../../util/humanReadableJson.ts'
+import uniq from '../../util/uniq.ts'
+import { rules } from './rules.ts'
+
+type TaskToInsert = {
+  description: string
+  matching_finding_ids: string[]
+  procedure_id: string | null
+  due_to: QueryableEvidenceNode
+  procedure: Lang['procedure']
 }
 
 export const additional_tasks = {
-  async getTasksToInsert(
+  async getTasksToInsertUsingPreComputedTables(
     trx: TrxOrDbOrQueryCreator,
-    { patient_id, patient_encounter_id, patient_age_determination, /*procedure_id, */ records: findings }: NewRecordsToConsider,
-  ) {
-    if (!patient_age_determination) return 'Skipped: patient age determination is unknown'
+    new_records: NewRecordsToConsider,
+  ): Promise<string | TaskToInsert[]> {
+    const applicable_rules = await rules.getApplicableBasedOnNewRecords(trx, new_records, 'task')
+    if (isString(applicable_rules)) return applicable_rules
 
-    // TODO, maybe handle negative findings? There could be tasks that call for them
-    const positive_record_ids = findings
-      .filter((f) => f.existence === 'Yes')
-      .map((f) => f.id)
-    if (!positive_record_ids.length) return 'Skipped: no positive findings to check'
+    return pMap(applicable_rules, async ({ rule_effect, ...applicable_rule }) => {
+      if (rule_effect.type !== 'task') return
+      const procedure_node = parseWithSchema(rule_effect.procedure_s_expression, procedure)
 
-    const to_consider = TASKS.filter(
-      (task) => task.ages.includes(patient_age_determination),
-    )
+      const existing_procedure = await buildExpression(
+        trx,
+        new_records,
+        procedure_node,
+      ).limit(1).executeTakeFirst()
 
-    if (!to_consider.length) return 'Skipped: no tasks apply to this age group'
-
-    const [first_task, ...other_tasks] = to_consider.map(
-      ({ description, due_to, procedure }) =>
-        trx.selectNoFrom([
-          literalString(description).as('description'),
-          jsonArrayFromColumn(
-            'id',
-            buildExpression(
-              trx,
-              { patient_id },
-              due_to,
-            ).where(
-              'patient_records_aggregated.id',
-              'in',
-              positive_record_ids,
-            ),
-          ).as('matching_finding_ids'),
-          buildExpression(
-            trx,
-            { patient_id, patient_encounter_id },
-            procedure,
-          ).limit(1).as('procedure_id'),
-        ]),
-    )
-
-    const all_tasks_query = other_tasks.reduce(
-      (acc, curr) => acc.unionAll(curr),
-      first_task,
-    )
-
-    console.time(`${patient_encounter_id} getTasksToInsert`)
-    debugLog(all_tasks_query)
-
-    const all_t = await all_tasks_query.execute()
-    console.timeEnd(`${patient_encounter_id} getTasksToInsert`)
-
-    return compactMap(
-      zip(
-        all_t,
-        to_consider,
-      ),
-      ([task_result, task]) => {
-        assertEquals(task_result.description, task.description)
-
-        if (arrayIsEmpty(task_result.matching_finding_ids)) {
-          return null
-        }
-        // TODO: the procedure was already identified, so probably nothing to do here
-        // Technically we could add the finding as Due to
-        if (task_result.procedure_id) {
-          return null
-        }
-        return { ...task, ...task_result }
-      },
-    )
+      return {
+        ...applicable_rule,
+        procedure_id: existing_procedure?.id || null,
+        procedure: procedure_node,
+      }
+    }).then(compact)
   },
   async insertTasksIfNotAlreadyIdentified(
     trx: TrxOrDbOrQueryCreator,
     { patient_id, patient_encounter_id, patient_age_determination, records }: NewRecordsToConsider,
   ) {
-    const tasks_to_insert = await additional_tasks.getTasksToInsert(trx, { patient_id, patient_encounter_id, patient_age_determination, records })
+    const tasks_to_insert = await additional_tasks.getTasksToInsertUsingPreComputedTables(trx, {
+      patient_id,
+      patient_encounter_id,
+      patient_age_determination,
+      records,
+    })
     if (isString(tasks_to_insert)) return tasks_to_insert
 
     const results = await pMap(tasks_to_insert, async (task) => {
       const evaluation_id = generateUUID()
-      const relations = task.matching_finding_ids.map((finding_id) => ({
+      const relations = uniq(task.matching_finding_ids).map((finding_id) => ({
         id: generateUUID(),
         source_id: evaluation_id,
         destination_id: finding_id,
@@ -250,7 +206,7 @@ export const additional_tasks = {
     }
 
     const due_to_record_ids = evaluations.map((evaluation) => {
-      assertLength(evaluation.destination_relations, 1)
+      assertLength(evaluation.destination_relations, 1, humanReadableJson(evaluation))
       assertEquals(
         evaluation.destination_relations[0].relation_name,
         DUE_TO.name,

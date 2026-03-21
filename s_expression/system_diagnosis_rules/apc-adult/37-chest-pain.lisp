@@ -1,5 +1,6 @@
 ;; Page 37 - Chest Pain: Ischaemic heart disease likely with radiating pain or pallor/sweating
 (system_diagnosis_rule
+  "Diagnose probable ischaemic heart disease"
   (diagnosis
     (snomed_concept "Ischemic heart disease" "disorder")
     probable
