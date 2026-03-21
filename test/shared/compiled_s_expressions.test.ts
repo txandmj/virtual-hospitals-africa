@@ -112,7 +112,7 @@ function* nodesAndConceptsSystemDiagnosisRules() {
   }
 }
 
-describe('s_expression/', () => {
+describe('s_expression/compile.ts', () => {
   afterAll(() => db.destroy())
   describe('tasks', () => {
     it('has valid snomed concepts', async () => {
