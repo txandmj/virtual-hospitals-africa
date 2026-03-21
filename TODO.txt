@@ -1,13 +1,5 @@
 TODO
-- Finish Port Tutorial to anaphylaxis
-  - While you wait page
-  - add more dialogue for doctor, pharmacist
-  - new images for doctor + pharmacist
-  - fix duduzile's image
-  - dialogue has min/max width
-
-- check for additional tasks on small screen width
-- collapsible drawer + sidebar
+- collapsible drawer?
 - word wrapping on drawer
 
 - recommended dose parser
@@ -27,4 +19,34 @@ TODO
 - Ask Claude to take another pass at documenting likely = probable
 - Create a script that sets up a mock patient exercises each test case
   - This way Dr. Skhu can log in and the patients are already set up and you can go manually review
-- pdf not opening to page on android app
+
+
+- disable triage if already in triage
+
+Triage Route Patient Next Steps
+  3 Options
+    - [Always shows] Non-urgent => default is await consultation
+    - Urgent + Tasks for you have been identified => Manage & Refer => arrive at manage patient page
+    - Urgent + Tasks for you have not been identified => Refer => arrive at open encounters view
+    - [Always shows] Very Urgent + Emergency => Stabilize
+
+1. Arrive at Open Encounters View w/ patient drawer is active (because I'm still with the patient)
+  - Present With: Me
+  - Status: Awaiting Bongani
+  - patient management tasks show up the drawer
+  - Action: Manage
+
+## Manage patient
+  - Immediately you will have tasks based on 
+    things that can't harm the patient,
+    that don't require sign off. In this case
+    - raise their legs
+    - maybe give oxygen
+  - You will also see that we're awaiting Bongani to sign off
+    - Adrenaline
+      Give immediately adrenaline2 0.5mL (1:1000 solution) IM into mid outer thigh. Repeat every 5 minutes if needed.
+    
+    Give sodium chloride 0.9% 1-2L IV rapidly regardless of BP. Then, if BP < 90/60, also give sodium chloride 0.9% 500mL IV rapidly, repeat until systolic BP > 90. Continue 1L 6 hourly. Stop if
+    breathing worsens.
+    If persistent wheeze or difficulty breathing despite adrenaline2, also give 1mL salbutamol 0.5% solution and 2mL ipratropium bromide solution in 4mL sodium chloride 0.9% via nebuliser every
+

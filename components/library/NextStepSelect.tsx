@@ -48,7 +48,7 @@ export function NextStepSelect(
         },
         {
           id: 'hand_over' satisfies TriageRoutePatientNextStep,
-          name: 'Hand over',
+          name: 'Manage and refer',
           icon: AtSymbolIcon,
           iconForeground: 'text-sky-700',
           iconBackground: 'bg-sky-50',
@@ -60,6 +60,20 @@ export function NextStepSelect(
             ),
           ]),
         },
+        // {
+        //   id: 'confirm' as unknown as TriageRoutePatientNextStep,
+        //   name: 'Confirm treatment plan',
+        //   icon: AtSymbolIcon,
+        //   iconForeground: 'text-sky-700',
+        //   iconBackground: 'bg-sky-50',
+        //   description: compact([
+        //     `I will stay here with ${patient.names.preferred_name}.`,
+        //     `${capitalize(staff)} will be notified immediately about ${posessivePronoun(patient)} case to confirm next steps.`,
+        //     // default_next_step === 'hand_over' && (
+        //     //   <span key='recommended' className='italic'>Recommended based on {objectPronoun(patient)} having a {priority.name.toLowerCase()} case.</span>
+        //     // ),
+        //   ]),
+        // },
         {
           id: 'stabilize_patient' satisfies TriageRoutePatientNextStep,
           name: 'Stabilize patient',
@@ -74,18 +88,18 @@ export function NextStepSelect(
             ),
           ]),
         },
-        {
-          id: 'come_back_later' satisfies TriageRoutePatientNextStep,
-          name: 'Come back later',
-          icon: ReceiptRefundIcon,
-          iconForeground: 'text-yellow-700',
-          iconBackground: 'bg-yellow-50',
-          description: compact([
-            `${capitalize(staff)} will be notified with my message.`,
-            `${patient.names.preferred_name} will stay here.`,
-            `I will serve other patients and come back once ${staff} ${to_be_notified.length === 1 ? 'has' : 'have'} responded.`,
-          ]),
-        },
+        // {
+        //   id: 'come_back_later' satisfies TriageRoutePatientNextStep,
+        //   name: 'Come back later',
+        //   icon: ReceiptRefundIcon,
+        //   iconForeground: 'text-yellow-700',
+        //   iconBackground: 'bg-yellow-50',
+        //   description: compact([
+        //     `${capitalize(staff)} will be notified with my message.`,
+        //     `${patient.names.preferred_name} will stay here.`,
+        //     `I will serve other patients and come back once ${staff} ${to_be_notified.length === 1 ? 'has' : 'have'} responded.`,
+        //   ]),
+        // },
       ]}
     />
   )

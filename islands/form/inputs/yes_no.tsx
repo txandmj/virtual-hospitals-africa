@@ -80,6 +80,7 @@ export function YesNoGrid(
           'border-b': placement === 'top',
           'border-t': placement === 'bottom',
         })}
+        data-placement={placement}
         onClick={checkAllWithoutValues}
         data-existence={existence}
       >

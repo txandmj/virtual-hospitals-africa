@@ -1,6 +1,7 @@
 import { MostRecentRecord } from '../../../islands/MostRecentRecord.tsx'
 import { RenderedEvaluationRelativeToHealthWorker, RenderedFindingRelativeToHealthWorker } from '../../../types.ts'
 import cls from '../../../util/cls.ts'
+import { hyphenate } from '../../../util/hyphenate.ts'
 
 export function DueTo(
   { due_to, organization_id, className }: {
@@ -10,7 +11,7 @@ export function DueTo(
   },
 ) {
   return (
-    <div class={cls('flex flex-row gap-1 text-sm leading-5', className)}>
+    <div class={cls('due-to flex flex-row gap-1 text-sm leading-5', className)} data-due-to={due_to.map((x) => hyphenate(x.displays.full)).join('-')}>
       <span class='font-semibold text-gray-600'>
         {'Due to '}
       </span>

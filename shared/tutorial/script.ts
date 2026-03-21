@@ -383,23 +383,46 @@ export const TUTORIAL_SCRIPT: ScriptItem[] = [
     dangerousHTML: true,
     text:
       `Additional tasks and investigations may be required. In this case we are prompted to check for signs related to the reported insect bite that would be <span class="text-yellow-600">urgent</span> if present`,
-    highlight: '.task-group-card[data-due-to="insect-bite-wound"]',
+    highlight: `
+      [data-due-to="insect-bite-wound"]
+    , [data-question="check_for.finding-generalized-muscle-weakness.existence"]
+    , [data-question="check_for.finding-has-drooping-eyelids.existence"]
+    , [data-question="check_for.finding-difficulty-swallowing.existence"]
+    , [data-question="check_for.finding-difficulty-talking.existence"]
+    , [data-question="check_for.finding-diplopia.existence"]
+    , [data-question="check_for.finding-deep-bite-wound.existence"]
+    , [data-question="check_for.finding-avulsion-injury.existence"]
+    , [data-question="check_for.finding-bite-wound-joint-structure.existence"]
+    , [data-question="check_for.finding-bite-wound-bone-structure.existence"]
+    , [data-question="check_for.finding-infection-of-bite-wound.existence"]
+    , [data-question="check_for.finding-excessive-bleeding.existence"]
+    , [data-question="check_for.finding-pulsatile-bleeding.existence"]
+    , [data-question="check_for.finding-snake-bite-wound.existence"]
+    , [data-question="check_for.finding-exposure-to-snake-venom.existence"]
+    `,
   },
   {
     type: 'dialogue',
     speaker: 'guide',
-    position: 'bottom-right',
+    position: 'top-right',
     // dangerousHTML: true,
     text: 'The low blood pressure also could indicate anaphylaxis, which the system flagged as a possible diagnosis.',
-    highlight: '.task-group-card[data-due-to="anaphylaxis-diagnosis-possible-diagnosis"]',
-  },
-  {
-    type: 'dialogue',
-    speaker: 'guide',
-    position: 'bottom-right',
-    // dangerousHTML: true,
-    text: 'The low blood pressure also could indicate anaphylaxis, which the system flagged as a possible diagnosis.',
-    highlight: '.task-group-card[data-due-to="anaphylaxis-diagnosis-possible-diagnosis"]',
+    highlight: `
+      [data-due-to="anaphylaxis-diagnosis-possible-diagnosis"]
+    , [data-question="check_for.finding-sudden-onset-itching.existence"]
+    , [data-question="check_for.finding-sudden-onset-eruption.existence"]
+    , [data-question="check_for.finding-insect-bite-wound.existence"]
+    , [data-question="check_for.finding-sudden-onset-swelling-face-structure.existence"]
+    , [data-question="check_for.finding-sudden-onset-swelling-tongue-structure.existence"]
+    , [data-question="check_for.finding-dizziness.existence"]
+    , [data-question="check_for.finding-collapse.existence"]
+    , [data-question="check_for.finding-difficulty-breathing.existence"]
+    , [data-question="check_for.finding-exposure-to-peanut.existence"]
+    , [data-question="check_for.finding-exposure-to-tree-nut.existence"]
+    , [data-question="check_for.finding-exposure-to-eggs-edible.existence"]
+    , [data-question="check_for.finding-exposure-to-milk.existence"]
+    , [data-question="check_for.finding-exposure-to-fish.existence"]
+    `,
   },
   {
     type: 'dialogue',
@@ -500,8 +523,7 @@ export const TUTORIAL_SCRIPT: ScriptItem[] = [
     speaker: 'guide',
     position: 'top-right',
     text: `We'll click "No" at the top to fill in "No" for all the remaining unanswered questions`,
-    highlight:
-      '.task-group-card[data-due-to="anaphylaxis-diagnosis-possible-diagnosis"] button.yes-no-header[data-existence="No"], .task-group-card[data-due-to="anaphylaxis-diagnosis-possible-diagnosis"] .yes-no-question-input[data-existence="No"]',
+    highlight: 'button.yes-no-header[data-existence="No"][data-placement="bottom"]',
   },
 
   {
