@@ -23,6 +23,7 @@ import { exists } from '../../util/exists.ts'
 import findMatching from '../../util/findMatching.ts'
 import { health_workers } from './health_workers.ts'
 import { employees } from './employees.ts'
+import matching from '../../util/matching.ts'
 
 function asWaitingRoomAction(
   patient_encounter: RenderedPatientOpenEncounter,
@@ -40,12 +41,16 @@ function asWaitingRoomAction(
   } = status.patient_presence
 
   const next_workflow_status = next_workflow && workflows[next_workflow]
-  const current_workflow_status = current_workflow &&
-    workflows[current_workflow]
+  const current_workflow_status = current_workflow && workflows[current_workflow]
 
   const workflow_to_start = current_workflow_status?.workflow ||
     next_workflow_status?.workflow
+
   assert(workflow_to_start)
+
+  const my_patient_encounter_employee_id = patient_encounter.all_employees_seen.find(matching({ employee_id: organization_employment.employment_id }))
+    ?.patient_encounter_employee_id
+  const with_employee_other_than_me = status.patient_presence.present_with_patient_encounter_employee_ids.some((id) => id !== my_patient_encounter_employee_id)
 
   const can_perform_action = organization_employment.in_departments.some(
     (department) =>
@@ -56,10 +61,10 @@ function asWaitingRoomAction(
   )
 
   return {
-    text: workflow_to_start,
     method: 'POST',
     href: `/app/organizations/${organization_employment.id}/patients/${patient.id}/open_encounter/start-workflow?workflow=${workflow_to_start}`,
-    disabled: !can_perform_action,
+    text: with_employee_other_than_me ? `In ${workflow_to_start}` : workflow_to_start,
+    disabled: !can_perform_action || with_employee_other_than_me,
   }
 }
 
