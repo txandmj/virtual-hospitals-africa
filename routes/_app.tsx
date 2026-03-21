@@ -8,7 +8,6 @@ export default function App({ Component, ...props }: PageProps) {
         <meta name='viewport' content='width=device-width, initial-scale=1.0' />
         <meta name='robots' content='noindex' />
         <title>Virtual Hospitals Africa</title>
-        <link rel='stylesheet' href='/styles.css' />
         <link rel='preconnect' href='https://fonts.googleapis.com' />
         <link
           rel='preconnect'
@@ -20,22 +19,33 @@ export default function App({ Component, ...props }: PageProps) {
           href='https://cdn.fontshare.com'
           crossOrigin='anonymous'
         />
+        <link rel='stylesheet' href='/styles.css' />
         <link
           rel='stylesheet'
-          href='https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap'
+          href='https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Ubuntu:wght@300;400;500;600;700;800&family=Roboto&display=swap'
+          media='print'
+          // @ts-ignore - onload is valid on link elements
+          onload="this.media='all'"
         />
-        <link
-          rel='stylesheet'
-          href='https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;500;600;700;800&display=swap'
-        />
-        <link
-          rel='stylesheet'
-          href='https://fonts.googleapis.com/css2?family=Roboto'
-        />
+        <noscript>
+          <link
+            rel='stylesheet'
+            href='https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Ubuntu:wght@300;400;500;600;700;800&family=Roboto&display=swap'
+          />
+        </noscript>
         <link
           rel='stylesheet'
           href='https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@800,500,700&display=swap'
+          media='print'
+          // @ts-ignore - onload is valid on link elements
+          onload="this.media='all'"
         />
+        <noscript>
+          <link
+            rel='stylesheet'
+            href='https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@800,500,700&display=swap'
+          />
+        </noscript>
         {props.route === '/' && (
           <>
             <meta

@@ -20,7 +20,7 @@ import zip from '../../../../../../../../util/zip.ts'
 import { exists } from '../../../../../../../../util/exists.ts'
 
 export const TriageAdditionalTasksAndInvestigationsSchema = z.object({
-  evaluation_ids: z.string().uuid().array(),
+  evaluation_ids: z.string().uuid().array().optional().default([]),
   just_do_it_tasks: z.record(
     z.string(),
     z.object({
