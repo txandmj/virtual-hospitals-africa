@@ -41,6 +41,120 @@ type Result =
   | { satisfies: false }
 
 export const s_expression_evidence = {
+  async evaluateMultiple(
+    trx: TrxOrDbOrQueryCreator,
+    patient: { patient_id: string; patient_encounter_id?: string | null },
+    nodes: QueryableEvidenceNode[],
+  ): Promise<Map<QueryableEvidenceNode, Result>> {
+    // Collect all leaf evidence nodes across every node, keyed by object identity
+    const evidence_to_s_expr = new Map<Evidence, string>()
+    for (const node of nodes) {
+      for (const evidence of allEvidenceToLookFor(node)) {
+        evidence_to_s_expr.set(evidence, inverseSExpression(evidence))
+      }
+    }
+
+    // Deduplicate by s-expression string
+    const unique_evidence = new Map<string, Evidence>()
+    for (const [evidence, s_expr] of evidence_to_s_expr) {
+      if (!unique_evidence.has(s_expr)) unique_evidence.set(s_expr, evidence)
+    }
+
+    // Single round trip across all nodes combined
+    const findings_map = new Map<string, string[]>()
+    const entries = [...unique_evidence.entries()]
+    if (entries.length > 0) {
+      const [first, ...rest] = entries.map(([s_expr, evidence]) =>
+        trx.selectFrom(
+          buildExpression(trx, patient, evidence).as('sub'),
+        ).select([
+          literalString(s_expr).as('s_expr'),
+          'sub.id',
+        ])
+      )
+      const query = rest.reduce((acc, curr) => acc.unionAll(curr), first)
+      for (const row of await query.execute()) {
+        const ids = findings_map.get(row.s_expr) ?? []
+        ids.push(row.id)
+        findings_map.set(row.s_expr, ids)
+      }
+    }
+
+    const results = new Map<QueryableEvidenceNode, Result>()
+    for (const node of nodes) {
+      results.set(node, evaluateEvidence(node))
+    }
+    return results
+
+    function evaluateEvidence(evidence: QueryableEvidenceNode): Result {
+      switch (evidence.atom) {
+        case 'or': {
+          const contributing_records: string[] = []
+          let any_true = false
+          for (const expr of evidence.expressions) {
+            const result = evaluateEvidence(expr)
+            if (result.satisfies) {
+              any_true = true
+              contributing_records.push(...result.contributing_records)
+            }
+          }
+          if (any_true) return { satisfies: true, contributing_records }
+          return { satisfies: false }
+        }
+
+        case 'and': {
+          const contributing_records: string[] = []
+          for (const expr of evidence.expressions) {
+            const result = evaluateEvidence(expr)
+            if (!result.satisfies) return { satisfies: false }
+            contributing_records.push(...result.contributing_records)
+          }
+          return { satisfies: true, contributing_records }
+        }
+
+        case 'any2': {
+          const contributing_records: string[] = []
+          let true_count = 0
+          for (const expr of evidence.expressions) {
+            const result = evaluateEvidence(expr)
+            if (result.satisfies) {
+              true_count++
+              contributing_records.push(...result.contributing_records)
+            }
+          }
+          if (true_count >= 2) return { satisfies: true, contributing_records }
+          return { satisfies: false }
+        }
+
+        case 'finding':
+        case 'evaluation':
+        case 'diagnosis':
+          return evaluateSingle(evidence)
+
+        case '<':
+        case '<=':
+        case '=':
+        case '>':
+        case '>=': {
+          if (evidence.type === 'measurement') return evaluateSingle(evidence)
+          return { satisfies: false }
+        }
+
+        default:
+          throw new Error(`Not supported ${(evidence as QueryableEvidenceNode).atom}`)
+      }
+    }
+
+    function evaluateSingle(evidence: Evidence): Result {
+      const s_expr = evidence_to_s_expr.get(evidence)
+      assert(s_expr != null)
+      const record_ids = findings_map.get(s_expr) ?? []
+      if (record_ids.length > 0) {
+        return { satisfies: true, contributing_records: record_ids }
+      }
+      return { satisfies: false }
+    }
+  },
   async evaluate(
     trx: TrxOrDbOrQueryCreator,
     patient: { patient_id: string; patient_encounter_id?: string | null },
