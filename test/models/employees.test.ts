@@ -174,15 +174,15 @@ describeParallel('db/models/employees.ts', () => {
           'email': result.email,
           'avatar_url': `/health_workers/${result.id}/avatar`,
           'employee_id': result.employee_id,
-          'organization_id': '00000000-0000-1000-8000-000000000001',
+          'organization_id': clinic.id,
           'role': 'nurse',
           'is_admin': false,
-          'href': `/app/organizations/00000000-0000-1000-8000-000000000001/employees/${result.id}`,
+          'href': `/app/organizations/${clinic.id}/employees/${result.id}`,
           'organizations': [
             {
               ...await organizations.getById(
                 db,
-                TEST_ORGANIZATION_UUIDS.ZA.clinic,
+                clinic.id,
               ),
               'employment_id': health_worker.employee_id,
               'role': 'nurse',
