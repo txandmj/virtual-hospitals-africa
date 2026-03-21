@@ -1,14 +1,15 @@
 import { sql } from 'kysely'
-import { pMap } from '../../util/inParallel.ts'
 import { AgeDetermination, ApplicableRule, NewRecordsToConsider, TrxOrDbOrQueryCreator } from '../../types.ts'
 import { asText, jsonBuildObject, literalString } from '../helpers.ts'
 import { groupBy } from '../../util/groupBy.ts'
 import { FINDING_SITE } from '../../shared/snomed_concepts.ts'
 import { parseWithSchema } from '../../shared/s_expression.ts'
 import { any_query_evidence } from '../../shared/s_expression_schemas.ts'
-import compact from '../../util/compact.ts'
 import uniq from '../../util/uniq.ts'
+import partition from '../../util/partition.ts'
 import { s_expression_evidence } from './s_expression_evidence.ts'
+import { exists } from '../../util/exists.ts'
+import compactMap from '../../util/compactMap.ts'
 
 export const rules = {
   async getApplicableBasedOnNewRecords(
@@ -182,41 +183,37 @@ export const rules = {
       .execute()
 
     const all_tasks = groupBy(tasks_matching_some_finding, 'rule_id').values().toArray()
-    console.log({ all_tasks })
 
-    return pMap(all_tasks, async (findings) => {
-      // const matching_task = findMatching(TASKS, { description: findings[0].rule_id })
-
+    const parsed = all_tasks.map((findings) => ({
+      findings,
       // TODO The uniq could be removed probably if upstream we enforce uniqueness
-      const matching_finding_ids = uniq(findings.map((finding) => finding.finding_id))
+      matching_finding_ids: uniq(findings.map((finding) => finding.finding_id)),
+      certainly_applies: findings.some((finding) => finding.always_applies_if_present),
+      due_to: parseWithSchema(findings[0].due_to_s_expression, any_query_evidence),
+    }))
 
-      const certainly_applies = findings.some((finding) => finding.always_applies_if_present)
+    const [certain, uncertain] = partition(parsed, (t) => t.certainly_applies)
 
-      const due_to = parseWithSchema(findings[0].due_to_s_expression, any_query_evidence)
+    const certain_results = certain.map(({ findings, matching_finding_ids, due_to }) => ({
+      description: findings[0].rule_id,
+      rule_effect: findings[0].rule_effect,
+      matching_finding_ids,
+      due_to,
+    }))
 
-      if (certainly_applies) {
-        return {
-          description: findings[0].rule_id,
-          rule_effect: findings[0].rule_effect,
-          matching_finding_ids,
-          due_to,
-        }
-      }
+    const due_to_nodes = uncertain.map((t) => t.due_to)
+    const evidence_results = await s_expression_evidence.evaluateMultiple(trx, { patient_id }, due_to_nodes)
 
-      const result = await s_expression_evidence.evaluate(
-        trx,
-        { patient_id },
-        due_to,
-      )
-
-      if (!result.satisfies) return
-
-      return {
+    const uncertain_results = compactMap(uncertain, ({ findings, due_to }) => {
+      const result = exists(evidence_results.get(due_to))
+      return result.satisfies && {
         description: findings[0].rule_id,
         rule_effect: findings[0].rule_effect,
         matching_finding_ids: result.contributing_records,
         due_to,
       }
-    }).then(compact)
+    })
+
+    return [...certain_results, ...uncertain_results]
   },
 }

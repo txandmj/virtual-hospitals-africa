@@ -25,11 +25,11 @@ fi
 https_proxy_server_pid=""
 http_server_pid=""
 
+mkdir -p ./logs
 
 # On CI, write logs to a known directory for artifact upload
 # Otherwise, use temp files
 if [[ "${CI:-}" == "true" ]]; then
-  mkdir -p ./logs
   test_http_server_output="./logs/server.log"
   test_https_proxy_server_output="./logs/proxy.log"
   : >"$test_http_server_output"
