@@ -72,6 +72,9 @@ export function completeAllStepsForTest(
 
 export type PartialPatientDemographics = {
   name?: string
+  first_names?: string
+  surname?: string
+  preferred_name?: string
   date_of_birth?: string
   sex?: Sex
   gender?: string

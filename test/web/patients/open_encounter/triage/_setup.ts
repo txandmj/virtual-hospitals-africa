@@ -122,7 +122,7 @@ export function asWarningSignsOlderChild(
   }
 }
 
-async function setupTriage({
+export async function setupTriage({
   clinic,
   nurse,
   shcp,
