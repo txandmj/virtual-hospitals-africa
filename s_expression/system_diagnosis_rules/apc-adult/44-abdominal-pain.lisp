@@ -1,6 +1,6 @@
 ;; Page 44 - Abdominal Pain: Peritonitis likely with guarding, rigidity or rebound tenderness
 (system_diagnosis_rule
-  "Diagnose probable peritonitis"
+  "Diagnose probable peritonitis based on abdominal pain"
   (diagnosis
     (snomed_concept "Peritonitis" "disorder")
     probable
@@ -29,7 +29,7 @@
     (or
       (clinical_finding (snomed_concept "Nausea" "finding"))
       (clinical_finding (snomed_concept "Finding of vomiting" "finding"))
-      (clinical_finding (snomed_concept "Fever" "finding"))
+      (active_condition (snomed_concept "Fever" "finding"))
       (clinical_finding (snomed_concept "Loss of appetite" "finding"))
     )
   )
@@ -43,8 +43,9 @@
   )
   adult
   (and
-    (clinical_finding (snomed_concept "Abdominal pain" "finding"))
-    (clinical_finding (snomed_concept "Pain radiating to lumbar region of back" "finding"))
+    (clinical_finding (snomed_concept "Upper abdominal pain" "finding")
+      (qualifier (snomed_concept "Pain radiating to lumbar region of back" "finding"))
+    )
     (or
       (clinical_finding (snomed_concept "Nausea" "finding"))
       (clinical_finding (snomed_concept "Finding of vomiting" "finding"))

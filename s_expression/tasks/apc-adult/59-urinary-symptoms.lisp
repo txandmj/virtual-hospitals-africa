@@ -22,5 +22,8 @@
     (clinical_finding (snomed_concept "Diabetes mellitus" "disorder") (qualifier (snomed_concept "Known present" "qualifier value")))
     (clinical_finding (snomed_concept "Pregnancy" "finding"))
     (clinical_finding (snomed_concept "Postmenopausal state" "finding"))
+    (clinical_finding (snomed_concept "Flank pain" "finding") (qualifier (snomed_concept "Sudden onset" "qualifier value")) (qualifier (snomed_concept "Unilateral" "qualifier value")))
+    (clinical_finding (snomed_concept "Inguinal pain" "finding") (qualifier (snomed_concept "Sudden onset" "qualifier value")) (qualifier (snomed_concept "Unilateral" "qualifier value")))
+    (clinical_finding (snomed_concept "Flank pain" "finding"))
   )
 )

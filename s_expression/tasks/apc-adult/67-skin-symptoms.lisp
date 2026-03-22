@@ -31,5 +31,6 @@
     (clinical_finding (snomed_concept "Periocular dermatitis" "disorder"))
     (clinical_finding (snomed_concept "Rash of genitalia" "disorder"))
     (clinical_finding (snomed_concept "Peeling of skin" "finding"))
+    (clinical_finding (snomed_concept "Blister of skin" "disorder"))
   )
 )

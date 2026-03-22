@@ -2,7 +2,7 @@ import { assert } from 'std/assert/assert.ts'
 import { patient_evaluations } from './patient_evaluations.ts'
 import { buildExpression, EXPRESSION_BUILDERS } from './s_expression.ts'
 import { ApplicableRule, ApplicableRuleEffectSystemSystemDiagnosisRule, RuleRunnerInput, TrxOrDb } from '../../types.ts'
-import { blankSelection, debugLog, success_true } from '../helpers.ts'
+import { blankSelection, success_true } from '../helpers.ts'
 import { DONE, EVIDENCE_OF_CONTEXTUAL_QUALIFIER, RELATIONSHIP, TO_BE_DONE } from '../../shared/snomed_concepts.ts'
 import { parseWithSchema } from '../../shared/s_expression.ts'
 import { system_diagnosis_rule } from '../../shared/s_expression_schemas.ts'
@@ -18,14 +18,24 @@ import { JsonValue } from '../../db.d.ts'
 import { exists } from '../../util/exists.ts'
 import { pMap } from '../../util/inParallel.ts'
 import compact from '../../util/compact.ts'
+import uniq from '../../util/uniq.ts'
 import compactMap from '../../util/compactMap.ts'
 import matching from '../../util/matching.ts'
+import { groupBy } from '../../util/groupBy.ts'
 
 export const SYSTEM_DIAGNOSIS_RULES_PARSED = SYSTEM_DIAGNOSIS_RULES_LISP.map((d) => parseWithSchema(d, system_diagnosis_rule))
 
 const concept_to_certainty_qualifier_map = Object.fromEntries(
   Object.entries(CERTAINTY_QUALIFIER_TO_CONCEPT).map(([certainty, concept]) => [concept.name, certainty]),
 ) as Record<string, keyof typeof CERTAINTY_QUALIFIER_TO_CONCEPT>
+
+const CERTAINTY_ORDER: Record<ApplicableRuleEffectSystemSystemDiagnosisRule['certainty'], number> = {
+  definite: 4,
+  probable: 3,
+  equivocal: 2,
+  possible: 1,
+  improbable: 0,
+}
 
 function shouldInsertNewDiagnosisAsPresentDiagnosisIsNonExistentOrLowerCertainty(
   present_diagnosis: {
@@ -37,14 +47,19 @@ function shouldInsertNewDiagnosisAsPresentDiagnosisIsNonExistentOrLowerCertainty
   if (!present_diagnosis) return true
   assert(isObjectLike(present_diagnosis.value))
   assert(isKeyOf(present_diagnosis.value.name, concept_to_certainty_qualifier_map))
-  const certainty = concept_to_certainty_qualifier_map[present_diagnosis.value.name]
-  switch (certainty) {
+  const present_diagnosis_certainty = concept_to_certainty_qualifier_map[present_diagnosis.value.name]
+  switch (present_diagnosis_certainty) {
     case 'definite':
-    case 'probable':
-    case 'improbable':
       return false
+    case 'probable':
+      return rule_effect.certainty === 'definite'
+    // While possible is a "higher" certainty
+    // improbable is the result of our having ruled out the possible diagnosis
+    // so we DO NOT insert one anew
+    case 'improbable':
+      return ['probable', 'definite'].includes(rule_effect.certainty)
     case 'equivocal':
-      return ['probable', 'improbable'].includes(rule_effect.certainty)
+      return ['probable', 'improbable', 'definite'].includes(rule_effect.certainty)
     case 'possible':
       return rule_effect.certainty !== 'possible'
   }
@@ -132,14 +147,22 @@ export const system_diagnosis_rules = {
     rules_result: string | ApplicableRule[],
   ): Promise<InsertedDiagnosis[]> {
     if (isString(rules_result)) return Promise.resolve([])
-    return pMap(rules_result, async (rule) => {
-      assert(rule.rule_effect.type === 'system_diagnosis_rule')
+
+    const diagnosis_rules = rules_result.filter((r): r is ApplicableRule & { rule_effect: ApplicableRuleEffectSystemSystemDiagnosisRule } =>
+      r.rule_effect.type === 'system_diagnosis_rule'
+    )
+    const rules_grouped = groupBy(diagnosis_rules, (rule) => rule.rule_effect.snomed_concept.id)
+    return pMap([...rules_grouped.values()], async (rules_for_concept) => {
+      const highest_certainty_rule = rules_for_concept.reduce((best, rule) =>
+        CERTAINTY_ORDER[rule.rule_effect.certainty] > CERTAINTY_ORDER[best.rule_effect.certainty] ? rule : best
+      )
+      const matching_finding_ids = uniq(rules_for_concept.flatMap((r) => r.matching_finding_ids))
       const diagnosis_node = diagnosisToEvaluation({
         snomed_concept: {
           atom: 'snomed_concept',
-          ...rule.rule_effect.snomed_concept,
+          ...highest_certainty_rule.rule_effect.snomed_concept,
         },
-        certainty_qualifier: rule.rule_effect.certainty,
+        certainty_qualifier: highest_certainty_rule.rule_effect.certainty,
       })
 
       const present_diagnosis = await EXPRESSION_BUILDERS.evaluation(
@@ -153,14 +176,14 @@ export const system_diagnosis_rules = {
         .limit(1)
         .executeTakeFirst()
 
-      const do_insert = shouldInsertNewDiagnosisAsPresentDiagnosisIsNonExistentOrLowerCertainty(present_diagnosis, rule.rule_effect)
+      const do_insert = shouldInsertNewDiagnosisAsPresentDiagnosisIsNonExistentOrLowerCertainty(present_diagnosis, highest_certainty_rule.rule_effect)
 
       if (!do_insert) return
 
       return system_diagnosis_rules.insertOne(trx, {
         ...input,
         diagnosis_node,
-        matching_finding_ids: rule.matching_finding_ids,
+        matching_finding_ids,
       })
     }).then(compact)
   },
@@ -175,28 +198,6 @@ export const system_diagnosis_rules = {
       value_snomed_concept_id: string
     }[],
   ) {
-    debugLog(
-      trx
-        .selectFrom('patient_record_relations as done_relations')
-        .innerJoin('patient_records_aggregated as done_records', 'done_relations.id', 'done_records.id')
-        .innerJoin('patient_records_aggregated as task_records', 'done_relations.destination_id', 'task_records.id')
-        .innerJoin('patient_record_relations as due_to_relations', 'due_to_relations.source_id', 'task_records.id')
-        .innerJoin('patient_records_aggregated as due_to_records', 'due_to_records.id', 'due_to_relations.id')
-        .innerJoin('patient_records_aggregated as diagnosis_records', 'diagnosis_records.id', 'due_to_relations.destination_id')
-        .where('task_records.specific_snomed_concept_id', '=', TO_BE_DONE.id)
-        .where('done_relations.source_id', '=', input.procedure_id)
-        .where('done_records.specific_snomed_concept_id', '=', DONE.id)
-        .where(
-          'diagnosis_records.id',
-          'in',
-          buildExpression(
-            trx,
-            input,
-            diagnosisToEvaluation({ certainty_qualifier: 'possible' }),
-          ),
-        )
-        .selectAll('diagnosis_records'),
-    )
     const possible_diagnoses_now_completed = await trx
       .selectFrom('patient_record_relations as done_relations')
       .innerJoin('patient_records_aggregated as done_records', 'done_relations.id', 'done_records.id')

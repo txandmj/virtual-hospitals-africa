@@ -18,7 +18,7 @@
       (clinical_finding (snomed_concept "Abnormal vaginal bleeding" "finding"))
       (clinical_finding (snomed_concept "Injury of head" "disorder"))
       (< (measurement (snomed_concept "Systolic blood pressure" "observable entity") mmHg) 90)
-      (< (measurement (snomed_concept "Heart rate" "observable entity") bpm) 50)
+      (< (measurement (snomed_concept "Pulse, function" "observable entity") bpm) 50)
     )
   )
 )

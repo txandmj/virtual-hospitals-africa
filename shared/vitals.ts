@@ -63,6 +63,8 @@ import {
   UNABLE_TO_WALK,
   UNRESPONSIVE,
 } from './snomed_concepts.ts'
+import omit from '../util/omit.ts'
+import values from '../util/values.ts'
 
 export const VITAL_MEASUREMENTS_SNOMED_CONCEPTS = {
   height: BODY_HEIGHT,
@@ -78,6 +80,14 @@ export const VITAL_MEASUREMENTS_SNOMED_CONCEPTS = {
   triceps_skinfold: TRICEPS_SKIN_FOLD_THICKNESS,
   head_circumference: HEAD_CIRCUMFERENCE,
 }
+
+export const VITALS_ADULT_SNOMED_CONCEPT_NAMES = new Set(
+  values(omit(VITAL_MEASUREMENTS_SNOMED_CONCEPTS, [
+    'midarm_circumference',
+    'triceps_skinfold',
+    'head_circumference',
+  ])).map((concept) => concept.name),
+)
 
 export const VITALS_COMPUTED_SNOMED_CONCEPTS = {
   body_mass_index: MEASUREMENT_OF_BODY_MASS_INDEX,
@@ -128,18 +138,6 @@ export type ComputedVital = keyof typeof VITALS_COMPUTED_SNOMED_CONCEPTS
 export type VitalMeasurement = keyof typeof VITAL_MEASUREMENTS_SNOMED_CONCEPTS
 export type VitalAssessment = keyof typeof VITAL_ASSESSMENTS_EVALUATION_SNOMED_CONCEPTS
 export type Vital = VitalMeasurement | VitalAssessment
-
-export const ADULT_TEWS_COMPONENTS = [
-  'consciousness' as const,
-  'mobility_assessment' as const,
-  'respiratory_rate' as const,
-  'heart_rate' as const,
-  'blood_pressure_systolic' as const,
-  'temperature' as const,
-  'trauma_presence' as const,
-] satisfies Vital[]
-
-export type AdultTEWSComponent = (typeof ADULT_TEWS_COMPONENTS)[number]
 
 export const VITAL_MEASUREMENTS_UNITS = {
   height: 'cm',

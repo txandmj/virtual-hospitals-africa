@@ -5,13 +5,14 @@ import { literalString } from '../helpers.ts'
 import { inverseSExpression } from '../../shared/s_expression_inverse.ts'
 import { Lang, MeasurementComparison, QueryableEvidenceNode } from '../../shared/s_expression_schemas.ts'
 
-type Evidence = Lang['finding' | 'evaluation' | 'diagnosis'] | MeasurementComparison
+type Evidence = Lang['finding' | 'evaluation' | 'diagnosis' | 'active_condition'] | MeasurementComparison
 
 export function* allEvidenceToLookFor(node: QueryableEvidenceNode): Generator<Evidence> {
   switch (node.atom) {
     case 'finding':
     case 'evaluation':
     case 'diagnosis':
+    case 'active_condition':
       yield node
       break
     case '<':
@@ -31,7 +32,6 @@ export function* allEvidenceToLookFor(node: QueryableEvidenceNode): Generator<Ev
       }
       break
     default:
-      console.error('klwelkewklewklewklewkl', node)
       throw new Error(`Not supported ${node.atom}`)
   }
 }
@@ -129,6 +129,7 @@ export const s_expression_evidence = {
         case 'finding':
         case 'evaluation':
         case 'diagnosis':
+        case 'active_condition':
           return evaluateSingle(evidence)
 
         case '<':
@@ -239,6 +240,7 @@ export const s_expression_evidence = {
         case 'finding':
         case 'evaluation':
         case 'diagnosis':
+        case 'active_condition':
           return evaluateSingle(evidence)
 
         case '<':

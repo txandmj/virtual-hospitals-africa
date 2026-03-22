@@ -4,7 +4,7 @@
   adult
   Urgent
   (and
-    (clinical_finding (snomed_concept "Fever" "finding"))
+    (active_condition (snomed_concept "Fever" "finding"))
     (or
       (clinical_finding (snomed_concept "Stiff neck" "finding"))
       (clinical_finding (snomed_concept "Drowsy" "finding"))

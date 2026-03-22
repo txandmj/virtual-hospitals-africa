@@ -12,5 +12,6 @@
         (time_ago 24 hours))
     (clinical_finding (snomed_concept "Irreducible hernia" "morphologic abnormality"))
     (clinical_finding (snomed_concept "Pulsatile mass of abdomen" "finding"))
+    (clinical_finding (snomed_concept "Groin mass" "finding") (qualifier (snomed_concept "Pulsatile" "qualifier value")))
   )
 )

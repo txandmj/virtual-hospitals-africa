@@ -12,7 +12,7 @@
       (clinical_finding (snomed_concept "Stiff neck" "finding"))
       (clinical_finding (snomed_concept "Drowsy" "finding"))
       (clinical_finding (snomed_concept "Clouded consciousness" "finding"))
-      (clinical_finding (snomed_concept "Fever" "finding"))
+      (active_condition (snomed_concept "Fever" "finding"))
     )
   )
 )
@@ -27,7 +27,7 @@
   (and
     (clinical_finding (snomed_concept "Eruption caused by drug" "disorder"))
     (or
-      (clinical_finding (snomed_concept "Fever" "finding"))
+      (active_condition (snomed_concept "Fever" "finding"))
       (clinical_finding (snomed_concept "Abdominal pain" "finding"))
       (clinical_finding (snomed_concept "Jaundice" "finding"))
       (clinical_finding (snomed_concept "Blister of skin" "disorder"))

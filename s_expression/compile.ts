@@ -62,6 +62,11 @@ export const ${const_name} = [
 `
 }
 
+export async function parseLispFile(lisp_path: string) {
+  const content = await Deno.readTextFile(lisp_path)
+  return extractSExpressions(content)
+}
+
 /**
  * Process multiple .lisp files and concatenate all expressions into a single .ts file
  */
@@ -82,7 +87,7 @@ async function processLispDirectory(lisp_paths: string[], out_ts_path: string) {
 
 const S_EXPRESSION_DIR = 's_expression'
 
-async function walkDirectory() {
+export async function walkDirectory() {
   const subdir_files = new Map<string, string[]>()
   for await (const entry of walk(S_EXPRESSION_DIR, { exts: ['.lisp'] })) {
     assert(entry.isFile)

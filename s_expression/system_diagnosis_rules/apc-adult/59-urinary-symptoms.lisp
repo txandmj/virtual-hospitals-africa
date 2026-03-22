@@ -8,7 +8,8 @@
   adult
   (and
     (clinical_finding (snomed_concept "Blood in urine" "finding"))
-    (clinical_finding (snomed_concept "Flank pain" "finding"))
+    (clinical_finding (snomed_concept "Flank pain" "finding") (qualifier (snomed_concept "Sudden onset" "qualifier value")) (qualifier (snomed_concept"Unilateral" "qualifier value")))
+    (clinical_finding (snomed_concept "Inguinal pain" "finding") (qualifier (snomed_concept "Sudden onset" "qualifier value")) (qualifier (snomed_concept"Unilateral" "qualifier value")))
   )
 )
 ;; Page 59 - Urinary Symptoms: Acute pyelonephritis likely with flank pain, fever and systemic signs
@@ -21,10 +22,10 @@
   adult
   (and
     (clinical_finding (snomed_concept "Flank pain" "finding"))
-    (clinical_finding (snomed_concept "Fever" "finding"))
+    (active_condition (snomed_concept "Fever" "finding"))
     (or
       (clinical_finding (snomed_concept "Finding of vomiting" "finding"))
-      (>= (measurement (snomed_concept "Heart rate" "observable entity") bpm) 100)
+      (>= (measurement (snomed_concept "Pulse, function" "observable entity") bpm) 100)
       (< (measurement (snomed_concept "Systolic blood pressure" "observable entity") mmHg) 90)
     )
   )
