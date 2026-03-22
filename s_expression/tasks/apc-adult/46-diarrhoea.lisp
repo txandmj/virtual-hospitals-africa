@@ -15,5 +15,7 @@
     (clinical_finding (snomed_concept "Finding of vomiting" "finding"))
     (<= (timestamp (clinical_finding (snomed_concept "History of travel with high risk of exposure to communicable disease" "situation")))
         (time_ago 5 days))
+    (clinical_finding (snomed_concept "Xerostomia" "finding"))
+    (finding (snomed_concept "Exposure to (contextual qualifier)" "qualifier value") (snomed_concept "Vibrio cholerae" "organism"))
   )
 )

@@ -38,5 +38,7 @@
     (clinical_finding (snomed_concept "Dizziness" "finding") (qualifier (snomed_concept "Sudden onset" "qualifier value")) (qualifier (snomed_concept "Severe (severity modifier)" "qualifier value")))
     (clinical_finding (snomed_concept "Collapse" "finding"))
     (finding (snomed_concept "Exposure to (contextual qualifier)" "qualifier value") (snomed_concept "Substance" "substance"))
+    (clinical_finding (snomed_concept "Upper abdominal pain" "finding") (qualifier (snomed_concept "Pain radiating to lumbar region of back" "finding")))
+    (clinical_finding (snomed_concept "Pulsatile mass of abdomen" "finding"))
   )
 )

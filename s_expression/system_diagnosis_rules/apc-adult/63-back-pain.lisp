@@ -29,7 +29,7 @@
     (or
       (clinical_finding (snomed_concept "Finding of vomiting" "finding"))
       (< (measurement (snomed_concept "Systolic blood pressure" "observable entity") mmHg) 90)
-      (>= (measurement (snomed_concept "Heart rate" "observable entity") bpm) 100)
+      (>= (measurement (snomed_concept "Pulse, function" "observable entity") bpm) 100)
     )
   )
 )

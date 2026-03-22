@@ -13,5 +13,7 @@
     (clinical_finding (snomed_concept "Joint swelling" "finding") (qualifier (snomed_concept "Severe (severity modifier)" "qualifier value")))
     (clinical_finding (snomed_concept "Deformity" "finding"))
     (clinical_finding (snomed_concept "Unable to weight-bear" "finding"))
+    (clinical_finding (snomed_concept "Pain of joint" "finding"))
+    (clinical_finding (snomed_concept "Joint swelling" "finding"))
   )
 )

@@ -9,7 +9,7 @@
       (and
         (clinical_finding (snomed_concept "Pallor of skin of face" "finding"))
         (or
-          (>= (measurement (snomed_concept "Heart rate" "observable entity") bpm) 100)
+          (>= (measurement (snomed_concept "Pulse, function" "observable entity") bpm) 100)
           (>= (measurement (snomed_concept "Respiratory rate" "observable entity") bpm) 30)
           (clinical_finding (snomed_concept "Dizziness" "finding"))
           (clinical_finding (snomed_concept "Chest pain" "finding"))

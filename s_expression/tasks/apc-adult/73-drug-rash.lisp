@@ -16,5 +16,8 @@
     (clinical_finding (snomed_concept "Blister" "morphologic abnormality"))
     (clinical_finding (snomed_concept "Peeling of skin" "finding"))
     (clinical_finding (snomed_concept "Jaundice" "finding"))
+    (clinical_finding (snomed_concept "Swelling" "finding") (finding_site (snomed_concept "Face structure" "body structure")))
+    (clinical_finding (snomed_concept "Swelling" "finding") (finding_site (snomed_concept "Tongue structure" "body structure")))
+    (clinical_finding (snomed_concept "Blister of skin" "disorder"))
   )
 )

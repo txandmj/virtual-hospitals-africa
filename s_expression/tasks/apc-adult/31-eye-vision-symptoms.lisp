@@ -28,5 +28,8 @@
     (clinical_finding (snomed_concept "Penetration of eyeball with magnetic foreign body" "disorder"))
     (clinical_finding (snomed_concept "Burn of cornea" "disorder"))
     (clinical_finding (snomed_concept "Ptosis of eyelid" "disorder") (qualifier (snomed_concept "Sudden onset" "qualifier value")))
+    (clinical_finding (snomed_concept "Swelling of eyelid" "finding"))
+    (clinical_finding (snomed_concept "Headache" "finding"))
+    (clinical_finding (snomed_concept "Nausea and vomiting" "disorder"))
   )
 )

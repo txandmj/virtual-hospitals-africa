@@ -31,7 +31,6 @@ export function* allEvidenceToLookFor(node: QueryableEvidenceNode): Generator<Ev
       }
       break
     default:
-      console.error('klwelkewklewklewklewkl', node)
       throw new Error(`Not supported ${node.atom}`)
   }
 }

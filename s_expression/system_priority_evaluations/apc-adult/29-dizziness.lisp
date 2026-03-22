@@ -17,7 +17,7 @@
       (clinical_finding (snomed_concept "Pulse irregular" "finding"))
       (< (measurement (snomed_concept "Systolic blood pressure" "observable entity") mmHg) 90)
       (< (measurement (snomed_concept "Diastolic blood pressure" "observable entity") mmHg) 60)
-      (< (measurement (snomed_concept "Heart rate" "observable entity") bpm) 50)
+      (< (measurement (snomed_concept "Pulse, function" "observable entity") bpm) 50)
     )
   )
 )
