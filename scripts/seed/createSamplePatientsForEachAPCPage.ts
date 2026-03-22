@@ -132,7 +132,7 @@ async function createSamplePatientsForEachAPCPage() {
     }),
   ])
 
-  await forEach(task_file_paths.slice(0, 5), async (task_file_path) => {
+  await forEach(task_file_paths, async (task_file_path) => {
     const page_slug = pageSlugFromFilePath(task_file_path)
     const { evidence_s_expressions, vital_overrides } = await collectDueTo(task_file_path)
 

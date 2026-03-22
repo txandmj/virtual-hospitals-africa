@@ -205,14 +205,15 @@ export const additional_tasks = {
       return existing_findings_query.execute()
     }
 
-    const due_to_record_ids = evaluations.map((evaluation) => {
-      assertLength(evaluation.destination_relations, 1, humanReadableJson(evaluation))
-      assertEquals(
-        evaluation.destination_relations[0].relation_name,
-        DUE_TO.name,
-      )
-      return evaluation.destination_relations[0].id
-    })
+    const due_to_record_ids = evaluations.flatMap((evaluation) =>
+      evaluation.destination_relations.map((destination_relation) => {
+        assertEquals(
+          destination_relation.relation_name,
+          DUE_TO.name,
+        )
+        return evaluation.destination_relations[0].id
+      })
+    )
 
     const { /* procedures,*/ existing_findings, due_to_findings, due_to_evaluations } = await promiseProps({
       // procedures: patient_procedures.getByIds(trx, procedure_ids).then((procedures) =>
