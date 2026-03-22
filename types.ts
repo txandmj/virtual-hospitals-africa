@@ -2478,7 +2478,6 @@ export type BriefHistoryKey =
   | 'hiv'
   | 'asthma'
   | 'copd'
-  | 'covid19'
   | 'heart_disease'
   | 'mental_disorder'
   | 'epilepsy'

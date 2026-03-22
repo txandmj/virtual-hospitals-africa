@@ -52,7 +52,6 @@ describeParallel('triage/brief_history', () => {
             asthma: { existence: null },
             cancer: { existence: null },
             copd: { existence: null },
-            covid19: { existence: null },
             diabetes: { existence: null },
             epilepsy: { existence: null },
             heart_disease: { existence: null },
@@ -81,9 +80,6 @@ describeParallel('triage/brief_history', () => {
             },
             'copd': {
               'existence': 'Chronic Obstructive Pulmonary Disease',
-            },
-            'covid19': {
-              'existence': 'COVID-19',
             },
             'heart_disease': {
               'existence': 'Heart Disease',
@@ -123,7 +119,6 @@ describeParallel('triage/brief_history', () => {
             asthma: { existence: null },
             cancer: { existence: null },
             copd: { existence: null },
-            covid19: { existence: null },
             diabetes: { existence: null },
             epilepsy: { existence: null },
             heart_disease: { existence: null },
@@ -152,9 +147,6 @@ describeParallel('triage/brief_history', () => {
             },
             'copd': {
               'existence': 'Chronic Obstructive Pulmonary Disease',
-            },
-            'covid19': {
-              'existence': 'COVID-19',
             },
             'heart_disease': {
               'existence': 'Heart Disease',
@@ -540,7 +532,6 @@ describeParallel('triage/brief_history', () => {
             asthma: { existence: null },
             cancer: { existence: 'Yes' },
             copd: { existence: null },
-            covid19: { existence: null },
             diabetes: { existence: 'No' },
             epilepsy: { existence: null },
             heart_disease: { existence: null },

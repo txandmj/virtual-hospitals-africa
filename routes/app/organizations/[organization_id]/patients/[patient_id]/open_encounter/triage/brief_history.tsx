@@ -23,6 +23,7 @@ import { exists } from '../../../../../../../../util/exists.ts'
 import { events } from '../../../../../../../../db/models/events.ts'
 import { BriefHistorySection } from '../../../../../../../../components/triage/BriefHistorySection.tsx'
 import { patient_record_providers } from '../../../../../../../../db/models/patient_record_providers.ts'
+import { assertOr400 } from '../../../../../../../../util/assertOr.ts'
 
 const ConditionSchemaOptional = z.object(
   {
@@ -50,7 +51,6 @@ const CommonConditionSchema = z.object(
     hiv: ConditionSchemaOptional,
     asthma: ConditionSchemaOptional,
     copd: ConditionSchemaOptional,
-    covid19: ConditionSchemaOptional,
     heart_disease: ConditionSchemaOptional,
     mental_disorder: ConditionSchemaOptional,
     epilepsy: ConditionSchemaOptional,
@@ -119,7 +119,7 @@ export const handler = postHandler(
     const most_recent_findings = await mostRecentRecords(ctx)
 
     const findings_to_insert: string[] = []
-    const altered_record_ids: string[] = []
+    const altered_records: { record_id: string; condition_key: CommonConditionKey }[] = []
 
     for (const [condition_key, condition] of entries(form_values.common_conditions)) {
       if (condition?.existence === undefined) continue
@@ -135,7 +135,7 @@ export const handler = postHandler(
       }
 
       if (prior_matching_finding?.patient_encounter_id === patient_encounter_id) {
-        altered_record_ids.push(prior_matching_finding.id)
+        altered_records.push({ record_id: prior_matching_finding.id, condition_key })
       }
 
       findings_to_insert.push(
@@ -178,9 +178,9 @@ export const handler = postHandler(
 
     function markAlteredRecords() {
       if (!completed_procedure) {
-        assert(
-          !altered_record_ids.length,
-          'With no previously completed procedure, there cannot be record alterations',
+        assertOr400(
+          !altered_records.length,
+          `With no previously completed procedure, there cannot be record alterations, but there was for ${altered_records[0]?.condition_key}`,
         )
         return
       }
@@ -189,7 +189,7 @@ export const handler = postHandler(
         patient_id,
         employment_id,
         patient_encounter_id,
-        altered_record_ids,
+        altered_record_ids: altered_records.map((record) => record.record_id),
         ...completed_procedure,
       })
     }

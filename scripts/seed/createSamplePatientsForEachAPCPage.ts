@@ -18,10 +18,13 @@ import {
   setupTriage,
 } from '../../test/web/patients/open_encounter/triage/_setup.ts'
 import { VITAL_MEASUREMENTS_SNOMED_CONCEPTS, VitalMeasurement, VITALS_ADULT_SNOMED_CONCEPT_NAMES } from '../../shared/vitals.ts'
+import { COMMON_CONDITIONS, CommonConditionKey } from '../../shared/brief_history.ts'
 import { forEach } from '../../util/inParallel.ts'
 import generateUUID from '../../util/uuid.ts'
 import { MeasurementComparison, QueryableEvidenceNode } from '../../shared/s_expression_schemas.ts'
 import entries from '../../util/entries.ts'
+import fromEntries from '../../util/fromEntries.ts'
+import { assertEquals } from 'std/assert/assert_equals.ts'
 
 type Evidence = ReturnType<typeof allEvidenceToLookFor> extends Generator<infer T> ? T : never
 
@@ -66,19 +69,54 @@ function vitalValueFromComparison(atom: string, threshold: number): number {
   }
 }
 
+const COMMON_CONDITION_BY_SNOMED_NAME = new Map<string, CommonConditionKey>(
+  COMMON_CONDITIONS.map((c) => [c.name, c.key]),
+)
+
 async function collectDueTo(task_file_path: string): Promise<{
   evidence_s_expressions: string[]
   vital_overrides: Partial<Record<VitalMeasurement, number>>
+  common_condition_keys: Set<CommonConditionKey>
+  skip: boolean
 }> {
   const expressions = await parseLispFile(task_file_path)
   const tasks = expressions.map((expression) => parseWithSchema(expression, task))
 
   const all_evidence = new Set<string>()
   const vital_overrides: Partial<Record<VitalMeasurement, number>> = {}
+  const common_condition_keys = new Set<CommonConditionKey>()
+  let skip = false
 
   for (const task_node of tasks) {
     for (const evidence of allEvidenceToLookFor(task_node.due_to)) {
       if (!isVitalsBasedEvidence(evidence)) {
+        if (evidence.atom === 'active_condition') {
+          const key = COMMON_CONDITION_BY_SNOMED_NAME.get(evidence.snomed_concept.name)
+          if (key != null) {
+            common_condition_keys.add(key)
+            continue
+          }
+        }
+        if (evidence.atom === 'finding') {
+          if (!evidence.specific_snomed_concept) {
+            assertEquals(evidence.attributes.length, 1)
+            assertEquals(evidence.attributes[0].specific_snomed_concept.name, 'Finding site')
+            all_evidence.add(inverseSExpression({
+              ...evidence,
+              specific_snomed_concept: {
+                atom: 'snomed_concept',
+                name: 'Pain',
+                category: 'finding',
+              },
+            }))
+            continue
+          }
+        }
+        // TODO: exercise these rules
+        if (evidence.atom === 'diagnosis') {
+          skip = true
+          continue
+        }
         all_evidence.add(inverseSExpression(evidence))
         continue
       }
@@ -101,7 +139,7 @@ async function collectDueTo(task_file_path: string): Promise<{
     }
   }
 
-  return { evidence_s_expressions: [...all_evidence], vital_overrides }
+  return { evidence_s_expressions: [...all_evidence], vital_overrides, common_condition_keys, skip }
 }
 
 function pageSlugFromFilePath(file_path: string): string {
@@ -134,7 +172,12 @@ async function createSamplePatientsForEachAPCPage() {
 
   await forEach(task_file_paths, async (task_file_path) => {
     const page_slug = pageSlugFromFilePath(task_file_path)
-    const { evidence_s_expressions, vital_overrides } = await collectDueTo(task_file_path)
+    // if (page_slug != '137-ischaemic-heart-disease') return
+    const { evidence_s_expressions, vital_overrides, common_condition_keys, skip } = await collectDueTo(task_file_path)
+    if (skip) {
+      console.log(`Skipping creating patient for page: ${page_slug}`)
+    }
+    console.log(`Creating patient for page: ${page_slug}`)
 
     const encounter = await insertPatientSeekingTreatmentWithEmployeeAndCompleteRegistrationForTest(
       db,
@@ -173,19 +216,34 @@ async function createSamplePatientsForEachAPCPage() {
       assessments: asVitalAssessmentFormValues(DEFAULT_ASSESSMENTS.adult),
     }
 
+    console.log({
+      warning_signs,
+      brief_history: {
+        common_conditions: fromEntries(COMMON_CONDITIONS.map((condition) => [condition.key, {
+          existence: common_condition_keys.has(condition.key) ? 'Yes' as const : 'No' as const,
+        }])),
+      },
+      height_and_weight: {
+        measurements: {
+          height: { value: 160, units: 'cm' },
+          weight: { value: 70, units: 'kg' },
+        },
+      },
+      measure_vitals,
+    })
+
     await setupTriage({
       clinic,
       nurse,
       shcp,
       encounter,
       steps: {
-        warning_signs,
         brief_history: {
-          common_conditions: {
-            pregnancy: { existence: 'No' },
-            diabetes: { existence: 'No' },
-          },
+          common_conditions: fromEntries(COMMON_CONDITIONS.map((condition) => [condition.key, {
+            existence: common_condition_keys.has(condition.key) ? 'Yes' as const : 'No' as const,
+          }])),
         },
+        warning_signs,
         height_and_weight: {
           measurements: {
             height: { value: 160, units: 'cm' },

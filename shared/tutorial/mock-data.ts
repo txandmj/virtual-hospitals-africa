@@ -547,7 +547,6 @@ export const TUTORIAL_BRIEF_HISTORY_COMMON_CONDITIONS: MostRecentBriefHistoryFin
   tuberculosis: undefined,
   hiv: undefined,
   copd: undefined,
-  covid19: undefined,
   heart_disease: undefined,
   mental_disorder: undefined,
   epilepsy: undefined,

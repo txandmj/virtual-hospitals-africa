@@ -5,7 +5,6 @@ import {
   ASTHMA,
   CHRONIC_OBSTRUCTIVE_PULMONARY_DISEASE,
   DIABETES_MELLITUS,
-  DISEASE_CAUSED_BY_SEVERE_ACUTE_RESPIRATORY_SYNDROME_CORONAVIRUS_2,
   EPILEPSY,
   HEART_DISEASE,
   HUMAN_IMMUNODEFICIENCY_VIRUS_INFECTION,
@@ -51,12 +50,6 @@ export const COMMON_CONDITIONS = [
     label: 'Chronic Obstructive Pulmonary Disease',
     required: false,
     ...CHRONIC_OBSTRUCTIVE_PULMONARY_DISEASE,
-  },
-  {
-    key: 'covid19' as const,
-    label: 'COVID-19',
-    required: false,
-    ...DISEASE_CAUSED_BY_SEVERE_ACUTE_RESPIRATORY_SYNDROME_CORONAVIRUS_2,
   },
   {
     key: 'heart_disease' as const,
