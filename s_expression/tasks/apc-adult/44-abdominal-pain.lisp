@@ -26,7 +26,6 @@
     (clinical_finding (snomed_concept "Right lower quadrant pain" "finding"))
     (clinical_finding (snomed_concept "Nausea" "finding"))
     (clinical_finding (snomed_concept "Finding of vomiting" "finding"))
-    (clinical_finding (snomed_concept "Fever" "finding"))
     (clinical_finding (snomed_concept "Loss of appetite" "finding"))
     (clinical_finding (snomed_concept "Right upper quadrant pain" "finding") (qualifier (snomed_concept "Severe (severity modifier)" "qualifier value")))
     (clinical_finding (snomed_concept "Upper abdominal pain" "finding") (qualifier (snomed_concept "Sudden onset" "qualifier value")) (qualifier (snomed_concept "Severe (severity modifier)" "qualifier value")))

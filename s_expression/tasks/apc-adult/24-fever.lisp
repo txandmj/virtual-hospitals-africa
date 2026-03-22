@@ -2,7 +2,7 @@
 (task
   "Check for urgent fever conditions"
   adult
-  (clinical_finding (snomed_concept "Fever" "finding"))
+  (active_condition (snomed_concept "Fever" "finding"))
   (check_for
     (clinical_finding (snomed_concept "Seizure" "finding"))
     (clinical_finding (snomed_concept "Decreased level of consciousness" "finding"))

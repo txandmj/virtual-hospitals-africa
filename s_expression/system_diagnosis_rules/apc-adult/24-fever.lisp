@@ -7,7 +7,7 @@
   )
   adult
   (and
-    (clinical_finding (snomed_concept "Fever" "finding"))
+    (active_condition (snomed_concept "Fever" "finding"))
     (clinical_finding (snomed_concept "Stiff neck" "finding"))
     (or
       (clinical_finding (snomed_concept "Drowsy" "finding"))
@@ -25,7 +25,7 @@
   )
   adult
   (and
-    (clinical_finding (snomed_concept "Fever" "finding"))
+    (active_condition (snomed_concept "Fever" "finding"))
     (clinical_finding (snomed_concept "Tenderness of right lower quadrant of abdomen" "finding"))
   )
 )

@@ -25,7 +25,7 @@
       (clinical_finding (snomed_concept "Leukocytes in urine" "finding"))
       (clinical_finding (snomed_concept "Nitrite detected in urine" "finding"))
     )
-    (clinical_finding (snomed_concept "Fever" "finding"))
+    (active_condition (snomed_concept "Fever" "finding"))
     (or
       (clinical_finding (snomed_concept "Finding of vomiting" "finding"))
       (< (measurement (snomed_concept "Systolic blood pressure" "observable entity") mmHg) 90)

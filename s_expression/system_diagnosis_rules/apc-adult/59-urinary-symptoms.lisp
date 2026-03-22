@@ -22,7 +22,7 @@
   adult
   (and
     (clinical_finding (snomed_concept "Flank pain" "finding"))
-    (clinical_finding (snomed_concept "Fever" "finding"))
+    (active_condition (snomed_concept "Fever" "finding"))
     (or
       (clinical_finding (snomed_concept "Finding of vomiting" "finding"))
       (>= (measurement (snomed_concept "Pulse, function" "observable entity") bpm) 100)

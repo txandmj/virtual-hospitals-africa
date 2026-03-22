@@ -206,6 +206,80 @@ describeParallel('db/models/system_diagnosis_rules.ts', () => {
   )
 
   itParallel(
+    'a definite fever diagnosis from temperature feeds into the probable meningitis rule',
+    async () => {
+      const { employee, patient_id, patient_encounter_id } = await insertPatientSeekingTreatmentWithEmployeeAndCompleteRegistrationForTest(db)
+      const inserted_findings = await patient_findings.insertMany(
+        db,
+        {
+          patient_id,
+          patient_encounter_id,
+          patient_encounter_employee_id: employee.patient_encounter_employee_id,
+          employment_id: employee.employee_id,
+          procedure: {
+            create_with_specific_snomed_concept_id: WORKFLOW_STEP_SNOMED_CONCEPTS.triage!.warning_signs.snomed_concept_id,
+          },
+          findings: [
+            `(clinical_finding (snomed_concept "Stiff neck" "finding"))`,
+            `(clinical_finding (snomed_concept "Drowsy" "finding"))`,
+          ],
+          measurements: [
+            parseWithSchema(`(= (measurement (snomed_concept "Body temperature" "observable entity") °C) 38.5)`, measurement_comparator),
+          ],
+        },
+      )
+
+      assert(inserted_findings.measurement_ids[0])
+      assert(inserted_findings.finding_ids[0])
+      assert(inserted_findings.finding_ids[1])
+
+      // First call: temperature triggers the "Diagnose fever" rule
+      const fever_result = await system_diagnosis_rules.insertSystemDiagnosesIfNotAlreadyIdentified(db, {
+        listener_id: 'test',
+        listener_name: 'test',
+        patient_id,
+        patient_encounter_id,
+        patient_age_determination: 'adult',
+        procedure_id: inserted_findings.procedure_id,
+        records: [
+          { id: inserted_findings.measurement_ids[0], existence: 'Yes' },
+        ],
+      })
+      assert(fever_result.startsWith('Inserted 1 diagnosis(es): '), `Expected fever diagnosis, got: ${fever_result}`)
+
+      // Second call: stiff neck + drowsy trigger the meningitis rule, which resolves
+      // fever via active_condition — matching the definite fever diagnosis already in the DB
+      const meningitis_result = await system_diagnosis_rules.insertSystemDiagnosesIfNotAlreadyIdentified(db, {
+        listener_id: 'test',
+        listener_name: 'test',
+        patient_id,
+        patient_encounter_id,
+        patient_age_determination: 'adult',
+        procedure_id: inserted_findings.procedure_id,
+        records: [
+          { id: inserted_findings.finding_ids[0], existence: 'Yes' },
+          { id: inserted_findings.finding_ids[1], existence: 'Yes' },
+        ],
+      })
+      assert(meningitis_result.startsWith('Inserted 1 diagnosis(es): '), `Expected meningitis diagnosis, got: ${meningitis_result}`)
+
+      const evaluations = await patient_evaluations.findAll(db, { patient_id })
+      const meningitis = evaluations.find((e) => e.specific_snomed_concept_name === 'Meningitis')
+      assertMatches(meningitis, {
+        'specific_snomed_concept_name': 'Meningitis',
+        'specific_snomed_concept_category': 'disorder',
+        'existence': 'Yes',
+        'value': { 'name': 'Probable diagnosis (contextual qualifier)' },
+        'displays': {
+          'finding': 'Meningitis Diagnosis',
+          'value': 'Probable diagnosis',
+          'full': 'Meningitis Diagnosis: Probable diagnosis',
+        },
+      })
+    },
+  )
+
+  itParallel(
     'no tension pneumothorax diagnosis if missing one of the findings is not present',
     async () => {
       const { employee, patient_id, patient_encounter_id } = await insertPatientSeekingTreatmentWithEmployeeAndCompleteRegistrationForTest(db)
