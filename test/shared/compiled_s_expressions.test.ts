@@ -13,6 +13,7 @@ import { assert } from 'std/assert/assert.ts'
 import { allEvidenceToLookFor } from '../../db/models/s_expression_evidence.ts'
 import { inverseSExpression } from '../../shared/s_expression_inverse.ts'
 import { VITALS_ADULT_SNOMED_CONCEPT_NAMES } from '../../shared/vitals.ts'
+import { assertUnreachable } from '../../util/assertUnreachable.ts'
 
 export function* allConceptsToLookFor(node: QueryableEvidenceNode): Generator<SnomedConcept> {
   switch (node.atom) {
@@ -24,6 +25,9 @@ export function* allConceptsToLookFor(node: QueryableEvidenceNode): Generator<Sn
       break
     case 'attribute':
       if (node.specific_snomed_concept) yield node.specific_snomed_concept
+      break
+    case 'active_condition':
+      yield node.snomed_concept
       break
     case 'finding':
     case 'evaluation':
@@ -77,7 +81,7 @@ export function* allConceptsToLookFor(node: QueryableEvidenceNode): Generator<Sn
       yield* allConceptsToLookFor(node.expression)
       break
     default:
-      throw new Error(`Not supported ${node.atom}`)
+      assertUnreachable(node)
   }
 }
 
@@ -169,7 +173,7 @@ describe('s_expression', () => {
               const evidence_collected_during_vitals = (
                 finding.atom === 'measurement' && VITALS_ADULT_SNOMED_CONCEPT_NAMES.has(finding.snomed_concept.name)
               ) || (
-                finding.atom === 'finding' && finding.specific_snomed_concept?.name === 'Fever'
+                finding.atom === 'active_condition' && finding.snomed_concept.name === 'Fever'
               )
               if (evidence_collected_during_vitals) continue
               const finding_s_expression = inverseSExpression(finding)
@@ -207,6 +211,31 @@ describe('s_expression', () => {
             system_diagnosis_rules,
             tasks,
           }
+        }
+      }
+    })
+  })
+  describe('apc-adult', () => {
+    it('has maximum one file per page number', async () => {
+      const s_expression_directory = await walkDirectory()
+      const system_diagnosis_rules_file_paths = exists(s_expression_directory.get('system_diagnosis_rules')).filter((path) => path.includes('apc-adult'))
+      const system_priority_evaluations_file_paths = exists(s_expression_directory.get('system_priority_evaluations')).filter((path) =>
+        path.includes('apc-adult')
+      )
+      const tasks_file_paths = exists(s_expression_directory.get('tasks')).filter((path) => path.includes('apc-adult'))
+
+      assertUniquePageNumbers(system_diagnosis_rules_file_paths)
+      assertUniquePageNumbers(system_priority_evaluations_file_paths)
+      assertUniquePageNumbers(tasks_file_paths)
+
+      function assertUniquePageNumbers(filepaths: string[]) {
+        const page_numbers = new Set<string>()
+        for (const filepath of filepaths) {
+          const page_number = filepath.match(/(\d+)/)![1]
+          if (page_numbers.has(page_number)) {
+            throw new Error(page_number + ' xx ' + filepath)
+          }
+          page_numbers.add(page_number)
         }
       }
     })

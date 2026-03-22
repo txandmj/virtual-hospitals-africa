@@ -14,6 +14,7 @@
     (clinical_finding (snomed_concept "Rebound tenderness" "finding"))
     (clinical_finding (snomed_concept "Abdominal guarding" "finding"))
     (clinical_finding (snomed_concept "Abdominal rigidity" "finding"))
+    (clinical_finding (snomed_concept "Tenderness of right lower quadrant of abdomen" "finding"))
     (clinical_finding (snomed_concept "Hematemesis" "disorder"))
     (clinical_finding (snomed_concept "Jaundice" "finding"))
     (clinical_finding (snomed_concept "Drowsy" "finding"))

@@ -63,7 +63,6 @@ import {
   UNABLE_TO_WALK,
   UNRESPONSIVE,
 } from './snomed_concepts.ts'
-import pick from '../util/pick.ts'
 import omit from '../util/omit.ts'
 import values from '../util/values.ts'
 

@@ -1,5 +1,6 @@
 import { assert } from 'std/assert/assert.ts'
 import { NonEmptyArray } from '../types.ts'
+import { humanReadableJson } from './humanReadableJson.ts'
 
 export function arrayIsEmpty<T>(arr: T[]): arr is [] {
   return !arr.length
@@ -15,7 +16,7 @@ export function assertArrayEmpty<T>(
 ): asserts arr is [] {
   assert(
     !arr.length,
-    message || `Expected array to be empty. Had values ${JSON.stringify(arr)}`,
+    message || `Expected array to be empty. Had values\n${humanReadableJson(arr)}`,
   )
 }
 
