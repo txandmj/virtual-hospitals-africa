@@ -1,6 +1,6 @@
 import { sql } from 'kysely'
 import { AgeDetermination, ApplicableRule, NewRecordsToConsider, TrxOrDbOrQueryCreator } from '../../types.ts'
-import { asText, jsonBuildObject, literalString } from '../helpers.ts'
+import { asText, debugLog, jsonBuildObject, literalString } from '../helpers.ts'
 import { groupBy } from '../../util/groupBy.ts'
 import { FINDING_SITE } from '../../shared/snomed_concepts.ts'
 import { parseWithSchema } from '../../shared/s_expression.ts'
@@ -73,7 +73,7 @@ export const rules = {
                     .on('dest_descendants.ancestor_id', '=', eb.ref('rule_due_to_finding_sites.value_snomed_concept_id')),
               )
               .where('patient_record_qualifiers.qualifies_record_id', '=', eb.ref('patient_records.id'))
-              .where('finding_sites.root_snomed_concept_id', '=', FINDING_SITE.id),
+              .where('finding_sites.specific_snomed_concept_id', '=', FINDING_SITE.id),
           ),
           eb.exists(
             trx.selectFrom('snomed_relationship')
@@ -139,7 +139,7 @@ export const rules = {
         'rule_due_to_measurements.always_applies_if_present',
       ])
 
-    const tasks_matching_some_finding = await trx.with('matching_rule_findings', () =>
+    const full_query = trx.with('matching_rule_findings', () =>
       by_findings_query
         .unionAll(by_finding_sites_query)
         .unionAll(by_measurements_query))
@@ -180,7 +180,10 @@ export const rules = {
       .$if(type === 'task', (qb) => qb.where('tasks.id', 'is not', null))
       .$if(type === 'system_diagnosis_rule', (qb) => qb.where('system_diagnosis_rules.id', 'is not', null))
       .$if(type === 'system_priority_evaluation', (qb) => qb.where('system_priority_evaluations.id', 'is not', null))
-      .execute()
+
+    debugLog(full_query)
+
+    const tasks_matching_some_finding = await full_query.execute()
 
     const all_tasks = groupBy(tasks_matching_some_finding, 'rule_id').values().toArray()
 

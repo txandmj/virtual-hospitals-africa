@@ -49,45 +49,45 @@ describeParallel('db/models/additional_tasks.ts', () => {
     },
   )
 
-  // itParallel('adds reference docs and check_for tasks for an Insect bite - wound', async () => {
-  //   const { employee, patient_id, patient_encounter_id } = await insertPatientSeekingTreatmentWithEmployeeAndCompleteRegistrationForTest(db)
-  //   const inserted_findings = await patient_findings.insertMany(
-  //     db,
-  //     {
-  //       patient_id,
-  //       patient_encounter_id,
-  //       patient_encounter_employee_id: employee.patient_encounter_employee_id,
-  //       employment_id: employee.employee_id,
-  //       procedure: {
-  //         create_with_specific_snomed_concept_id: WORKFLOW_STEP_SNOMED_CONCEPTS.triage!.warning_signs.snomed_concept_id,
-  //       },
-  //       findings: [
-  //         `(clinical_finding (snomed_concept "Insect bite - wound" "disorder"))`,
-  //       ],
-  //     },
-  //   )
+  itParallel('adds reference docs and check_for tasks for an Insect bite - wound', async () => {
+    const { employee, patient_id, patient_encounter_id } = await insertPatientSeekingTreatmentWithEmployeeAndCompleteRegistrationForTest(db)
+    const inserted_findings = await patient_findings.insertMany(
+      db,
+      {
+        patient_id,
+        patient_encounter_id,
+        patient_encounter_employee_id: employee.patient_encounter_employee_id,
+        employment_id: employee.employee_id,
+        procedure: {
+          create_with_specific_snomed_concept_id: WORKFLOW_STEP_SNOMED_CONCEPTS.triage!.warning_signs.snomed_concept_id,
+        },
+        findings: [
+          `(clinical_finding (snomed_concept "Insect bite - wound" "disorder"))`,
+        ],
+      },
+    )
 
-  //   assert(inserted_findings.finding_ids[0])
-  //   const tasks_to_insert = await additional_tasks.getTasksToInsertUsingPreComputedTables(db, {
-  //     patient_id,
-  //     patient_encounter_id,
-  //     patient_age_determination: 'adult',
-  //     records: [{
-  //       id: inserted_findings.finding_ids[0],
-  //       existence: 'Yes',
-  //     }],
-  //   })
-  //   assertMatches(tasks_to_insert, [
-  //     {
-  //       atom: 'task',
-  //       description: 'Display medical guidance for Bites',
-  //     },
-  //     {
-  //       atom: 'task',
-  //       description: 'Check for urgent bite/sting conditions',
-  //     },
-  //   ])
-  // })
+    assert(inserted_findings.finding_ids[0])
+    const tasks_to_insert = await additional_tasks.getTasksToInsertUsingPreComputedTables(db, {
+      patient_id,
+      patient_encounter_id,
+      patient_age_determination: 'adult',
+      records: [{
+        id: inserted_findings.finding_ids[0],
+        existence: 'Yes',
+      }],
+    })
+    assertMatches(tasks_to_insert, [
+      {
+        atom: 'task',
+        description: 'Display medical guidance for Bites',
+      },
+      {
+        atom: 'task',
+        description: 'Check for urgent bite/sting conditions',
+      },
+    ])
+  })
 
   itParallel('adds reference docs and check_for tasks for an Insect bite - wound', async () => {
     const { employee, patient_id, patient_encounter_id } = await insertPatientSeekingTreatmentWithEmployeeAndCompleteRegistrationForTest(db)
@@ -394,5 +394,38 @@ describeParallel('db/models/additional_tasks.ts', () => {
       { description: 'Display medical guidance for Arm symptoms' },
       { description: 'Display medical guidance for Joint symptoms' },
     ])
+  })
+
+  itParallel('displays additional tasks for pain of mouth', async () => {
+    const { employee, patient_id, patient_encounter_id } = await insertPatientSeekingTreatmentWithEmployeeAndCompleteRegistrationForTest(db)
+    const inserted_findings = await patient_findings.insertMany(
+      db,
+      {
+        patient_id,
+        patient_encounter_id,
+        patient_encounter_employee_id: employee.patient_encounter_employee_id,
+        employment_id: employee.employee_id,
+        procedure: {
+          create_with_specific_snomed_concept_id: WORKFLOW_STEP_SNOMED_CONCEPTS.triage!.warning_signs.snomed_concept_id,
+        },
+        findings: [
+          `(clinical_finding (snomed_concept "Pain" "finding") (finding_site (snomed_concept "Structure of mouth and/or pharynx" "body structure")))`,
+        ],
+      },
+    )
+
+    assert(inserted_findings.finding_ids[0])
+    const tasks_to_insert = await additional_tasks.getTasksToInsertUsingPreComputedTables(db, {
+      patient_id,
+      patient_encounter_id,
+      patient_age_determination: 'adult',
+      records: [{
+        id: inserted_findings.finding_ids[0],
+        existence: 'Yes',
+      }],
+    })
+
+    assert(!isString(tasks_to_insert))
+    assert(tasks_to_insert.length > 0)
   })
 })
