@@ -5,6 +5,7 @@ export default function asFormData(
 
   function appendToFormData(obj: Record<string, unknown>, prefix = '') {
     for (const [key, value] of Object.entries(obj)) {
+      if (value == null) continue
       const full_key = prefix ? `${prefix}.${key}` : key
 
       if (Array.isArray(value)) {
@@ -22,7 +23,7 @@ export default function asFormData(
           }
         })
       } else if (
-        value !== null && typeof value === 'object' &&
+        typeof value === 'object' &&
         !(value instanceof File) && !(value instanceof Blob)
       ) {
         // Recursively handle nested objects

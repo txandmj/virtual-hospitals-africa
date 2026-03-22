@@ -1,25 +1,26 @@
 import { sql } from 'kysely'
-import { TrxOrDbOrQueryCreator } from '../../types.ts'
+import { IdSelectable, TrxOrDbOrQueryCreator } from '../../types.ts'
 import { base, identity } from './_base.ts'
-import { assertOr400 } from '../../util/assertOr.ts'
 import { SnomedCategory } from '../../db.d.ts'
+import { idSelection } from '../helpers.ts'
 
 type SearchTerms = {
-  search: string
+  snomed_concept_id?: IdSelectable
+  search?: string
 }
 
-const categories: SnomedCategory[] = [
+export const FINDING_LIKE_CATEGORIES: SnomedCategory[] = [
   'finding' as const,
   'morphologic abnormality' as const,
   'disorder' as const,
+  'situation' as const,
+  'event' as const,
 ]
 
 function baseQuery(trx: TrxOrDbOrQueryCreator, terms: SearchTerms) {
-  assertOr400(terms.search, 'Must be searching for a term')
+  const best_similarity = terms.search ? sql<number>`max(similarity(${terms.search}, term))` : sql<number>`0`
 
-  const best_similarity = sql<number>`max(similarity(${terms.search}, term))`
-
-  return trx
+  let query = trx
     .selectFrom('snomed_concept_finding_like')
     .innerJoin(
       'snomed_inferred_canonical_name_and_category',
@@ -29,11 +30,11 @@ function baseQuery(trx: TrxOrDbOrQueryCreator, terms: SearchTerms) {
     .leftJoin(
       'snomed_inferred_canonical_name_and_category as preferred_category_of_same_name',
       (join) =>
-        categories
+        FINDING_LIKE_CATEGORIES
           ? join.on((eb) =>
             eb.or(
-              categories!.slice(1).flatMap((category, i) => {
-                const higher_ranking_categories = categories!.slice(0, i + 1)
+              FINDING_LIKE_CATEGORIES!.slice(1).flatMap((category, i) => {
+                const higher_ranking_categories = FINDING_LIKE_CATEGORIES!.slice(0, i + 1)
                 return higher_ranking_categories.map((higher_ranking_category) =>
                   eb.and([
                     eb('preferred_category_of_same_name.name', '=', eb.ref('snomed_inferred_canonical_name_and_category.name')),
@@ -47,7 +48,6 @@ function baseQuery(trx: TrxOrDbOrQueryCreator, terms: SearchTerms) {
           : join.on(sql<boolean>`false`),
     )
     .where('preferred_category_of_same_name.id', 'is', null)
-    .where(sql<boolean>`${terms.search} <% term`)
     .select([
       'snomed_inferred_canonical_name_and_category.id',
       'snomed_inferred_canonical_name_and_category.name',
@@ -55,7 +55,21 @@ function baseQuery(trx: TrxOrDbOrQueryCreator, terms: SearchTerms) {
       best_similarity.as('best_similarity'),
     ])
     .groupBy('snomed_inferred_canonical_name_and_category.id')
-    .orderBy(best_similarity, 'desc')
+
+  if (terms.snomed_concept_id) {
+    query = query.where(
+      'snomed_concept_finding_like.id',
+      ...idSelection(terms.snomed_concept_id),
+    )
+  }
+
+  if (terms.search) {
+    query = query
+      .where(sql<boolean>`${terms.search} <% term`)
+      .orderBy(best_similarity, 'desc')
+  }
+
+  return query
 }
 
 export const snomed_concept_finding_like = base({

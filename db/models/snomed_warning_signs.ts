@@ -1,14 +1,14 @@
-import { SnomedWarningSignSearchResult, TrxOrDbOrQueryCreator } from '../../types.ts'
+import { IdSelectable, SnomedWarningSignSearchResult, TrxOrDbOrQueryCreator } from '../../types.ts'
 import { base } from './_base.ts'
-import { AgeDetermination, SnomedCategory } from '../../db.d.ts'
+import { AgeDetermination } from '../../db.d.ts'
 import { asConceptSExpression } from '../../shared/snomed_concepts.ts'
 import { snomed_concept_finding_like } from './snomed_concept_finding_like.ts'
 
 type SearchTerms = {
-  search: string
+  search?: string
+  snomed_concept_id?: IdSelectable
   age_determination: AgeDetermination
   pregnancy?: boolean
-  categories?: SnomedCategory[]
 }
 
 export const snomed_warning_signs = base({
