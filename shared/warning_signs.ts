@@ -226,11 +226,10 @@ const WARNING_SIGN_DEFS = [
     key: 'Aggression' as const,
     clinical_finding_s_expression: '(clinical_finding (snomed_concept "Aggressive behavior" "finding"))',
     name: 'Aggression',
-    description: null,
+    description: 'Violent, disruptive, or insulting behavior',
     priority: 'Very urgent' as const,
     category: 'Very urgent' as const,
   },
-
   {
     key: 'Dislocation of larger joint' as const,
     clinical_finding_s_expression: '(clinical_finding (snomed_concept "Dislocation" "morphologic abnormality"))',

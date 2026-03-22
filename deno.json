@@ -50,7 +50,8 @@
     "preview": "deno serve -A _fresh/server.js",
     "check": "./scripts/code-quality/check.sh",
     "hygiene": "./scripts/code-quality/hygiene.sh",
-    "util": "deno task run:trusted ./util.ts"
+    "util": "deno task run:trusted ./util.ts",
+    "rules:rebuild": "deno task compile:s_expressions && deno task docker db:seed reload 30_rules && deno task db:seed dump 30_rules"
   },
   "compilerOptions": { 
     "lib": [
