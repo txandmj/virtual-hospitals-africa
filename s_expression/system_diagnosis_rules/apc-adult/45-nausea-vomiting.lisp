@@ -1,6 +1,6 @@
 ;; Page 45 - Nausea/Vomiting: peritonitis likely with guarding, rigidity or rebound tenderness
 (system_diagnosis_rule
-  "Diagnose probable peritonitis"
+  "Diagnose probable peritonitis based on nausea"
   (diagnosis
     (snomed_concept "Peritonitis" "disorder")
     probable
@@ -20,7 +20,7 @@
 )
 ;; Page 45 - Nausea/Vomiting: appendicitis likely with right lower abdominal tenderness
 (system_diagnosis_rule
-  "Diagnose probable appendicitis"
+  "Diagnose probable appendicitis based on nausea"
   (diagnosis
     (snomed_concept "Acute appendicitis" "disorder")
     probable
@@ -34,25 +34,9 @@
     (clinical_finding (snomed_concept "Tenderness of right lower quadrant of abdomen" "finding"))
   )
 )
-;; Page 45 - Nausea/Vomiting: pancreatitis likely with upper abdominal pain spreading to back
-(system_diagnosis_rule
-  "Diagnose probable acute pancreatitis"
-  (diagnosis
-    (snomed_concept "Acute pancreatitis" "disorder")
-    probable
-  )
-  adult
-  (and
-    (or
-      (clinical_finding (snomed_concept "Nausea" "finding"))
-      (clinical_finding (snomed_concept "Finding of vomiting" "finding"))
-    )
-    (clinical_finding (snomed_concept "Pain radiating to lumbar region of back" "finding"))
-  )
-)
 ;; Page 45 - Nausea/Vomiting: meningitis likely with neck stiffness, altered consciousness or purpuric rash
 (system_diagnosis_rule
-  "Diagnose probable meningitis"
+  "Diagnose probable meningitis based on nausea"
   (diagnosis
     (snomed_concept "Meningitis" "disorder")
     probable

@@ -33,17 +33,3 @@
     )
   )
 )
-;; Page 63 - Back pain: kidney stone likely with blood in urine and sudden severe flank pain
-(system_diagnosis_rule
-  "Diagnose possible kidney stone"
-  (diagnosis
-    (snomed_concept "Kidney stone" "disorder")
-    possible
-  )
-  adult
-  (and
-    (clinical_finding (snomed_concept "Backache" "finding"))
-    (clinical_finding (snomed_concept "Blood in urine" "finding"))
-    (clinical_finding (snomed_concept "Flank pain" "finding"))
-  )
-)
