@@ -8,7 +8,7 @@ import { exists } from '../../util/exists.ts'
 import { addTestEmployee } from '../../mocks/testEmployee.ts'
 import { addTestEmployeeWithSession } from '../../test/_helpers/employees.ts'
 import { insertPatientSeekingTreatmentWithEmployeeAndCompleteRegistrationForTest } from '../../test/_helpers/workflows.ts'
-import { createTestOrganization } from '../../test/_helpers/organizations.ts'
+import { TEST_ORGANIZATION_UUIDS } from '../../test/_helpers/organizations.ts'
 import {
   asVitalAssessmentFormValues,
   asVitalMeasurementFormValues,
@@ -17,10 +17,11 @@ import {
   DEFAULT_MEASUREMENTS,
   setupTriage,
 } from '../../test/web/patients/open_encounter/triage/_setup.ts'
-import { VITALS_ADULT_SNOMED_CONCEPT_NAMES } from '../../shared/vitals.ts'
+import { VITAL_MEASUREMENTS_SNOMED_CONCEPTS, VitalMeasurement, VITALS_ADULT_SNOMED_CONCEPT_NAMES } from '../../shared/vitals.ts'
 import { forEach } from '../../util/inParallel.ts'
 import generateUUID from '../../util/uuid.ts'
 import { MeasurementComparison, QueryableEvidenceNode } from '../../shared/s_expression_schemas.ts'
+import entries from '../../util/entries.ts'
 
 type Evidence = ReturnType<typeof allEvidenceToLookFor> extends Generator<infer T> ? T : never
 
@@ -45,37 +46,62 @@ function isVitalsBasedEvidence(evidence: Evidence | QueryableEvidenceNode): bool
   )
 }
 
-async function collectEvidenceForPage(task_file_path: string): Promise<string[]> {
+function vitalFromSnomedConceptName(name: string): VitalMeasurement | null {
+  for (const [vital, concept] of entries(VITAL_MEASUREMENTS_SNOMED_CONCEPTS)) {
+    if (concept.name === name) return vital
+  }
+  return null
+}
+
+function vitalValueFromComparison(atom: string, threshold: number): number {
+  switch (atom) {
+    case '>':
+    case '>=':
+      return threshold + 1
+    case '<':
+    case '<=':
+      return threshold - 1
+    default:
+      return threshold
+  }
+}
+
+async function collectDueTo(task_file_path: string): Promise<{
+  evidence_s_expressions: string[]
+  vital_overrides: Partial<Record<VitalMeasurement, number>>
+}> {
   const expressions = await parseLispFile(task_file_path)
   const tasks = expressions.map((expression) => parseWithSchema(expression, task))
 
   const all_evidence = new Set<string>()
+  const vital_overrides: Partial<Record<VitalMeasurement, number>> = {}
 
   for (const task_node of tasks) {
-    // Due to evidence (flattened leaf nodes)
     for (const evidence of allEvidenceToLookFor(task_node.due_to)) {
       if (!isVitalsBasedEvidence(evidence)) {
         all_evidence.add(inverseSExpression(evidence))
+        continue
       }
-    }
 
-    // Checking for evidence (leaf nodes from each check_for item)
-    if (Array.isArray(task_node.procedure.value)) {
-      for (const item of task_node.procedure.value) {
-        try {
-          for (const evidence of allEvidenceToLookFor(item)) {
-            if (!isVitalsBasedEvidence(evidence)) {
-              all_evidence.add(inverseSExpression(evidence))
-            }
+      const is_comparator = evidence.atom === '>' || evidence.atom === '<' || evidence.atom === '>=' || evidence.atom === '<=' || evidence.atom === '='
+      if (is_comparator) {
+        const comparison = evidence as MeasurementComparison
+        const snomed_name = comparison.measurement.snomed_concept?.name
+        if (snomed_name) {
+          const vital = vitalFromSnomedConceptName(snomed_name)
+          if (vital) {
+            const threshold = comparison.value.toNumber()
+            vital_overrides[vital] = vitalValueFromComparison(comparison.atom, threshold)
           }
-        } catch {
-          // Skip unsupported node types (e.g., time-based comparisons)
         }
+      } else if (evidence.atom === 'active_condition' && (evidence as { snomed_concept?: { name: string } }).snomed_concept?.name === 'Fever') {
+        // Fever threshold is 38.5°C, so use 39.0
+        vital_overrides['temperature'] = 39.0
       }
     }
   }
 
-  return [...all_evidence]
+  return { evidence_s_expressions: [...all_evidence], vital_overrides }
 }
 
 function pageSlugFromFilePath(file_path: string): string {
@@ -88,7 +114,10 @@ async function createSamplePatientsForEachAPCPage() {
   const task_file_paths = exists(s_expression_directory.get('tasks'))
     .filter((path) => path.includes('apc-adult'))
 
-  const clinic = await createTestOrganization(db)
+  const clinic = {
+    id: TEST_ORGANIZATION_UUIDS.ZA.clinic,
+  }
+  // await createTestOrganization(db)
 
   const [nurse, shcp] = await Promise.all([
     addTestEmployeeWithSession(db, {
@@ -105,7 +134,7 @@ async function createSamplePatientsForEachAPCPage() {
 
   await forEach(task_file_paths.slice(0, 5), async (task_file_path) => {
     const page_slug = pageSlugFromFilePath(task_file_path)
-    const evidence_s_expressions = await collectEvidenceForPage(task_file_path)
+    const { evidence_s_expressions, vital_overrides } = await collectDueTo(task_file_path)
 
     const encounter = await insertPatientSeekingTreatmentWithEmployeeAndCompleteRegistrationForTest(
       db,
@@ -119,7 +148,7 @@ async function createSamplePatientsForEachAPCPage() {
           name: `TESTING ${page_slug}`,
           preferred_name: 'TESTING',
           date_of_birth: '1990-01-01',
-        }
+        },
       },
     )
 
@@ -140,7 +169,7 @@ async function createSamplePatientsForEachAPCPage() {
     }
 
     const measure_vitals = {
-      measurements: asVitalMeasurementFormValues(DEFAULT_MEASUREMENTS.adult),
+      measurements: asVitalMeasurementFormValues({ ...DEFAULT_MEASUREMENTS.adult, ...vital_overrides }),
       assessments: asVitalAssessmentFormValues(DEFAULT_ASSESSMENTS.adult),
     }
 
@@ -151,6 +180,12 @@ async function createSamplePatientsForEachAPCPage() {
       encounter,
       steps: {
         warning_signs,
+        brief_history: {
+          common_conditions: {
+            pregnancy: { existence: 'No' },
+            diabetes: { existence: 'No' },
+          },
+        },
         height_and_weight: {
           measurements: {
             height: { value: 160, units: 'cm' },
@@ -162,7 +197,7 @@ async function createSamplePatientsForEachAPCPage() {
     })
 
     console.log(`Created patient for page: ${page_slug}`)
-  })
+  }, { concurrency: 1 })
 
   console.log('Done! Created sample patients for all APC pages.')
   await db.destroy()
