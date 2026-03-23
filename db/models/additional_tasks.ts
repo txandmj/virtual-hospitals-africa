@@ -47,11 +47,11 @@ import compact from '../../util/compact.ts'
 
 import uniq from '../../util/uniq.ts'
 import { rules } from './rules.ts'
-import findMatching from '../../util/findMatching.ts'
-import { getTaskById, TASKS } from '../../shared/tasks.ts'
+import { getTaskById } from '../../shared/tasks.ts'
 import isObjectLike from '../../util/isObjectLike.ts'
 import { patient_procedures } from './patient_procedures.ts'
 import { humanReadableJson } from '../../util/humanReadableJson.ts'
+import { logJSONToFileIfOnServer } from '../../util/logJSONToFileIfOnServer.ts'
 
 type TaskToInsert = {
   id: string
@@ -186,12 +186,10 @@ export const additional_tasks = {
       assert(evaluation.value)
       assert(evaluation.value.type === 'task')
       const task = getTaskById(evaluation.value.task_id)
-      // const procedure = parseWithSchema(evaluation.value.s_expression, investigation)
-      // const tasks: Array<Lang['link' | 'finding' | 'measurement' | 'snomed_concept']> = isObjectLike(procedure.value)
-      //   ? [procedure.value]
-      //   : procedure.value
       return { ...evaluation, task }
     })
+
+    logJSONToFileIfOnServer(evaluations_with_proto_tasks)
 
     const s_expression_to_existing_findings = new Map<string, Lang['finding' | 'measurement']>()
     const s_expression_to_already_done = new Map<string, ToBeDone>()

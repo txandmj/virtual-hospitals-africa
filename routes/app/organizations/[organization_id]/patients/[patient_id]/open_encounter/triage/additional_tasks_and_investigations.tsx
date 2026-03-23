@@ -18,6 +18,7 @@ import { NO_QUALIFIER, UNKNOWN_QUALIFIER } from '../../../../../../../../shared/
 import compactMap from '../../../../../../../../util/compactMap.ts'
 import zip from '../../../../../../../../util/zip.ts'
 import { exists } from '../../../../../../../../util/exists.ts'
+import { logJSONToFileIfOnServer } from '../../../../../../../../util/logJSONToFileIfOnServer.ts'
 
 export const TriageAdditionalTasksAndInvestigationsSchema = z.object({
   evaluation_ids: z.string().uuid().array().optional().default([]),
@@ -204,6 +205,7 @@ export async function TriageAdditionalTasksAndInvestigationsPage(
   const { trx, encounter, health_worker_id, organization_id, patient_encounter_id } = ctx.state
   await events.allProcessedForEncounter(trx, { patient_encounter_id })
   const { evaluation_ids, task_groups } = await additional_tasks.getTasksGroups(trx, { health_worker_id, encounter })
+  logJSONToFileIfOnServer(task_groups)
 
   const use_pdf_viewer = getCookies(ctx.req.headers)['twa'] === '1'
 

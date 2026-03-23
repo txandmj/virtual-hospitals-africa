@@ -14,11 +14,11 @@ export const monkeyPatchConsole = once(function monkeyPatchConsole() {
   console.log = (...args: unknown[]) => {
     let line_number = getFileLineNumber(2)
     // Total hack (but this whole thing is a hack!) if debugLog is called print the line debugLog was called from
-    if (line_number.includes('db/helpers.ts')) {
-      line_number = getFileLineNumber(3)
-    }
-    // Same goes for logReadableJson
-    if (line_number.includes('humanReadableJson.ts')) {
+    if (
+      line_number.includes('db/helpers.ts') ||
+      line_number.includes('humanReadableJson.ts') ||
+      line_number.includes('logJSONToFileIfOnServer.ts')
+    ) {
       line_number = getFileLineNumber(3)
     }
     const timestamp = new Date().toISOString()

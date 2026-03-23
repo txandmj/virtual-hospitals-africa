@@ -26,10 +26,6 @@
     (allergy (snomed_concept "Drug or medicament" "substance"))
     (clinical_finding (snomed_concept "Abdominal pain" "finding"))
     (clinical_finding (snomed_concept "Finding of vomiting" "finding"))
-    (clinical_finding (snomed_concept "Itching" "finding"))
-    (clinical_finding (snomed_concept "Eruption" "morphologic abnormality"))
-    (clinical_finding (snomed_concept "Swelling" "finding") (finding_site (snomed_concept "Face structure" "body structure")))
-    (clinical_finding (snomed_concept "Swelling" "finding") (finding_site (snomed_concept "Tongue structure" "body structure")))
   )
 )
 (task

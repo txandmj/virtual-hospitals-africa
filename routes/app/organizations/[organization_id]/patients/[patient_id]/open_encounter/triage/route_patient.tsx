@@ -14,6 +14,7 @@ import { TRIAGE_ROUTE_PATIENT_NEXT_STEPS } from '../../../../../../../../shared/
 import { startWorkflow } from '../start-workflow.tsx'
 import { promiseProps } from '../../../../../../../../util/promiseProps.ts'
 import { redirectToFirstIncompleteStep } from '../index.tsx'
+import { additional_tasks } from '../../../../../../../../db/models/additional_tasks.ts'
 
 export const TriageRoutePatientSchema = z.object({
   next_step: z.enum(TRIAGE_ROUTE_PATIENT_NEXT_STEPS),
@@ -91,12 +92,16 @@ export async function PatientTriageRoutePatientPage(
     patient,
     health_worker_id,
     organization_id,
-    encounter: { reason, notes, priority },
+    encounter,
   } = ctx.state
+  const { reason, notes, priority } = encounter
   if (!priority) {
     return redirectToFirstIncompleteStep(ctx, { warning_message: 'Please complete triage before routing the patient' })
   }
   assert(completedPersonal(patient))
+
+  const { evaluation_ids, task_groups } = await additional_tasks.getTasksGroups(trx, { health_worker_id, encounter })
+  console.log({task_groups})
 
   const clinic_employees = await employees_presence.findAll(trx, {
     organization_id,
@@ -110,7 +115,7 @@ export async function PatientTriageRoutePatientPage(
       priority={priority}
       clinic_employees={clinic_employees}
     />
-  )
+)
 }
 
 export default OpenEncounterWorkflowPage(PatientTriageRoutePatientPage)
