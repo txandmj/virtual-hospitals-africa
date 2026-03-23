@@ -20,7 +20,7 @@ import { markEnteredInError } from '../../../../../../../../db/models/patient_re
 import { promiseProps } from '../../../../../../../../util/promiseProps.ts'
 
 import { exists } from '../../../../../../../../util/exists.ts'
-import { events } from '../../../../../../../../db/models/events.ts'
+
 import { BriefHistorySection } from '../../../../../../../../components/triage/BriefHistorySection.tsx'
 import { patient_record_providers } from '../../../../../../../../db/models/patient_record_providers.ts'
 import { assertOr400 } from '../../../../../../../../util/assertOr.ts'
@@ -203,14 +203,11 @@ export async function TriageBriefHistoryPage(
     attempting_to_complete_workflow: false,
   })
 
-  const { trx, encounter, patient_encounter_id, organization_employment } = ctx.state
-  const { patient } = encounter
+  const { organization_employment, patient } = ctx.state
 
   assert(completedPersonal(patient))
 
   const { most_recent_findings, existing_allergies } = await promiseProps({
-    // In practice, events won't add any findings that we might have here
-    _: events.allProcessedForEncounter(trx, { patient_encounter_id }),
     most_recent_findings: mostRecentRecords(ctx),
     existing_allergies: existingAllergies(ctx),
   })

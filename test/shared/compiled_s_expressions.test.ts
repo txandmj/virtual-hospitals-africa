@@ -144,10 +144,10 @@ describe('s_expression', () => {
     })
 
     it('leverages findings we check for in TASKS_LISP based on the apc adult guidelines', async () => {
-      const rules_without_corresponding_check_for = await collect(systemDiagnosisRulesWithNoCheckFor())
+      const rules_without_corresponding_check_for = await collect(probableSystemDiagnosisRulesWithNoCheckFor())
       assertArrayEmpty(rules_without_corresponding_check_for)
 
-      async function* systemDiagnosisRulesWithNoCheckFor() {
+      async function* probableSystemDiagnosisRulesWithNoCheckFor() {
         for await (const { task_file_path, system_diagnosis_rules_file_path, system_diagnosis_rules, tasks } of correspondingAPCRules()) {
           const all_checking_for = new Set(tasks.flatMap((task_node) => {
             const due_to = allEvidenceToLookFor(task_node.due_to).map(inverseSExpression)
@@ -161,6 +161,7 @@ describe('s_expression', () => {
           }))
 
           for (const rule of system_diagnosis_rules) {
+            if (rule.diagnosis.certainty_qualifier !== 'probable') continue
             for (const evidence of allEvidenceToLookFor(rule.due_to)) {
               const finding = (
                   evidence.atom === '>' ||

@@ -4,21 +4,20 @@ import { z } from 'zod'
 import { postHandler } from '../../../../../../../../backend/postHandler.ts'
 import AdditionalTasks from '../../../../../../../../components/triage/AdditionalTasks.tsx'
 import { additional_tasks } from '../../../../../../../../db/models/additional_tasks.ts'
-import { positive_decimal, yes_no_unknown } from '../../../../../../../../util/validators.ts'
+import { positive_decimal } from '../../../../../../../../util/validators.ts'
 import { sExpressionZodValidator } from '../../../../../../../../shared/s_expression.ts'
 import { FindingNodeToInsert, MeasurementToInsert, patient_findings } from '../../../../../../../../db/models/patient_findings.ts'
-
 import { promiseProps } from '../../../../../../../../util/promiseProps.ts'
-import { insertable_finding_base, measurement, to_be_done } from '../../../../../../../../shared/s_expression_schemas.ts'
+import { measurement, to_be_done } from '../../../../../../../../shared/s_expression_schemas.ts'
 import { events } from '../../../../../../../../db/models/events.ts'
 import values from '../../../../../../../../util/values.ts'
 import { assert } from 'std/assert/assert.ts'
 import { markEnteredInError } from '../../../../../../../../db/models/patient_records_base.ts'
-import { NO_QUALIFIER, UNKNOWN_QUALIFIER } from '../../../../../../../../shared/snomed_concepts.ts'
 import compactMap from '../../../../../../../../util/compactMap.ts'
 import zip from '../../../../../../../../util/zip.ts'
 import { exists } from '../../../../../../../../util/exists.ts'
 import { logJSONToFileIfOnServer } from '../../../../../../../../util/logJSONToFileIfOnServer.ts'
+import { check_for, CheckForSchema } from '../../../../../../../../db/models/check_for.ts'
 
 export const TriageAdditionalTasksAndInvestigationsSchema = z.object({
   evaluation_ids: z.string().uuid().array().optional().default([]),
@@ -30,14 +29,7 @@ export const TriageAdditionalTasksAndInvestigationsSchema = z.object({
   ).optional().default({}).transform(values),
   check_for: z.record(
     z.string(),
-    z.object({
-      s_expression: sExpressionZodValidator(insertable_finding_base),
-      existence: yes_no_unknown,
-      existing_record: z.object({
-        id: z.string().uuid(),
-        existence: yes_no_unknown,
-      }).optional(),
-    }),
+    CheckForSchema,
   ).optional().default({}).transform(values),
   measurements: z.record(
     z.string(),
@@ -101,22 +93,7 @@ export const handler = postHandler(
     return response
 
     async function insertFindings(): Promise<InsertedSummary> {
-      const findings_to_insert: FindingNodeToInsert[] = compactMap(form_values.check_for, (finding) => {
-        if (finding.existing_record && finding.existing_record.existence === finding.existence) return
-        return {
-          ...finding.s_expression,
-          existence: finding.existence,
-          value_snomed_concept: finding.existence === 'Yes' ? null : finding.existence === 'No'
-            ? {
-              atom: 'snomed_concept',
-              ...NO_QUALIFIER,
-            }
-            : {
-              atom: 'snomed_concept',
-              ...UNKNOWN_QUALIFIER,
-            },
-        }
-      })
+      const findings_to_insert: FindingNodeToInsert[] = check_for.asInsertableFindings(form_values.check_for)
 
       const measurements_to_insert: MeasurementToInsert[] = compactMap(form_values.measurements, (measurement) => {
         if (measurement.existing_record && measurement.existing_record.value.equals(measurement.value)) return

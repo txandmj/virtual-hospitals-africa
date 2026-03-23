@@ -7,7 +7,6 @@ import db from '../db/db.ts'
 import { mailing_list } from '../db/models/mailing_list.ts'
 import { addSubscriber } from '../external-clients/mailerlite.ts'
 
-
 const contact_reasons = CONTACT_REASON_OPTIONS.map((o) => o.value) as [ContactReason, ...ContactReason[]]
 
 const MailingListRecipientSchema = z.object({
