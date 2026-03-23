@@ -15,6 +15,7 @@ import {
   CLINICAL_FINDING,
   EVALUATION_FOR_SIGNS_AND_SYMPTOMS_OF_PHYSICAL_HEALTH_PROBLEMS,
   MEASUREMENT_PROCEDURE,
+  PATIENT_MANAGEMENT_PROCEDURE,
   PROCEDURE,
 } from './snomed_concepts.ts'
 
@@ -49,11 +50,17 @@ type NonQueryableBaseLang = {
   evaluates: {
     expression: QueryableSingleNode
   }
+
+  time_ago: Duration
+  timestamp: {
+    finding: InsertableFindingBase
+  }
+  // Represents a task rule definition. Its procedure is what is to be done
   task: {
     description: string
     ages: AgeDetermination[]
     due_to: QueryableEvidenceNode
-    procedure: Lang['procedure']
+    to_be_done: ToBeDone
   }
   system_priority_evaluation: {
     description: string
@@ -66,10 +73,6 @@ type NonQueryableBaseLang = {
     ages: AgeDetermination[]
     due_to: QueryableEvidenceNode
     diagnosis: Lang['diagnosis']
-  }
-  time_ago: Duration
-  timestamp: {
-    finding: InsertableFindingBase
   }
 }
 
@@ -106,11 +109,10 @@ type QueryableSingleBaseLang =
       specific_snomed_concept: Lang['snomed_concept'] | null
       value:
         | null
+        | Lang['snomed_concept']
         | Lang['link']
         | Lang['measurement'][]
-        | Array<
-          Omit<InsertableFindingBase, 'existence'> & { existence: 'Any' }
-        >
+        | MatchingFinding[]
       qualifiers: Lang['qualifier'][]
       attributes: Lang['attribute'][]
     }
@@ -179,9 +181,16 @@ export type InsertableFindingBase = NonNullableProperty<Lang['finding'], 'root_s
   existence: Existence
 }
 
+export type MatchingFinding = Omit<InsertableFindingBase, 'existence'> & { existence: 'Any' }
+
 export type InsertableFinding = InsertableFindingBase | MeasurementComparison
 
-export type Investigation = NonNullableProperty<Lang['procedure'], 'root_snomed_concept' | 'specific_snomed_concept' | 'value'>
+export type ToBeDone = NonNullableProperty<Lang['procedure'], 'root_snomed_concept' | 'specific_snomed_concept' | 'value'>
+
+export type ToBeDoneProcedureLink = ToBeDone & { value: Lang['link'] }
+export type ToBeDoneProcedureProcedure = ToBeDone & { value: Lang['snomed_concept'] }
+export type ToBeDoneProcedureCheckFor = ToBeDone & { value: Lang['finding'][] }
+export type ToBeDoneProcedureMeasurements = ToBeDone & { value: Lang['measurement'][] }
 
 const snomed_concept: z.ZodType<Lang['snomed_concept']> = z
   .object({
@@ -794,9 +803,35 @@ export const measure: z.ZodType<Lang['procedure']> = z.lazy(
     })),
 ).describe('measure')
 
-export const procedure: z.ZodType<Lang['procedure']> = z.lazy(() => procedure_base.or(check_for).or(measure)).describe('measure')
+export const manage: z.ZodType<Lang['procedure']> = z.lazy(
+  () =>
+    z.object({
+      atom: z.literal('manage'),
+      args: z.tuple([snomed_concept]),
+    }).transform(({ args: [snomed_concept] }) => ({
+      atom: 'procedure' as const,
+      root_snomed_concept: {
+        atom: 'snomed_concept' as const,
+        ...PROCEDURE,
+      },
+      specific_snomed_concept: {
+        atom: 'snomed_concept' as const,
+        ...PATIENT_MANAGEMENT_PROCEDURE,
+      },
+      qualifiers: [],
+      attributes: [],
+      value: snomed_concept,
+    })),
+).describe('manage')
 
-export const investigation: z.ZodType<Investigation> = procedure
+export const procedure: z.ZodType<Lang['procedure']> = z.lazy(() =>
+  procedure_base
+    .or(check_for)
+    .or(measure)
+    .or(manage)
+).describe('procedure')
+
+export const to_be_done: z.ZodType<ToBeDone> = procedure
   .transform((procedure) => procedure as NonNullableProperty<typeof procedure, 'root_snomed_concept' | 'specific_snomed_concept' | 'value'>)
   .refine(
     (procedure) => procedure.root_snomed_concept != null,
@@ -819,7 +854,7 @@ export const investigation: z.ZodType<Investigation> = procedure
       path: ['args'],
     },
   )
-  .describe('investigation')
+  .describe('to_be_done')
 
 const comparator_operator = z.enum([
   '>',
@@ -904,14 +939,14 @@ export const task: z.ZodType<Lang['task']> = z.lazy(() =>
       z.string(),
       ages,
       any_query_evidence,
-      procedure,
+      to_be_done,
     ]),
-  }).transform(({ atom, args: [description, ages, due_to, procedure] }) => ({
+  }).transform(({ atom, args: [description, ages, due_to, to_be_done] }) => ({
     atom,
     description,
     ages,
     due_to,
-    procedure,
+    to_be_done,
   }))
 ).describe('task')
 

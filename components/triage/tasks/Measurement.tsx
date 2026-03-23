@@ -1,10 +1,10 @@
-import { RenderedTask } from '../../../types.ts'
+import { RenderedTaskToBeDone } from '../../../types.ts'
 import { HiddenInput } from '../../library/HiddenInput.tsx'
 import VitalsInputRow from '../../vitals/InputRow.tsx'
 import MeasurementInput from '../../vitals/MeasurementInput.tsx'
 import { uniqueIdentifier } from './uniqueIdentifier.ts'
 
-export function MeasurementTask({ organization_id, task }: { organization_id: string; task: RenderedTask & { atom: 'measurement' } }) {
+export function MeasurementTask({ organization_id, task }: { organization_id: string; task: RenderedTaskToBeDone & { atom: 'measurement' } }) {
   const name = `measurements.${uniqueIdentifier(task)}`
   return (
     <>

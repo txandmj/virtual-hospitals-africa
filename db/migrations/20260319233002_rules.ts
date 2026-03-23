@@ -5,6 +5,7 @@ import { createPointerTable, createStandardTable } from '../createTable.ts'
 export async function up(db: Kysely<DB>) {
   await db.schema.createTable('rules')
     .addColumn('id', 'varchar(255)', (col) => col.notNull().primaryKey())
+    .addColumn('description', 'varchar(255)', (col) => col.notNull())
     .addColumn('age_determinations', sql`age_determination[]`, (col) => col.notNull())
     .addColumn('due_to_s_expression', 'text', (col) => col.notNull())
     .execute()
@@ -12,7 +13,7 @@ export async function up(db: Kysely<DB>) {
   await createPointerTable(db, 'tasks', {
     references: 'rules',
     primary_key_type: 'varchar(255)',
-  }, (qb) => qb.addColumn('procedure_s_expression', 'text', (col) => col.notNull()))
+  }, (qb) => qb.addColumn('to_be_done_s_expression', 'text', (col) => col.notNull()))
 
   await db.schema.createType('diagnosis_certainty')
     .asEnum([

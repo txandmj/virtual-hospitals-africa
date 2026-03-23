@@ -1173,6 +1173,11 @@ export interface PatientRecordsStillValid {
   id: string
 }
 
+export interface PatientRecordTasks {
+  id: string
+  task_id: string
+}
+
 export interface PatientReferrals {
   employment_id: string | null
   id: string
@@ -1403,6 +1408,7 @@ export interface RuleDueToMeasurements {
 
 export interface Rules {
   age_determinations: ArrayType<AgeDetermination>
+  description: string
   due_to_s_expression: string
   id: string
 }
@@ -1753,7 +1759,7 @@ export interface SystemPriorityEvaluations {
 
 export interface Tasks {
   id: string
-  procedure_s_expression: string
+  to_be_done_s_expression: string
 }
 
 export interface WhatsappMessagesReceived {
@@ -1907,6 +1913,7 @@ export interface DB {
   patient_record_qualifiers: PatientRecordQualifiers
   patient_record_relations: PatientRecordRelations
   patient_record_s_expressions: PatientRecordSExpressions
+  patient_record_tasks: PatientRecordTasks
   patient_records: PatientRecords
   patient_records_aggregated: PatientRecordsAggregated
   patient_records_still_valid: PatientRecordsStillValid

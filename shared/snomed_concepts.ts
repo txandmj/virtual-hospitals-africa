@@ -639,3 +639,8 @@ export const FINDING_SITE = asConcept({
   name: 'Finding site',
   category: 'attribute' as const,
 })
+export const PATIENT_MANAGEMENT_PROCEDURE = asConcept({
+  id: '363259005',
+  name: 'Patient management procedure',
+  category: 'procedure' as const,
+})

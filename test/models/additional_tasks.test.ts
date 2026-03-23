@@ -11,7 +11,7 @@ import { patient_evaluations } from '../../db/models/patient_evaluations.ts'
 import { patient_findings } from '../../db/models/patient_findings.ts'
 import { insertPatientSeekingTreatmentWithEmployeeAndCompleteRegistrationForTest } from 'test/_helpers/workflows.ts'
 import { WORKFLOW_STEP_SNOMED_CONCEPTS } from '../../shared/workflow.ts'
-import { additional_tasks } from '../../db/models/additional_tasks.ts'
+import { additional_tasks, isCheckFor } from '../../db/models/additional_tasks.ts'
 import { assertMatches } from '../../util/assertMatches.ts'
 import { traceTime } from '../../util/traceTime.ts'
 import range from '../../util/range.ts'
@@ -25,10 +25,10 @@ describeParallel('db/models/additional_tasks.ts', () => {
   itParallel(
     'all of the findings referenced to check_for actually exist',
     async () => {
-      await pMap(TASKS, async (task) => {
-        if (!Array.isArray(task.procedure.value)) return
+      await pMap(TASKS, async ({ to_be_done }) => {
+        if (!isCheckFor(to_be_done)) return
 
-        for (const finding of task.procedure.value) {
+        for (const finding of (to_be_done.value as any)) {
           const snomed_concept = finding.atom === 'measurement' ? finding.snomed_concept : finding.specific_snomed_concept
 
           assert(snomed_concept)

@@ -2,6 +2,7 @@ import { assert } from 'std/assert/assert.ts'
 import compact from '../util/compact.ts'
 import { AnyNode, EventValue, Lang } from './s_expression_schemas.ts'
 import { AgeDetermination } from '../types.ts'
+import { PATIENT_MANAGEMENT_PROCEDURE, PROCEDURE } from './snomed_concepts.ts'
 
 // TODO: come back to this idea maybe.
 // As it stands two s_expressions could refer to the same snomed concept,
@@ -84,6 +85,13 @@ export function inverseSExpression(node: AnyNode): string {
         const atom = node.value[0].atom === 'finding' ? 'check_for' : 'measure'
         const parts: string[] = [atom, ...node.value.map(inverseSExpression)]
         return `(${parts.join(' ')})`
+      }
+      if (node.specific_snomed_concept && node.specific_snomed_concept.name === PATIENT_MANAGEMENT_PROCEDURE.name) {
+        assert(node.root_snomed_concept)
+        assert(node.root_snomed_concept.name === PROCEDURE.name)
+        assert(node.value)
+        assert(node.value.atom === 'snomed_concept')
+        return `(manage ${inverseSExpression(node.value)})`
       }
 
       const parts: string[] = ['procedure']
@@ -175,7 +183,7 @@ export function inverseSExpression(node: AnyNode): string {
     }
 
     case 'task': {
-      return `(task ${quoted(node.description)} ${ages(node)} ${inverseSExpression(node.due_to)} ${inverseSExpression(node.procedure)})`
+      return `(task ${quoted(node.description)} ${ages(node)} ${inverseSExpression(node.due_to)} ${inverseSExpression(node.to_be_done)})`
     }
 
     case 'system_priority_evaluation': {

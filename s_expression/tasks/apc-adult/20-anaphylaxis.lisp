@@ -32,3 +32,11 @@
     (clinical_finding (snomed_concept "Swelling" "finding") (finding_site (snomed_concept "Tongue structure" "body structure")))
   )
 )
+(task
+  "Raise legs for anaphylaxis patient"
+  adult
+  (active_condition (snomed_concept "Anaphylaxis" "disorder"))
+  (manage
+    (snomed_concept "Elevation of lower limb" "procedure")
+  )
+)

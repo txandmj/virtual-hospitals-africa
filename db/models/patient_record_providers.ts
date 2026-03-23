@@ -25,7 +25,7 @@ async function hydrateIntermediateRecords<
   >
 >
 async function hydrateIntermediateRecords<
-  IntermediateRecord extends SearchResult<typeof patient_evaluations | typeof patient_procedures>,
+  IntermediateRecord extends SearchResult<typeof patient_evaluations>,
 >(
   trx: TrxOrDbOrQueryCreator,
   { records, encounter, health_worker_id }: {
@@ -37,6 +37,22 @@ async function hydrateIntermediateRecords<
   Array<
     IntermediateRecord & {
       provider: null | RenderedRecordProvider
+    }
+  >
+>
+async function hydrateIntermediateRecords<
+  IntermediateRecord extends SearchResult<typeof patient_procedures>,
+>(
+  trx: TrxOrDbOrQueryCreator,
+  { records, encounter, health_worker_id }: {
+    records: IntermediateRecord[]
+    health_worker_id: string | IdSelection
+    encounter?: RenderedPatientEncounter
+  },
+): Promise<
+  Array<
+    IntermediateRecord & {
+      provider: RenderedRecordProvider
     }
   >
 >
@@ -75,19 +91,17 @@ async function hydrateIntermediateRecords<
         : employee.employee_id === record.employment_id
     )
     assert(
-      matching_employee || record.type !== 'finding',
+      matching_employee || record.type === 'evaluation',
       `Matching employee not found ${record.id}`,
     )
+    const provider = matching_employee
+      ? {
+        ...matching_employee,
+        is_me: matching_employee.id === health_worker_id,
+      }
+      : null
 
-    return {
-      ...record,
-      provider: matching_employee
-        ? {
-          ...matching_employee,
-          is_me: matching_employee.id === health_worker_id,
-        }
-        : null,
-    }
+    return { ...record, provider }
   }
 }
 

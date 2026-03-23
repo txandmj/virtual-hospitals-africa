@@ -9,7 +9,7 @@ import { sExpressionZodValidator } from '../../../../../../../../shared/s_expres
 import { FindingNodeToInsert, MeasurementToInsert, patient_findings } from '../../../../../../../../db/models/patient_findings.ts'
 
 import { promiseProps } from '../../../../../../../../util/promiseProps.ts'
-import { insertable_finding_base, investigation, measurement } from '../../../../../../../../shared/s_expression_schemas.ts'
+import { insertable_finding_base, measurement, to_be_done } from '../../../../../../../../shared/s_expression_schemas.ts'
 import { events } from '../../../../../../../../db/models/events.ts'
 import values from '../../../../../../../../util/values.ts'
 import { assert } from 'std/assert/assert.ts'
@@ -24,7 +24,7 @@ export const TriageAdditionalTasksAndInvestigationsSchema = z.object({
   just_do_it_tasks: z.record(
     z.string(),
     z.object({
-      s_expression: sExpressionZodValidator(investigation),
+      s_expression: sExpressionZodValidator(to_be_done),
     }),
   ).optional().default({}).transform(values),
   check_for: z.record(

@@ -1,6 +1,6 @@
 import { YesNoQuestion } from '../../../islands/form/inputs/yes_no.tsx'
 import { MostRecentRecord } from '../../../islands/MostRecentRecord.tsx'
-import { RenderedTask } from '../../../types.ts'
+import { RenderedTaskToBeDone } from '../../../types.ts'
 import { HiddenInput } from '../../library/HiddenInput.tsx'
 import { uniqueIdentifier } from './uniqueIdentifier.ts'
 
@@ -9,7 +9,7 @@ export function CheckForTask({
   task,
 }: {
   organization_id: string
-  task: RenderedTask & { atom: 'finding' }
+  task: RenderedTaskToBeDone & { atom: 'finding' }
 }) {
   const name = `check_for.${uniqueIdentifier(task)}`
 
