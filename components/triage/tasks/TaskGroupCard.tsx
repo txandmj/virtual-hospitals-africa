@@ -4,7 +4,7 @@ import { hyphenate } from '../../../util/hyphenate.ts'
 import negate from '../../../util/negate.ts'
 import partition from '../../../util/partition.ts'
 import { MeasurementTask } from './Measurement.tsx'
-import { isFinding, isLink, isMeasurement } from './type-predicates.ts'
+import { isFinding, isLink, isManage, isMeasurement } from './type-predicates.ts'
 import { uniqueIdentifier } from './uniqueIdentifier.ts'
 import { DueTo } from './DueTo.tsx'
 
@@ -18,6 +18,7 @@ export function TaskGroupCard({
   const tasks = group.tasks
     .filter(negate(isLink))
     .filter(negate(isFinding))
+    .filter(negate(isManage))
   if (!tasks.length) return null
   const [measure_tasks, none] = partition(tasks, isMeasurement)
   assert(measure_tasks.length)

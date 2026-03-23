@@ -8,7 +8,7 @@ export function isFinding(task: RenderedTaskToBeDone): task is RenderedTaskToBeD
   return task.atom === 'finding'
 }
 
-export function isProcedure(task: RenderedTaskToBeDone): task is RenderedTaskToBeDone & { atom: 'procedure' } {
+export function isManage(task: RenderedTaskToBeDone): task is RenderedTaskToBeDone & { atom: 'procedure' } {
   return task.atom === 'procedure'
 }
 
