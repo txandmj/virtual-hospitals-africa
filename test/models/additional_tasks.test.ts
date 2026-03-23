@@ -82,12 +82,13 @@ describeParallel('db/models/additional_tasks.ts', () => {
     })
     assertMatches(tasks_to_insert, [
       {
-        atom: 'task',
+        description: 'Check for urgent bite/sting conditions',
+      },
+      {
         description: 'Display medical guidance for Bites',
       },
       {
-        atom: 'task',
-        description: 'Check for urgent bite/sting conditions',
+        description: 'Display medical guidance for Injured patient',
       },
     ])
   })
@@ -181,7 +182,7 @@ describeParallel('db/models/additional_tasks.ts', () => {
                 category: 'disorder',
               },
             },
-            procedure: {
+            to_be_done: {
               atom: 'procedure',
               root_snomed_concept: {
                 atom: 'snomed_concept',
@@ -215,7 +216,7 @@ describeParallel('db/models/additional_tasks.ts', () => {
               },
               possible: true,
             },
-            procedure: {
+            to_be_done: {
               atom: 'procedure',
               root_snomed_concept: {
                 atom: 'snomed_concept',
@@ -300,7 +301,7 @@ describeParallel('db/models/additional_tasks.ts', () => {
               category: 'disorder',
             },
           },
-          procedure: {
+          to_be_done: {
             atom: 'procedure',
             root_snomed_concept: {
               atom: 'snomed_concept',
@@ -334,7 +335,7 @@ describeParallel('db/models/additional_tasks.ts', () => {
             },
             possible: true,
           },
-          procedure: {
+          to_be_done: {
             atom: 'procedure',
             root_snomed_concept: {
               atom: 'snomed_concept',

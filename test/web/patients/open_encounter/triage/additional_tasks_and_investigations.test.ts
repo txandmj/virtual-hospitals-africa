@@ -131,7 +131,7 @@ describeParallel('triage/additional_tasks_and_investigations', () => {
           's_expression': '(finding (snomed_concept "Clinical finding" "finding") (snomed_concept "Severe pain" "finding"))',
           'displays': { 'value': null, 'finding': 'Severe pain', 'full': 'Severe pain' },
           'existing_record': {
-            'finding_s_expression': '(finding (snomed_concept "Clinical finding" "finding") (snomed_concept "Severe pain" "finding"))',
+            's_expression': '(finding (snomed_concept "Clinical finding" "finding") (snomed_concept "Severe pain" "finding"))',
             'specific_snomed_concept_name': 'Severe pain',
             'specific_snomed_concept_category': 'finding',
             'existence': 'No',
@@ -910,7 +910,6 @@ describeParallel('triage/additional_tasks_and_investigations', () => {
       const form_values: any = getFormValues($)
       const additional_tasks_and_investigations_post_data = structuredClone(form_values)
       additional_tasks_and_investigations_post_data.check_for['finding-sudden-onset-itching'].existence = 'Yes'
-      additional_tasks_and_investigations_post_data.check_for['finding-difficulty-breathing'].existence = 'Yes'
 
       for (const key of keys(additional_tasks_and_investigations_post_data.check_for)) {
         if (!additional_tasks_and_investigations_post_data.check_for[key].existence) {
@@ -935,7 +934,7 @@ describeParallel('triage/additional_tasks_and_investigations', () => {
     'downgrades a possible diagnosis for anaphylaxis to an improbable diagnosis if checks are not met',
     async () => {
       const insect_bite_s_expr = '(clinical_finding (snomed_concept "Insect bite - wound" "disorder"))'
-      const { $, nurse, encounter, patient_id: _patient_id, patient_encounter_id, postStep } = await setupTriageNewPatient({
+      const { $, patient_id: _patient_id, patient_encounter_id, postStep } = await setupTriageNewPatient({
         patient_demographics: randomDemographics('ZA', 'female', 'adult'),
         warning_signs: asWarningSignsAdult([], { pregnant: false }, insect_bite_s_expr),
         brief_history: {
@@ -977,72 +976,15 @@ describeParallel('triage/additional_tasks_and_investigations', () => {
       // deno-lint-ignore no-explicit-any
       const form_values: any = getFormValues($)
 
+      const additional_tasks_post_data = structuredClone(form_values)
+      for (const key in additional_tasks_post_data.check_for) {
+        if (!additional_tasks_post_data.check_for[key].existence) {
+          additional_tasks_post_data.check_for[key].existence = 'No'
+        }
+      }
+
       const $assign_priority = await postStep({
-        additional_tasks_and_investigations: {
-          evaluation_ids: (await additional_tasks.getTasksGroups(db, { health_worker_id: nurse.health_worker.id, encounter })).evaluation_ids,
-          check_for: {
-            'finding-sudden-onset-itching': {
-              s_expression:
-                '(finding (snomed_concept "Clinical finding" "finding") (snomed_concept "Itching" "finding") (qualifier (snomed_concept "Sudden onset" "qualifier value")))',
-              existence: 'No',
-            },
-            'finding-sudden-onset-eruption': {
-              s_expression:
-                '(finding (snomed_concept "Clinical finding" "finding") (snomed_concept "Eruption" "morphologic abnormality") (qualifier (snomed_concept "Sudden onset" "qualifier value")))',
-              existence: 'No',
-            },
-            'finding-insect-bite-wound': {
-              s_expression: '(finding (snomed_concept "Clinical finding" "finding") (snomed_concept "Insect bite - wound" "disorder"))',
-              existing_record: {
-                id: form_values['check_for']['finding-insect-bite-wound']['existing_record']['id'] as string,
-                existence: 'Yes',
-              },
-              existence: 'Yes',
-            },
-            'finding-sudden-onset-swelling-face-structure': {
-              s_expression:
-                '(finding (snomed_concept "Clinical finding" "finding") (snomed_concept "Swelling" "finding") (attribute (snomed_concept "Finding site" "attribute") (snomed_concept "Face structure" "body structure")) (qualifier (snomed_concept "Sudden onset" "qualifier value")))',
-              existence: 'No',
-            },
-            'finding-sudden-onset-swelling-tongue-structure': {
-              s_expression:
-                '(finding (snomed_concept "Clinical finding" "finding") (snomed_concept "Swelling" "finding") (attribute (snomed_concept "Finding site" "attribute") (snomed_concept "Tongue structure" "body structure")) (qualifier (snomed_concept "Sudden onset" "qualifier value")))',
-              existence: 'No',
-            },
-            'finding-dizziness': {
-              s_expression: '(finding (snomed_concept "Clinical finding" "finding") (snomed_concept "Dizziness" "finding"))',
-              existence: 'No',
-            },
-            'finding-collapse': {
-              s_expression: '(finding (snomed_concept "Clinical finding" "finding") (snomed_concept "Collapse" "finding"))',
-              existence: 'No',
-            },
-            'finding-difficulty-breathing': {
-              s_expression: '(finding (snomed_concept "Clinical finding" "finding") (snomed_concept "Difficulty breathing" "finding"))',
-              existence: 'Yes',
-            },
-            'finding-exposure-to-peanut': {
-              s_expression: '(finding (snomed_concept "Exposure to (contextual qualifier)" "qualifier value") (snomed_concept "Peanut" "substance"))',
-              existence: 'No',
-            },
-            'finding-exposure-to-tree-nut': {
-              s_expression: '(finding (snomed_concept "Exposure to (contextual qualifier)" "qualifier value") (snomed_concept "Tree nut" "substance"))',
-              existence: 'No',
-            },
-            'finding-exposure-to-eggs-edible': {
-              s_expression: '(finding (snomed_concept "Exposure to (contextual qualifier)" "qualifier value") (snomed_concept "Eggs (edible)" "substance"))',
-              existence: 'No',
-            },
-            'finding-exposure-to-milk': {
-              s_expression: '(finding (snomed_concept "Exposure to (contextual qualifier)" "qualifier value") (snomed_concept "Milk" "substance"))',
-              existence: 'No',
-            },
-            'finding-exposure-to-fish': {
-              s_expression: '(finding (snomed_concept "Exposure to (contextual qualifier)" "qualifier value") (snomed_concept "Fish" "substance"))',
-              existence: 'No',
-            },
-          },
-        },
+        additional_tasks_and_investigations: additional_tasks_post_data,
       })
 
       const table = getTableDisplay($assign_priority)
@@ -1129,9 +1071,6 @@ describeParallel('triage/additional_tasks_and_investigations', () => {
         {
           check_for: {
             'finding-sudden-onset-itching': {
-              existence: 'Yes',
-            },
-            'finding-difficulty-breathing': {
               existence: 'Yes',
             },
           },
