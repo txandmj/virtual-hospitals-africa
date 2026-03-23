@@ -5,6 +5,8 @@ import { CONTACT_REASON_OPTIONS, ContactReason } from '../components/library/Con
 import { postHandler } from '../backend/postHandler.ts'
 import db from '../db/db.ts'
 import { mailing_list } from '../db/models/mailing_list.ts'
+import { addSubscriber } from '../external-clients/mailerlite.ts'
+
 
 const contact_reasons = CONTACT_REASON_OPTIONS.map((o) => o.value) as [ContactReason, ...ContactReason[]]
 
@@ -29,6 +31,7 @@ const success_messages = {
 export const handler = postHandler(
   MailingListRecipientSchema,
   async (_ctx, recipient) => {
+    await addSubscriber(recipient)
     await discord.notifyMailingListSignup(recipient)
     await mailing_list.add(db, recipient)
     const success = success_messages[recipient.entrypoint](recipient.name)
