@@ -440,6 +440,12 @@ describeParallel('triage/warning_signs', () => {
               },
             ],
             'tasks': [
+              { atom: 'finding', displays: { full: 'Current Injury of head' } },
+              { atom: 'finding', displays: { full: 'Unconscious' } },
+              { atom: 'finding', displays: { full: 'Hypoglycemia' } },
+              { atom: 'finding', displays: { full: 'Alcohol use disorder' } },
+              { atom: 'finding', displays: { full: 'Status epilepticus' } },
+              { atom: 'finding', displays: { full: 'Cardiac arrhythmia' } },
               {
                 atom: 'link',
                 title: 'APC 2023 — Seizures',

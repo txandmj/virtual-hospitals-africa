@@ -2588,9 +2588,14 @@ export type RecordValueScore = {
   score: string
 }
 
-export type RecordValueSExpression = {
-  type: 's_expression'
-  s_expression: string
+// export type RecordValueSExpression = {
+//   type: 's_expression'
+//   s_expression: string
+// }
+
+export type RecordValueTask = {
+  type: 'task'
+  task_id: string
 }
 
 export type RecordValueLink = {
@@ -2609,12 +2614,8 @@ export type RecordValue =
   | RecordValueSnomedConcept
   | RecordValueMeasurement
   | RecordValueScore
-  | RecordValueSExpression
+  | RecordValueTask
   | RecordValueLink
-
-export type IntermediateRecordValue =
-  | Exclude<RecordValue, RecordValueSExpression>
-  | Omit<RecordValueSExpression, 'nodes' | 's_expression'>
 
 export type IntermediateBaseRecord = {
   id: string
@@ -2769,26 +2770,38 @@ export type RenderedRoom = {
   }
 }
 
-export type RenderedTask =
-  & (
-    | Lang['link']
-    | Lang['finding'] & {
-      displays: RecordDisplays
-      s_expression: string
-      existing_finding: null | RenderedFindingRelativeToHealthWorker
-    }
-    | Lang['measurement'] & {
-      displays: RecordDisplays
-      s_expression: string
-      existing_measurement: null | (RenderedFindingRelativeToHealthWorker & { value: RecordValueMeasurement })
-    }
-  )
-  & {
-    atom: 'link' | 'finding' | 'measurement'
+export type RenderedTaskToBeDone =
+  | Lang['link'] & {
+    existing_record?: never
   }
+  | Lang['procedure'] & {
+    description: string
+    displays: RecordDisplays
+    s_expression: string
+    existing_record: null | RenderedProcedureRelativeToHealthWorker
+  }
+  | Lang['finding'] & {
+    displays: RecordDisplays
+    s_expression: string
+    existing_record: null | RenderedFindingRelativeToHealthWorker
+  }
+  | Lang['measurement'] & {
+    displays: RecordDisplays
+    s_expression: string
+    existing_record: null | (RenderedFindingRelativeToHealthWorker & { value: RecordValueMeasurement })
+  }
+// & {
+//   task: {
+//     id: string
+//     description: string
+//   }
+//   // atom: 'link' | 'finding' | 'measurement'
+// }
 export type TaskGroup = {
+  completed: boolean
   due_to: Array<RenderedFindingRelativeToHealthWorker | RenderedEvaluationRelativeToHealthWorker>
-  tasks: RenderedTask[]
+  tasks: RenderedTaskToBeDone[]
+  // description?: string
 }
 
 export type AgeDetermination =
@@ -2990,7 +3003,7 @@ export type NewRecordsToConsider = {
 
 export type ApplicableRuleEffectTask = {
   type: 'task'
-  procedure_s_expression: string
+  to_be_done_s_expression: string
 }
 
 export type ApplicableRuleEffectSystemPriorityEvaluation = {
@@ -3014,6 +3027,7 @@ export type ApplicableRuleEffect =
   | ApplicableRuleEffectSystemSystemDiagnosisRule
 
 export type ApplicableRule = {
+  id: string
   description: string
   matching_finding_ids: string[]
   due_to: QueryableEvidenceNode

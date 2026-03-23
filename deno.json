@@ -51,7 +51,8 @@
     "check": "./scripts/code-quality/check.sh",
     "hygiene": "./scripts/code-quality/hygiene.sh",
     "util": "deno task run:trusted ./util.ts",
-    "rules:rebuild": "deno task compile:s_expressions && deno task docker db:seed reload 30_rules && deno task db:seed dump 30_rules"
+    "rules:rebuild": "deno task compile:s_expressions && deno task docker db:seed recreate 30_rules && deno task db:seed dump 30_rules",
+    "rules:rebuild:prod": "deno task rules:rebuild && deno task prod db:seed reload 30_rules"
   },
   "compilerOptions": { 
     "lib": [

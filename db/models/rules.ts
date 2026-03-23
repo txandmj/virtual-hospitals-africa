@@ -158,7 +158,7 @@ export const rules = {
           .when('tasks.id', 'is not', null)
           .then(jsonBuildObject({
             type: literalString('task' as const),
-            procedure_s_expression: eb.ref('tasks.procedure_s_expression').$notNull(),
+            to_be_done_s_expression: eb.ref('tasks.to_be_done_s_expression').$notNull(),
           }))
           .when('system_priority_evaluations.id', 'is not', null)
           .then(jsonBuildObject({
@@ -198,6 +198,7 @@ export const rules = {
     const [certain, uncertain] = partition(parsed, (t) => t.certainly_applies)
 
     const certain_results = certain.map(({ findings, matching_finding_ids, due_to }) => ({
+      id: findings[0].rule_id,
       description: findings[0].rule_id,
       rule_effect: findings[0].rule_effect,
       matching_finding_ids,
@@ -210,6 +211,7 @@ export const rules = {
     const uncertain_results = compactMap(uncertain, ({ findings, due_to }) => {
       const result = exists(evidence_results.get(due_to))
       return result.satisfies && {
+        id: findings[0].rule_id,
         description: findings[0].rule_id,
         rule_effect: findings[0].rule_effect,
         matching_finding_ids: result.contributing_records,

@@ -39,17 +39,19 @@ export default function Avatar(
   },
 ) {
   const full_class_name = twMerge(
-    'flex-none rounded-full',
+    'flex-none rounded-full overflow-hidden',
     size_styles[size],
     className,
   )
   if (src) {
     return (
-      <img
-        src={src}
-        alt=''
-        className={full_class_name}
-      />
+      <div className={full_class_name}>
+        <img
+          src={src}
+          alt=''
+          className='h-full w-full object-cover'
+        />
+      </div>
     )
   }
   if (hide_when_empty) {

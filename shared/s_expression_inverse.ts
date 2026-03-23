@@ -2,6 +2,8 @@ import { assert } from 'std/assert/assert.ts'
 import compact from '../util/compact.ts'
 import { AnyNode, EventValue, Lang } from './s_expression_schemas.ts'
 import { AgeDetermination } from '../types.ts'
+import { ALLERGIC_CONDITION, PATIENT_MANAGEMENT_PROCEDURE, PROCEDURE } from './snomed_concepts.ts'
+import assertLength from '../util/assertLength.ts'
 
 // TODO: come back to this idea maybe.
 // As it stands two s_expressions could refer to the same snomed concept,
@@ -27,12 +29,21 @@ function ages(node: { ages: AgeDetermination[] }) {
   return node.ages.length === 1 ? quoted(node.ages[0]) : `(ages ${node.ages.map(quoted).join(' ')})`
 }
 
+// TODO port this to https://zod.dev/codecs
 export function inverseSExpression(node: AnyNode): string {
   switch (node.atom) {
     case 'snomed_concept':
       return snomedConceptToString(node)
 
     case 'finding': {
+      if (node.specific_snomed_concept && node.specific_snomed_concept.name === ALLERGIC_CONDITION.name) {
+        if (node.attributes.length) {
+          assertLength(node.attributes, 1)
+          assert(node.attributes[0].value.atom === 'snomed_concept')
+          return `(allergy ${inverseSExpression(node.attributes[0].value)})`
+        }
+        return `(allergy)`
+      }
       const parts: string[] = ['finding']
       if (node.root_snomed_concept) {
         parts.push(snomedConceptToString(node.root_snomed_concept))
@@ -84,6 +95,13 @@ export function inverseSExpression(node: AnyNode): string {
         const atom = node.value[0].atom === 'finding' ? 'check_for' : 'measure'
         const parts: string[] = [atom, ...node.value.map(inverseSExpression)]
         return `(${parts.join(' ')})`
+      }
+      if (node.specific_snomed_concept && node.specific_snomed_concept.name === PATIENT_MANAGEMENT_PROCEDURE.name) {
+        assert(node.root_snomed_concept)
+        assert(node.root_snomed_concept.name === PROCEDURE.name)
+        assert(node.value)
+        assert(node.value.atom === 'snomed_concept')
+        return `(manage ${inverseSExpression(node.value)})`
       }
 
       const parts: string[] = ['procedure']
@@ -175,7 +193,7 @@ export function inverseSExpression(node: AnyNode): string {
     }
 
     case 'task': {
-      return `(task ${quoted(node.description)} ${ages(node)} ${inverseSExpression(node.due_to)} ${inverseSExpression(node.procedure)})`
+      return `(task ${quoted(node.description)} ${ages(node)} ${inverseSExpression(node.due_to)} ${inverseSExpression(node.to_be_done)})`
     }
 
     case 'system_priority_evaluation': {

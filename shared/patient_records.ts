@@ -19,14 +19,16 @@ import omit from '../util/omit.ts'
 import assertOneOf from '../util/assertOneOf.ts'
 import { humanReadableJson } from '../util/humanReadableJson.ts'
 import { inverseSExpression } from './s_expression_inverse.ts'
-import { Lang } from './s_expression_schemas.ts'
+import { Lang, ToBeDone } from './s_expression_schemas.ts'
 import capitalize from '../util/capitalize.ts'
 import isString from '../util/isString.ts'
-import { MEASUREMENT_FINDING } from './snomed_concepts.ts'
+import { CAUSATIVE_AGENT, FINDING_SITE, MEASUREMENT_FINDING } from './snomed_concepts.ts'
 import { SnomedCategory } from '../db.d.ts'
 import last from '../util/last.ts'
 import words from '../util/words.ts'
 import { exists } from '../util/exists.ts'
+import isObjectLike from '../util/isObjectLike.ts'
+import { getTaskById } from './tasks.ts'
 
 type DisplayableRecord = IntermediateBaseRecord & {
   qualifiers?: DisplayableRecord[]
@@ -183,12 +185,40 @@ function measurementToDisplayableRecord(
   }
 }
 
-export function toDisplayableRecord(node: Lang['measurement' | 'finding']): FormattableRecord {
+function procedureToDisplayableRecord(
+  procedure: ToBeDone,
+): FormattableRecord {
+  assert(procedure.value)
+  assert(isObjectLike(procedure.value))
+  assert(procedure.value.atom === 'snomed_concept')
+  return {
+    id: '',
+    created_at: '',
+    patient_encounter_id: '',
+    root_snomed_concept_id: '',
+    root_snomed_concept_name: procedure.root_snomed_concept.name,
+    root_snomed_concept_category: procedure.root_snomed_concept.category,
+    specific_snomed_concept_id: '',
+    specific_snomed_concept_name: procedure.specific_snomed_concept.name,
+    specific_snomed_concept_category: procedure.specific_snomed_concept.category,
+    value: {
+      type: 'snomed_concept',
+      ...toRenderedSnomedConcept(procedure.value),
+    },
+    qualifiers: [],
+    evaluations: [],
+    destination_relations: [],
+  }
+}
+
+export function toDisplayableRecord(node: Lang['measurement' | 'finding'] | ToBeDone): FormattableRecord {
   switch (node.atom) {
     case 'finding':
       return findingToDisplayableRecord(node)
     case 'measurement':
       return measurementToDisplayableRecord(node)
+    case 'procedure':
+      return procedureToDisplayableRecord(node)
   }
 }
 
@@ -214,9 +244,12 @@ function valueDisplay(
     case 'link': {
       return value
     }
-    case 's_expression': {
-      return null
+    case 'task': {
+      return getTaskById(value.task_id).description
     }
+    // case 's_expression': {
+    //   return null
+    // }
     default: {
       throw new Error(`Unexpected type in ${humanReadableJson(value)}`)
     }
@@ -270,6 +303,11 @@ function massageSpecificConceptDisplay(record: DisplayableRecord): string | null
     .replace(/, function$/, '')
 }
 
+const ATTRIBUTES_TO_INCLUDE_IN_DISPLAY = new Set([
+  FINDING_SITE.name,
+  CAUSATIVE_AGENT.name,
+])
+
 function buildDisplays(
   record: WithProperRecordValue<DisplayableRecord> & {
     attributes?: Array<WithProperRecordValue<DisplayableRecord> & { displays: RecordDisplays }>
@@ -288,9 +326,9 @@ function buildDisplays(
     )
   }
 
-  const finding_sites = (record.attributes || [])
-    .filter((attribute) => attribute.specific_snomed_concept_name === 'Finding site')
-    .map((finding_site) => `(${exists(finding_site.displays.value)})`)
+  const attributes_to_include_in_display = (record.attributes || [])
+    .filter((attribute) => ATTRIBUTES_TO_INCLUDE_IN_DISPLAY.has(attribute.specific_snomed_concept_name))
+    .map((attribute) => `(${exists(attribute.displays.value)})`)
 
   const qualifier_is_postfix = postfix || qualifierIsPostfix(qualifiers[0])
 
@@ -307,8 +345,8 @@ function buildDisplays(
   )
 
   const finding_displays_qualified = qualifier_is_postfix
-    ? [...finding_displays, ...qualifier_displays, ...finding_sites]
-    : [...qualifier_displays, ...finding_displays, ...finding_sites]
+    ? [...finding_displays, ...qualifier_displays, ...attributes_to_include_in_display]
+    : [...qualifier_displays, ...finding_displays, ...attributes_to_include_in_display]
 
   const finding_display = finding_displays_qualified.join(' ')
 
@@ -426,7 +464,7 @@ function toQualifier(modifier: IntermediateBaseRecord): Lang['qualifier'] {
 
 export function asNormalFormSExpression<Rest>(
   record: RenderedRecordRelativeToHealthWorkerDef<
-    'finding' | 'procedure' | 'evaluation',
+    'finding' | 'evaluation', /* | 'procedure'*/
     Rest
   >,
 ): string {
@@ -507,23 +545,23 @@ export function asNormalFormSExpression<Rest>(
           attributes,
         }
       }
-      case 'procedure': {
-        assert(record.value?.type !== 's_expression', 'Revisit this whole idea')
-        const value = !record.value ? null : (
-          assert(record.value.type === 'link'), {
-            atom: 'link' as const,
-            ...record.value,
-          }
-        )
-        return {
-          atom: 'procedure',
-          root_snomed_concept,
-          specific_snomed_concept,
-          qualifiers,
-          attributes,
-          value,
-        }
-      }
+      // case 'procedure': {
+      //   assert(record.value?.type !== 's_expression', 'Revisit this whole idea')
+      //   const value = !record.value ? null : (
+      //     assert(record.value.type === 'link'), {
+      //       atom: 'link' as const,
+      //       ...record.value,
+      //     }
+      //   )
+      //   return {
+      //     atom: 'procedure',
+      //     root_snomed_concept,
+      //     specific_snomed_concept,
+      //     qualifiers,
+      //     attributes,
+      //     value,
+      //   }
+      // }
       default: {
         throw new Error(`X ${record.type}`)
       }

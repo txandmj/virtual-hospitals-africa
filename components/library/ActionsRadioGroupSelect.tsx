@@ -21,20 +21,14 @@ export function ActionsRadioGroupSelect(
 ) {
   return (
     <fieldset>
-      <div className='divide-y divide-gray-200 overflow-hidden rounded-lg bg-gray-200 shadow md:grid md:grid-cols-2 sm:divide-y-0'>
-        {options.map((option, idx) => (
+      <div className='grid grid-cols-3 gap-2'>
+        {options.map((option) => (
           <label
             key={option.id}
             className={cls(
-              'group relative cursor-pointer bg-white p-6',
+              'group relative block cursor-pointer bg-white p-6 w-full rounded-lg shadow',
               'focus-within:outline focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-indigo-600',
               'has-[:checked]:bg-indigo-50 has-[:checked]:outline has-[:checked]:outline-2 has-[:checked]:-outline-offset-2 has-[:checked]:outline-indigo-600',
-              {
-                'rounded-tl-lg rounded-tr-lg sm:rounded-tr-none': idx === 0,
-                'sm:rounded-tr-lg': idx === 1,
-                'sm:rounded-bl-lg': idx === options.length - 2,
-                'rounded-bl-lg rounded-br-lg sm:rounded-bl-none': idx === options.length - 1,
-              },
             )}
             data-option-value={option.id}
           >
@@ -49,7 +43,7 @@ export function ActionsRadioGroupSelect(
             />
             <span
               aria-hidden='true'
-              className={cls(option.iconBackground, option.iconForeground, 'absolute right-5 top-2.5 inline-flex rounded-lg p-3 hidden md:show')}
+              className={cls(option.iconBackground, option.iconForeground, 'absolute right-5 top-2.5 rounded-lg p-3')}
             >
               <option.icon aria-hidden='true' class='size-6' />
             </span>

@@ -15,6 +15,7 @@ import type {
   RenderedFindingRelativeToHealthWorker,
   RenderedPatientCompletedRegistration,
   RenderedSidebarWorkflow,
+  RenderedTaskToBeDone,
   RenderedWaitingRoom,
   SnomedWarningSignSearchResult,
   TaskGroup,
@@ -2189,6 +2190,7 @@ export const MIGRAINE_SEARCH_RESPONSE: {
 
 export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
   {
+    'completed': false,
     'due_to': [
       {
         'id': '3f3fb76d-482b-4eab-bc50-9c4fe3ab104a',
@@ -2316,7 +2318,7 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
           'finding': 'Generalized muscle weakness',
           'full': 'Generalized muscle weakness',
         },
-        'existing_finding': null,
+        'existing_record': null,
       },
       {
         'atom': 'finding',
@@ -2335,7 +2337,7 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
         'existence': 'Any',
         's_expression': '(finding (snomed_concept "Clinical finding" "finding") (snomed_concept "Has drooping eyelids" "finding"))',
         'displays': { 'value': null, 'finding': 'Has drooping eyelids', 'full': 'Has drooping eyelids' },
-        'existing_finding': null,
+        'existing_record': null,
       },
       {
         'atom': 'finding',
@@ -2354,7 +2356,7 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
         'existence': 'Any',
         's_expression': '(finding (snomed_concept "Clinical finding" "finding") (snomed_concept "Difficulty swallowing" "finding"))',
         'displays': { 'value': null, 'finding': 'Difficulty swallowing', 'full': 'Difficulty swallowing' },
-        'existing_finding': null,
+        'existing_record': null,
       },
       {
         'atom': 'finding',
@@ -2373,7 +2375,7 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
         'existence': 'Any',
         's_expression': '(finding (snomed_concept "Clinical finding" "finding") (snomed_concept "Difficulty talking" "finding"))',
         'displays': { 'value': null, 'finding': 'Difficulty talking', 'full': 'Difficulty talking' },
-        'existing_finding': null,
+        'existing_record': null,
       },
       {
         'atom': 'finding',
@@ -2388,7 +2390,7 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
         'existence': 'Any',
         's_expression': '(finding (snomed_concept "Clinical finding" "finding") (snomed_concept "Diplopia" "disorder"))',
         'displays': { 'value': null, 'finding': 'Diplopia', 'full': 'Diplopia' },
-        'existing_finding': null,
+        'existing_record': null,
       },
       {
         'atom': 'finding',
@@ -2407,7 +2409,7 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
         'existence': 'Any',
         's_expression': '(finding (snomed_concept "Clinical finding" "finding") (snomed_concept "Deep bite wound" "morphologic abnormality"))',
         'displays': { 'value': null, 'finding': 'Deep bite wound', 'full': 'Deep bite wound' },
-        'existing_finding': null,
+        'existing_record': null,
       },
       {
         'atom': 'finding',
@@ -2437,7 +2439,7 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
           'finding': 'Bite - wound (Joint structure)',
           'full': 'Bite - wound (Joint structure)',
         },
-        'existing_finding': null,
+        'existing_record': null,
       },
       {
         'atom': 'finding',
@@ -2467,7 +2469,7 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
           'finding': 'Bite - wound (Bone structure)',
           'full': 'Bite - wound (Bone structure)',
         },
-        'existing_finding': null,
+        'existing_record': null,
       },
       {
         'atom': 'finding',
@@ -2486,7 +2488,7 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
         'existence': 'Any',
         's_expression': '(finding (snomed_concept "Clinical finding" "finding") (snomed_concept "Infection of bite wound" "disorder"))',
         'displays': { 'value': null, 'finding': 'Infection of bite wound', 'full': 'Infection of bite wound' },
-        'existing_finding': null,
+        'existing_record': null,
       },
       {
         'atom': 'finding',
@@ -2512,7 +2514,7 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
         's_expression':
           '(finding (snomed_concept "Clinical finding" "finding") (snomed_concept "Bleeding" "finding") (qualifier (snomed_concept "Excessive" "qualifier value")))',
         'displays': { 'value': null, 'finding': 'Excessive Bleeding', 'full': 'Excessive Bleeding' },
-        'existing_finding': null,
+        'existing_record': null,
       },
       {
         'atom': 'finding',
@@ -2538,11 +2540,12 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
         's_expression':
           '(finding (snomed_concept "Clinical finding" "finding") (snomed_concept "Bleeding" "finding") (qualifier (snomed_concept "Pulsatile" "qualifier value")))',
         'displays': { 'value': null, 'finding': 'Pulsatile Bleeding', 'full': 'Pulsatile Bleeding' },
-        'existing_finding': null,
+        'existing_record': null,
       },
     ],
   },
   {
+    'completed': false,
     'due_to': [
       {
         'id': 'ffe638e8-55e2-48e4-a847-0fb7466477f0',
@@ -2657,7 +2660,7 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
         's_expression':
           '(finding (snomed_concept "Clinical finding" "finding") (snomed_concept "Itching" "finding") (qualifier (snomed_concept "Sudden onset" "qualifier value")))',
         'displays': { 'value': null, 'finding': 'Sudden onset Itching', 'full': 'Sudden onset Itching' },
-        'existing_finding': null,
+        'existing_record': null,
       },
       {
         'atom': 'finding',
@@ -2687,7 +2690,7 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
         's_expression':
           '(finding (snomed_concept "Clinical finding" "finding") (snomed_concept "Eruption" "morphologic abnormality") (qualifier (snomed_concept "Sudden onset" "qualifier value")))',
         'displays': { 'value': null, 'finding': 'Sudden onset Eruption', 'full': 'Sudden onset Eruption' },
-        'existing_finding': null,
+        'existing_record': null,
       },
       {
         'atom': 'finding',
@@ -2706,7 +2709,7 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
         'existence': 'Any',
         's_expression': '(finding (snomed_concept "Clinical finding" "finding") (snomed_concept "Insect bite - wound" "disorder"))',
         'displays': { 'value': null, 'finding': 'Insect bite - wound', 'full': 'Insect bite - wound' },
-        'existing_finding': {
+        'existing_record': {
           'id': '3f3fb76d-482b-4eab-bc50-9c4fe3ab104a',
           'created_at': new Date(),
           'patient_encounter_id': 'd9cc7030-8ea7-447d-8c45-19668626356f',
@@ -2842,7 +2845,7 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
           'finding': 'Sudden onset Swelling (Face structure)',
           'full': 'Sudden onset Swelling (Face structure)',
         },
-        'existing_finding': null,
+        'existing_record': null,
       },
       {
         'atom': 'finding',
@@ -2882,7 +2885,7 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
           'finding': 'Sudden onset Swelling (Tongue structure)',
           'full': 'Sudden onset Swelling (Tongue structure)',
         },
-        'existing_finding': null,
+        'existing_record': null,
       },
       {
         'atom': 'finding',
@@ -2897,7 +2900,7 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
         'existence': 'Any',
         's_expression': '(finding (snomed_concept "Clinical finding" "finding") (snomed_concept "Dizziness" "finding"))',
         'displays': { 'value': null, 'finding': 'Dizziness', 'full': 'Dizziness' },
-        'existing_finding': {
+        'existing_record': {
           'id': '77eaf011-d915-4797-bd86-5e4423a8760b',
           'created_at': new Date(),
           'patient_encounter_id': 'd9cc7030-8ea7-447d-8c45-19668626356f',
@@ -3013,7 +3016,7 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
         'existence': 'Any',
         's_expression': '(finding (snomed_concept "Clinical finding" "finding") (snomed_concept "Collapse" "finding"))',
         'displays': { 'value': null, 'finding': 'Collapse', 'full': 'Collapse' },
-        'existing_finding': null,
+        'existing_record': null,
       },
       {
         'atom': 'finding',
@@ -3032,7 +3035,7 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
         'existence': 'Any',
         's_expression': '(finding (snomed_concept "Clinical finding" "finding") (snomed_concept "Difficulty breathing" "finding"))',
         'displays': { 'value': null, 'finding': 'Difficulty breathing', 'full': 'Difficulty breathing' },
-        'existing_finding': null,
+        'existing_record': null,
       },
       {
         'atom': 'finding',
@@ -3051,7 +3054,7 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
         'existence': 'Any',
         's_expression': '(finding (snomed_concept "Exposure to (contextual qualifier)" "qualifier value") (snomed_concept "Peanut" "substance"))',
         'displays': { 'value': null, 'finding': 'Exposure to Peanut', 'full': 'Exposure to Peanut' },
-        'existing_finding': null,
+        'existing_record': null,
       },
       {
         'atom': 'finding',
@@ -3070,7 +3073,7 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
         'existence': 'Any',
         's_expression': '(finding (snomed_concept "Exposure to (contextual qualifier)" "qualifier value") (snomed_concept "Tree nut" "substance"))',
         'displays': { 'value': null, 'finding': 'Exposure to Tree nut', 'full': 'Exposure to Tree nut' },
-        'existing_finding': null,
+        'existing_record': null,
       },
       {
         'atom': 'finding',
@@ -3097,7 +3100,7 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
           'finding': 'Exposure to Eggs (edible)',
           'full': 'Exposure to Eggs (edible)',
         },
-        'existing_finding': null,
+        'existing_record': null,
       },
       {
         'atom': 'finding',
@@ -3116,7 +3119,7 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
         'existence': 'Any',
         's_expression': '(finding (snomed_concept "Exposure to (contextual qualifier)" "qualifier value") (snomed_concept "Milk" "substance"))',
         'displays': { 'value': null, 'finding': 'Exposure to Milk', 'full': 'Exposure to Milk' },
-        'existing_finding': null,
+        'existing_record': null,
       },
       {
         'atom': 'finding',
@@ -3135,7 +3138,7 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
         'existence': 'Any',
         's_expression': '(finding (snomed_concept "Exposure to (contextual qualifier)" "qualifier value") (snomed_concept "Fish" "substance"))',
         'displays': { 'value': null, 'finding': 'Exposure to Fish', 'full': 'Exposure to Fish' },
-        'existing_finding': null,
+        'existing_record': null,
       },
     ],
   },
@@ -5202,3 +5205,58 @@ export const TUTORIAL_ASSIGN_PRIORITY = {
   'priority': 'Urgent',
   'total_score': { 'score': 1, 'priority': 'Non-urgent' },
 }
+
+export const TUTORIAL_MANAGE_PATIENT_TASKS: Array<
+  RenderedTaskToBeDone & {
+    atom: 'procedure'
+  }
+> = [
+  {
+    'atom': 'procedure' as const,
+    'root_snomed_concept': {
+      'atom': 'snomed_concept' as const,
+      'name': 'Procedure',
+      'category': 'procedure',
+    },
+    'specific_snomed_concept': {
+      'atom': 'snomed_concept' as const,
+      'name': 'Patient management procedure',
+      'category': 'procedure',
+    },
+    'qualifiers': [],
+    'attributes': [],
+    'value': { 'atom': 'snomed_concept', 'name': 'Oxygen therapy', 'category': 'procedure' },
+    'displays': {
+      'finding': 'Patient management procedure Procedure',
+      'value': 'Oxygen therapy',
+      'full': 'Patient management procedure Procedure: Oxygen therapy',
+    },
+    's_expression': '(manage (snomed_concept "Oxygen therapy" "procedure"))',
+    'existing_record': null,
+    'description': 'Administer oxygen for anaphylaxis patient',
+  },
+  {
+    'atom': 'procedure' as const,
+    'root_snomed_concept': {
+      'atom': 'snomed_concept' as const,
+      'name': 'Procedure',
+      'category': 'procedure',
+    },
+    'specific_snomed_concept': {
+      'atom': 'snomed_concept' as const,
+      'name': 'Patient management procedure',
+      'category': 'procedure',
+    },
+    'qualifiers': [],
+    'attributes': [],
+    'value': { 'atom': 'snomed_concept' as const, 'name': 'Elevation of lower limb', 'category': 'procedure' },
+    'displays': {
+      'finding': 'Patient management procedure Procedure',
+      'value': 'Elevation of lower limb',
+      'full': 'Patient management procedure Procedure: Elevation of lower limb',
+    },
+    's_expression': '(manage (snomed_concept "Elevation of lower limb" "procedure"))',
+    'existing_record': null,
+    'description': 'Raise legs for anaphylaxis patient',
+  },
+]

@@ -1,4 +1,4 @@
-import { Maybe, Names, Priority, RenderedEmployeeWithPresence } from '../../types.ts'
+import { Maybe, Names, Priority, RenderedEmployeeWithPresence, RenderedTaskToBeDone } from '../../types.ts'
 import { EncounterReason } from '../../db.d.ts'
 import { TextArea } from '../../islands/form/inputs/textarea.tsx'
 import FormRow from '../../components/library/FormRow.tsx'
@@ -13,13 +13,13 @@ import { TriageRoutePatientNextStep } from '../../shared/triage_route_patient.ts
 import { NextStepSelect } from '../../components/library/NextStepSelect.tsx'
 import ProvidersSelect from '../ProvidersSelect.tsx'
 
-function defaultNextStep(priority: Priority): TriageRoutePatientNextStep {
+function defaultNextStep(priority: Priority, has_manage_patient_tasks: boolean): TriageRoutePatientNextStep {
   switch (priority) {
     case 'Non-urgent':
       return 'await_consultation'
     case 'Urgent':
     case 'Deceased':
-      return 'hand_over'
+      return has_manage_patient_tasks ? 'manage_and_refer' : 'refer'
     case 'Very urgent':
     case 'Emergency':
       return 'stabilize_patient'
@@ -36,13 +36,11 @@ function defaultToBeNotified(next_step: TriageRoutePatientNextStep, clinic_emplo
   switch (next_step) {
     case 'await_consultation':
       return []
-    case 'hand_over':
+    case 'refer':
+    case 'manage_and_refer':
     case 'stabilize_patient': {
       const shcp = getSHCP(clinic_employees)
       return shcp ? [shcp] : []
-    }
-    case 'come_back_later': {
-      throw new Error('come_back_later is never a default step')
     }
     default: {
       return assertUnreachable(next_step)
@@ -51,7 +49,7 @@ function defaultToBeNotified(next_step: TriageRoutePatientNextStep, clinic_emplo
 }
 
 export default function TriageRoutePatientSection(
-  { this_visit, patient, priority, clinic_employees }: {
+  { this_visit, patient, priority, clinic_employees, manage_patient_tasks }: {
     this_visit: {
       reason: Maybe<EncounterReason>
       notes?: Maybe<string>
@@ -65,27 +63,37 @@ export default function TriageRoutePatientSection(
       target_treatment_time: Date | null
     }
     clinic_employees: RenderedEmployeeWithPresence[]
+    manage_patient_tasks: Array<RenderedTaskToBeDone & { atom: 'procedure' }>
   },
 ) {
-  const default_next_step = defaultNextStep(priority.name)
+  const default_next_step = defaultNextStep(priority.name, !!manage_patient_tasks.length)
   const next_step = useSignal<string>(default_next_step)
   const to_be_notified = useSignal<RenderedEmployeeWithPresence[]>(defaultToBeNotified(default_next_step, clinic_employees))
   const to_be_notified_display = computed(() => [...to_be_notified.value].map(employeeDisplay).map((e) => e.display_name))
 
   return (
-    <>
-      <FormSection id='route_patient_next_step' header='Next Step'>
+    <div class='flex flex-col gap-6'>
+      <FormSection id='route_patient_next_step' header='Next Step' always_column>
         <FormRow>
           <NextStepSelect
             patient={patient}
             priority={priority}
             default_next_step={default_next_step}
             to_be_notified={to_be_notified_display.value}
+            manage_patient_tasks={manage_patient_tasks}
             onSelect={(step) => next_step.value = step}
           />
+          {
+            /* {manage_patient_tasks.length > 0 && <div class='flex flex-col'>
+            <SectionHeader>Manage patient tasks</SectionHeader>
+            <ul class='mt-1.5 list-disc list-inside space-y-1'>
+              {manage_patient_tasks.map((task, i) => <li key={i} class='text-xs text-gray-700'>{task.description}</li>)}
+            </ul>
+          </div>} */
+          }
         </FormRow>
       </FormSection>
-      <FormSection header='Staff'>
+      <FormSection header='Staff' always_column>
         <FormRow>
           <ProvidersSelect
             providers={clinic_employees}
@@ -94,7 +102,7 @@ export default function TriageRoutePatientSection(
           />
         </FormRow>
       </FormSection>
-      <FormSection header='Notes'>
+      <FormSection header='Notes' always_column>
         <FormRow>
           <TextArea
             name='notes'
@@ -107,6 +115,6 @@ export default function TriageRoutePatientSection(
         name='health_worker_ids_to_be_notified'
         value={[...to_be_notified.value].map((x) => x.id)}
       />
-    </>
+    </div>
   )
 }

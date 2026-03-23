@@ -14,5 +14,5 @@
   "Give oxygen if saturation below 92%"
   adult
   (< (measurement (snomed_concept "Hemoglobin saturation with oxygen" "observable entity") %) 92)
-  (procedure (snomed_concept "Procedure" "procedure") (snomed_concept "Oxygen therapy" "procedure"))
+  (manage (snomed_concept "Oxygen therapy" "procedure"))
 )

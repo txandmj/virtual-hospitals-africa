@@ -1,10 +1,10 @@
-import { RenderedTask } from '../../../types.ts'
+import { RenderedTaskToBeDone } from '../../../types.ts'
 import { uniqueIdentifier } from './uniqueIdentifier.ts'
 
 export function JustDoItTask({
   task,
 }: {
-  task: RenderedTask & { atom: 'link' }
+  task: RenderedTaskToBeDone & { atom: 'link' }
 }) {
   const name = `just_do_it_tasks.${uniqueIdentifier(task)}`
 

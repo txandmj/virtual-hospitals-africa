@@ -51,7 +51,7 @@ function dueToInsert(due_to: QueryableEvidenceNode): DueToInsert[] {
         }]
       }
       assert(due_to.specific_snomed_concept, `Must have a specific_snomed_concept\n${inverseSExpression(due_to)}`)
-      const always_applies_if_present = !due_to.attributes.length && !due_to.qualifiers.length
+      const always_applies_if_present = !due_to.attributes.length && !due_to.qualifiers.length && !due_to.excluding.length
       return [{
         ...due_to,
         type: 'finding',
@@ -123,6 +123,7 @@ async function insertRule(
     | typeof SYSTEM_DIAGNOSIS_RULES_PARSED
   )[number],
 ) {
+  // TODO rule description will be distinct for manage tasks
   const rule_id = rule.description
   const due_to_insert = dueToInsert(rule.due_to)
 
@@ -131,6 +132,7 @@ async function insertRule(
   await trx.insertInto('rules')
     .values({
       id: rule_id,
+      description: rule.description,
       age_determinations: rule.ages,
       due_to_s_expression: inverseSExpression(rule.due_to),
     })
@@ -192,7 +194,7 @@ export default define([
     await trx.insertInto('tasks')
       .values({
         id: task.description,
-        procedure_s_expression: inverseSExpression(task.procedure),
+        to_be_done_s_expression: inverseSExpression(task.to_be_done),
       })
       .returning('id')
       .executeTakeFirstOrThrow()
@@ -222,4 +224,4 @@ export default define([
       .returning('id')
       .executeTakeFirstOrThrow()
   })
-})
+}, { never_dump: true })

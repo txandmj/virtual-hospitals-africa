@@ -14,6 +14,10 @@ import { TRIAGE_ROUTE_PATIENT_NEXT_STEPS } from '../../../../../../../../shared/
 import { startWorkflow } from '../start-workflow.tsx'
 import { promiseProps } from '../../../../../../../../util/promiseProps.ts'
 import { redirectToFirstIncompleteStep } from '../index.tsx'
+import { additional_tasks } from '../../../../../../../../db/models/additional_tasks.ts'
+import { assertOrRedirect } from '../../../../../../../../util/assertOr.ts'
+import { isManage } from '../../../../../../../../shared/tasks.ts'
+import { logReadableJson } from '../../../../../../../../util/humanReadableJson.ts'
 
 export const TriageRoutePatientSchema = z.object({
   next_step: z.enum(TRIAGE_ROUTE_PATIENT_NEXT_STEPS),
@@ -56,7 +60,8 @@ export const handler = postHandler(
           `/app/organizations/${organization.id}/waiting_room`,
         ))
       }
-      case 'hand_over': {
+      case 'manage_and_refer':
+      case 'refer': {
         const { redirect_to } = await promiseProps({
           completing_last_step,
           redirect_to: startWorkflow(
@@ -83,6 +88,22 @@ export const handler = postHandler(
   },
 )
 
+// While we have the evaluation_ids, this is not the time we do those tasks so we do not include them
+async function managePatientTasks(
+  ctx: OpenEncounterWorkflowContext,
+) {
+  const { trx, health_worker_id, encounter, open_encounter_pathname } = ctx.state
+  const { task_groups } = await additional_tasks.getTasksGroups(trx, { health_worker_id, encounter })
+  const some_non_manage_task_incomplete = task_groups.some((task_group) =>
+    !task_group.completed && task_group.tasks.some((task) => task.atom === 'finding' || task.atom === 'measurement')
+  )
+
+  assertOrRedirect(!some_non_manage_task_incomplete, `${open_encounter_pathname}/triage/additional_tasks_and_investigations`)
+
+  const manage_patient_tasks = task_groups.flatMap((task_group) => task_group.tasks.filter(isManage))
+  return manage_patient_tasks
+}
+
 export async function PatientTriageRoutePatientPage(
   ctx: OpenEncounterWorkflowContext,
 ) {
@@ -91,17 +112,26 @@ export async function PatientTriageRoutePatientPage(
     patient,
     health_worker_id,
     organization_id,
-    encounter: { reason, notes, priority },
+    encounter,
   } = ctx.state
+  const { reason, notes, priority } = encounter
   if (!priority) {
     return redirectToFirstIncompleteStep(ctx, { warning_message: 'Please complete triage before routing the patient' })
   }
   assert(completedPersonal(patient))
 
-  const clinic_employees = await employees_presence.findAll(trx, {
-    organization_id,
-    excluding_health_worker_id: health_worker_id,
+  const { /*evaluation_ids, */ task_groups } = await additional_tasks.getTasksGroups(trx, { health_worker_id, encounter })
+  console.log({ task_groups })
+
+  const { clinic_employees, manage_patient_tasks } = await promiseProps({
+    clinic_employees: employees_presence.findAll(trx, {
+      organization_id,
+      excluding_health_worker_id: health_worker_id,
+    }),
+    manage_patient_tasks: managePatientTasks(ctx),
   })
+
+  logReadableJson(manage_patient_tasks)
 
   return (
     <TriageRoutePatientSection
@@ -109,6 +139,7 @@ export async function PatientTriageRoutePatientPage(
       patient={patient}
       priority={priority}
       clinic_employees={clinic_employees}
+      manage_patient_tasks={manage_patient_tasks}
     />
   )
 }

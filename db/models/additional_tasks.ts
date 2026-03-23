@@ -9,7 +9,7 @@ import {
   RenderedEvaluationRelativeToHealthWorker,
   RenderedFindingRelativeToHealthWorker,
   RenderedPatientEncounter,
-  RenderedTask,
+  RenderedTaskToBeDone,
   TaskGroup,
   TrxOrDbOrQueryCreator,
 } from '../../types.ts'
@@ -29,8 +29,17 @@ import { inverseSExpression } from '../../shared/s_expression_inverse.ts'
 import { formatRecord, toDisplayableRecord } from '../../shared/patient_records.ts'
 import { patient_findings } from './patient_findings.ts'
 import { parseWithSchema } from '../../shared/s_expression.ts'
-import { investigation, Lang, procedure, QueryableEvidenceNode } from '../../shared/s_expression_schemas.ts'
-import isObjectLike from '../../util/isObjectLike.ts'
+import {
+  Lang,
+  MatchingFinding,
+  QueryableEvidenceNode,
+  to_be_done,
+  ToBeDone,
+  ToBeDoneProcedureCheckFor,
+  ToBeDoneProcedureLink,
+  ToBeDoneProcedureMeasurements,
+  ToBeDoneProcedureProcedure,
+} from '../../shared/s_expression_schemas.ts'
 import compactMap from '../../util/compactMap.ts'
 import isString from '../../util/isString.ts'
 
@@ -38,13 +47,37 @@ import compact from '../../util/compact.ts'
 
 import uniq from '../../util/uniq.ts'
 import { rules } from './rules.ts'
+import { getTaskById } from '../../shared/tasks.ts'
+import isObjectLike from '../../util/isObjectLike.ts'
+import { patient_procedures } from './patient_procedures.ts'
+import { humanReadableJson } from '../../util/humanReadableJson.ts'
+
+import sortBy from '../../util/sortBy.ts'
+import { assertUnreachable } from '../../util/assertUnreachable.ts'
 
 type TaskToInsert = {
+  id: string
   description: string
   matching_finding_ids: string[]
   procedure_id: string | null
   due_to: QueryableEvidenceNode
-  procedure: Lang['procedure']
+  to_be_done: ToBeDone
+}
+
+function isLink(to_be_done: ToBeDone): to_be_done is ToBeDoneProcedureLink {
+  return isObjectLike(to_be_done.value) && to_be_done.value.atom === 'link'
+}
+
+function isProcedure(to_be_done: ToBeDone): to_be_done is ToBeDoneProcedureProcedure {
+  return isObjectLike(to_be_done.value) && to_be_done.value.atom === 'snomed_concept'
+}
+
+export function isCheckFor(to_be_done: ToBeDone): to_be_done is ToBeDoneProcedureCheckFor {
+  return Array.isArray(to_be_done.value) && to_be_done.value[0].atom === 'finding'
+}
+
+export function isMeasurements(to_be_done: ToBeDone): to_be_done is ToBeDoneProcedureMeasurements {
+  return Array.isArray(to_be_done.value) && to_be_done.value[0].atom === 'measurement'
 }
 
 export const additional_tasks = {
@@ -57,18 +90,18 @@ export const additional_tasks = {
 
     return pMap(applicable_rules, async ({ rule_effect, ...applicable_rule }) => {
       if (rule_effect.type !== 'task') return
-      const procedure_node = parseWithSchema(rule_effect.procedure_s_expression, procedure)
+      const to_be_done_node = parseWithSchema(rule_effect.to_be_done_s_expression, to_be_done)
 
       const existing_procedure = await buildExpression(
         trx,
         new_records,
-        procedure_node,
+        to_be_done_node,
       ).limit(1).executeTakeFirst()
 
       return {
         ...applicable_rule,
         procedure_id: existing_procedure?.id || null,
-        procedure: procedure_node,
+        to_be_done: to_be_done_node,
       }
     }).then(compact)
   },
@@ -101,8 +134,8 @@ export const additional_tasks = {
           by_system: true,
           evaluation: `(evaluation ${ACTION_STATUS.s_expression} ${TO_BE_DONE.s_expression})`,
           value: {
-            type: 's_expression' as const,
-            s_expression: inverseSExpression(task.procedure),
+            type: 'task' as const,
+            task_id: task.id,
           },
         },
       ).with(
@@ -153,29 +186,43 @@ export const additional_tasks = {
 
     const evaluations_with_proto_tasks = evaluations.map((evaluation) => {
       assert(evaluation.value)
-      assert(evaluation.value.type === 's_expression')
-      const procedure = parseWithSchema(evaluation.value.s_expression, investigation)
-      const tasks: Array<Lang['link' | 'finding' | 'measurement'] /* | FindingRecencyComparison*/> = isObjectLike(procedure.value)
-        ? [procedure.value]
-        : procedure.value
-      return { ...evaluation, tasks }
+      assert(evaluation.value.type === 'task')
+      const task = getTaskById(evaluation.value.task_id)
+      return { ...evaluation, task }
     })
 
-    const all_finding_s_expressions = new Map(
-      compactMap(evaluations_with_proto_tasks.flatMap((e) => e.tasks), (task) => {
-        if (task.atom === 'finding' || task.atom === 'measurement') {
-          return [inverseSExpression(task), task]
+    const s_expression_to_existing_findings = new Map<string, Lang['finding' | 'measurement']>()
+    const s_expression_to_already_done = new Map<string, ToBeDone>()
+    for (const { task } of evaluations_with_proto_tasks) {
+      const value = task.to_be_done.value satisfies
+        | Lang['snomed_concept']
+        | Lang['link']
+        | Lang['measurement'][]
+        | MatchingFinding[]
+
+      if (Array.isArray(value)) {
+        // Compiler needed some extra convincing 🙃
+        const finding_and_measurements: Lang['measurement'][] | MatchingFinding[] = value
+        for (const finding_or_measurement of finding_and_measurements) {
+          const s_expression = inverseSExpression(finding_or_measurement)
+          s_expression_to_existing_findings.set(s_expression, finding_or_measurement)
         }
-      }),
-    )
+      } else if (value.atom === 'snomed_concept') {
+        const s_expression = inverseSExpression(task.to_be_done)
+        s_expression_to_already_done.set(s_expression, task.to_be_done)
+      } else {
+        assertEquals(value.atom, 'link')
+      }
+    }
 
     function existingFindings() {
-      if (!all_finding_s_expressions.size) return Promise.resolve([])
+      if (!s_expression_to_existing_findings.size) return Promise.resolve([])
 
-      const existing_findings_query = trx.with('all_findings', (qb) => {
-        const [first, ...others] = all_finding_s_expressions.entries().map(([finding_s_expression, node]) =>
+      const existing_findings_query = trx.with('existing_findings', (qb) => {
+        const [first, ...others] = s_expression_to_existing_findings.entries().map(([s_expression, node]) =>
           qb.selectNoFrom([
-            literalString(finding_s_expression).as('finding_s_expression'),
+            literalString(s_expression)
+              .as('s_expression'),
             buildExpression(
               trx,
               { patient_id, patient_encounter_id },
@@ -192,16 +239,52 @@ export const additional_tasks = {
           first,
         )
       })
-        .selectFrom('all_findings')
+        .selectFrom('existing_findings')
         .innerJoin(
           patient_findings.baseQuery(trx, { include_negative: true }).as('join_against'),
           'join_against.id',
-          'all_findings.finding_id',
+          'existing_findings.finding_id',
         )
-        .select('all_findings.finding_s_expression')
+        .select('existing_findings.s_expression')
         .selectAll('join_against')
 
       return existing_findings_query.execute()
+    }
+
+    function alreadyDone() {
+      if (!s_expression_to_already_done.size) return Promise.resolve([])
+
+      const already_done_query = trx.with('already_done', (qb) => {
+        const [first, ...others] = s_expression_to_already_done.entries().map(([s_expression, node]) =>
+          qb.selectNoFrom([
+            literalString(s_expression)
+              .as('s_expression'),
+            buildExpression(
+              trx,
+              { patient_id, patient_encounter_id },
+              node,
+            )
+              .orderBy('patient_records_aggregated.created_at', 'desc')
+              .limit(1)
+              .as('procedure_id'),
+          ])
+        )
+
+        return others.reduce(
+          (acc, curr) => acc.unionAll(curr),
+          first,
+        )
+      })
+        .selectFrom('already_done')
+        .innerJoin(
+          patient_procedures.baseQuery(trx, {}).as('join_against'),
+          'join_against.id',
+          'already_done.procedure_id',
+        )
+        .select('already_done.s_expression')
+        .selectAll('join_against')
+
+      return already_done_query.execute()
     }
 
     const due_to_record_ids = evaluations.flatMap((evaluation) =>
@@ -210,18 +293,18 @@ export const additional_tasks = {
           destination_relation.relation_name,
           DUE_TO.name,
         )
-        return evaluation.destination_relations[0].id
+        return destination_relation.id
       })
     )
 
-    const { /* procedures,*/ existing_findings, due_to_findings, due_to_evaluations } = await promiseProps({
-      // procedures: patient_procedures.getByIds(trx, procedure_ids).then((procedures) =>
-      //   patient_record_providers.hydrateIntermediateRecords(trx, {
-      //     records: procedures,
-      //     encounter,
-      //     health_worker_id,
-      //   })
-      // ),
+    const { already_done, existing_findings, due_to_findings, due_to_evaluations } = await promiseProps({
+      already_done: alreadyDone().then((procedures) =>
+        patient_record_providers.hydrateIntermediateRecords(trx, {
+          records: procedures.map(formatRecord),
+          encounter,
+          health_worker_id,
+        })
+      ),
       existing_findings: existingFindings().then((findings) =>
         patient_record_providers.hydrateIntermediateRecords(trx, {
           records: findings.map(formatRecord),
@@ -247,73 +330,118 @@ export const additional_tasks = {
 
     const task_group_map = groupBy(
       evaluations_with_proto_tasks,
-      (evaluation) => evaluation.destination_relations[0].id,
+      (evaluation) => evaluation.destination_relations.map((relation) => relation.id).join(';'),
     )
 
     const evaluation_ids: string[] = []
-    const task_groups: TaskGroup[] = []
-    const seen_finding_s_expressions = new Set<string>()
+    const unsorted_task_groups_with_potentially_duplicative_findings: TaskGroup[] = []
 
-    for (const [record_id, evaluations] of task_group_map) {
-      const due_to = exists(
-        due_to_findings.find(matching({ id: record_id })) ||
-          due_to_evaluations.find(matching({ id: record_id })),
+    for (const [record_ids_joined, evaluations] of task_group_map) {
+      const due_to = record_ids_joined.split(';').map((record_id) =>
+        exists(
+          due_to_findings.find(matching({ id: record_id })) ||
+            due_to_evaluations.find(matching({ id: record_id })),
+        )
       )
 
-      const tasks: RenderedTask[] = compactMap(
-        evaluations.flatMap((evaluation) => {
-          evaluation_ids.push(evaluation.id)
-          return evaluation.tasks
-        }),
-        (task): RenderedTask | undefined => {
-          if (task.atom === 'link') {
-            return task
-          }
+      const tasks: RenderedTaskToBeDone[] = evaluations.flatMap((evaluation): RenderedTaskToBeDone[] => {
+        evaluation_ids.push(evaluation.id)
+        const { to_be_done } = evaluation.task
 
-          const finding_s_expression = inverseSExpression(task)
+        if (isLink(to_be_done)) {
+          return [to_be_done.value]
+        }
 
-          if (seen_finding_s_expressions.has(finding_s_expression)) {
-            return undefined
-          }
-          seen_finding_s_expressions.add(finding_s_expression)
-
-          const { displays } = formatRecord(toDisplayableRecord(task))
-          const existing_finding: null | RenderedFindingRelativeToHealthWorker = existing_findings.find(matching({ finding_s_expression })) || null
-
-          if (task.atom === 'finding') {
-            return {
-              ...task,
-              s_expression: finding_s_expression,
-              displays,
-              existing_finding,
-            }
-          }
-
-          assert(task.atom === 'measurement')
-          if (!existing_finding) {
-            return {
-              ...task,
-              s_expression: finding_s_expression,
-              displays,
-              existing_measurement: null,
-            }
-          }
-
-          assert(isMeasurement(existing_finding))
-
-          return {
-            ...task,
-            s_expression: finding_s_expression,
+        if (isProcedure(to_be_done)) {
+          const { displays } = formatRecord(toDisplayableRecord(to_be_done))
+          const s_expression = inverseSExpression(to_be_done)
+          // const existing_procedure: null | RenderedProcedureRelativeToHealthWorker = already_done.find(matching({ s_expression })) || null
+          const existing_record = already_done.find(matching({ s_expression })) || null
+          return [{
+            ...to_be_done,
             displays,
-            existing_measurement: existing_finding,
-          }
-        },
-      )
+            s_expression,
+            existing_record,
+            description: evaluation.task.description,
+          }]
+        }
 
-      task_groups.push({ due_to: [due_to], tasks })
+        if (isCheckFor(to_be_done)) {
+          return compactMap(to_be_done.value, (finding) => {
+            const s_expression = inverseSExpression(finding)
+            const { displays } = formatRecord(toDisplayableRecord(finding))
+            const existing_record: null | RenderedFindingRelativeToHealthWorker = existing_findings.find(matching({ s_expression })) || null
+
+            return {
+              ...finding,
+              displays,
+              s_expression,
+              existing_record,
+            }
+          })
+        }
+
+        if (isMeasurements(to_be_done)) {
+          return compactMap(to_be_done.value, (measurement) => {
+            const s_expression = inverseSExpression(measurement)
+            const { displays } = formatRecord(toDisplayableRecord(measurement))
+
+            return {
+              ...measurement,
+              displays,
+              s_expression,
+              existing_record: existingMeasurement(),
+            }
+
+            function existingMeasurement() {
+              const existing_record: null | RenderedFindingRelativeToHealthWorker = existing_findings.find(matching({ s_expression })) || null
+              if (!existing_record) return null
+              assert(isMeasurement(existing_record))
+              return existing_record
+            }
+          })
+        }
+
+        throw new Error(`to_be_done unclear ${humanReadableJson(to_be_done)}`)
+      })
+
+      const completed = tasks.every((task) => task.atom === 'link' || task.existing_record)
+
+      unsorted_task_groups_with_potentially_duplicative_findings.push({ due_to, completed, tasks: sortBy(tasks, (task) => task.existing_record ? 1 : 0) })
     }
 
-    return { evaluation_ids, task_groups }
+    const task_groups_complete_first_with_potentially_duplicative_findings = sortBy(
+      unsorted_task_groups_with_potentially_duplicative_findings,
+      (task_group) => task_group.completed ? 0 : 1,
+    )
+
+    const seen_finding_s_expressions = new Set<string>()
+    const task_groups_complete_first = task_groups_complete_first_with_potentially_duplicative_findings.map((task_group) => ({
+      ...task_group,
+      tasks: task_group.tasks.filter((task) => {
+        switch (task.atom) {
+          case 'link':
+          case 'procedure':
+            return true
+          case 'finding':
+          case 'measurement': {
+            if (seen_finding_s_expressions.has(task.s_expression)) {
+              return false
+            }
+            seen_finding_s_expressions.add(task.s_expression)
+            return true
+          }
+          default:
+            return assertUnreachable(task)
+        }
+      }),
+    }))
+
+    // incomplete first
+    return {
+      evaluation_ids,
+      task_groups: task_groups_complete_first.toReversed(),
+    }
   },
   async procedureCompletedTasks(
     trx: TrxOrDbOrQueryCreator,

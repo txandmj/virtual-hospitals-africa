@@ -114,13 +114,13 @@ export const COMMON_SYMPTOMS: CommonSymptom[] = [
     'description': null,
     'category': 'Common Symptoms' as const,
   },
-  {
-    'key': 'COVID-19' as const,
-    'clinical_finding_s_expression': normalForm(
-      `(clinical_finding (snomed_concept "Disease caused by severe acute respiratory syndrome coronavirus 2" "disorder"))`,
-    ),
-    'name': 'COVID-19',
-    'description': null,
-    'category': 'Common Symptoms' as const,
-  },
+  // {
+  //   'key': 'COVID-19' as const,
+  //   'clinical_finding_s_expression': normalForm(
+  //     `(clinical_finding (snomed_concept "Disease caused by severe acute respiratory syndrome coronavirus 2" "disorder"))`,
+  //   ),
+  //   'name': 'COVID-19',
+  //   'description': null,
+  //   'category': 'Common Symptoms' as const,
+  // },
 ]

@@ -14,6 +14,7 @@ import { allEvidenceToLookFor } from '../../db/models/s_expression_evidence.ts'
 import { inverseSExpression } from '../../shared/s_expression_inverse.ts'
 import { VITALS_ADULT_SNOMED_CONCEPT_NAMES } from '../../shared/vitals.ts'
 import { assertUnreachable } from '../../util/assertUnreachable.ts'
+import { isCheckFor } from '../../db/models/additional_tasks.ts'
 
 export function* allConceptsToLookFor(node: QueryableEvidenceNode): Generator<SnomedConcept> {
   switch (node.atom) {
@@ -150,7 +151,8 @@ describe('s_expression', () => {
         for await (const { task_file_path, system_diagnosis_rules_file_path, system_diagnosis_rules, tasks } of correspondingAPCRules()) {
           const all_checking_for = new Set(tasks.flatMap((task_node) => {
             const due_to = allEvidenceToLookFor(task_node.due_to).map(inverseSExpression)
-            const checking_for = Array.isArray(task_node.procedure.value) ? task_node.procedure.value.map(inverseSExpression) : []
+            // TODO  || isMeasurements(task_node.to_be_done)?
+            const checking_for = isCheckFor(task_node.to_be_done) ? task_node.to_be_done.value.map(inverseSExpression) : []
 
             return [
               ...due_to,

@@ -7,7 +7,7 @@
   )
   adult
   (and
-    (clinical_finding (snomed_concept "Facial swelling" "finding"))
+    (clinical_finding (snomed_concept "Swelling" "finding") (finding_site (snomed_concept "Face structure" "body structure")))
     (>= (measurement (snomed_concept "Body temperature" "observable entity") °C) 38)
   )
 )
@@ -20,7 +20,7 @@
   )
   adult
   (and
-    (clinical_finding (snomed_concept "Facial swelling" "finding"))
+    (clinical_finding (snomed_concept "Swelling" "finding") (finding_site (snomed_concept "Face structure" "body structure")))
     (or
       (clinical_finding (snomed_concept "Blood in urine" "finding"))
       (clinical_finding (snomed_concept "Proteinuria" "finding"))

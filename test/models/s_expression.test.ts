@@ -6,7 +6,7 @@ import { buildExpression } from '../../db/models/s_expression.ts'
 import { addTestEmployee } from '../_helpers/employees.ts'
 import { insertPatientSeekingTreatmentWithEmployeeAndCompleteRegistrationForTest } from '../_helpers/workflows.ts'
 import { patient_findings } from '../../db/models/patient_findings.ts'
-import { WORKFLOW_SNOMED_CONCEPTS } from '../../shared/workflow.ts'
+import { WORKFLOW_SNOMED_CONCEPTS, WORKFLOW_STEP_SNOMED_CONCEPTS } from '../../shared/workflow.ts'
 import { assertMatches } from '../../util/assertMatches.ts'
 import z from 'zod'
 import { assertArrayEmpty } from '../../util/arraySize.ts'
@@ -14,6 +14,7 @@ import { patient_procedures } from '../../db/models/patient_procedures.ts'
 import { PROCEDURE } from '../../shared/snomed_concepts.ts'
 import { describeParallel, itParallel } from 'test/_helpers/testParallel.ts'
 import assertLength from '../../util/assertLength.ts'
+import { assertEquals } from 'std/assert/assert_equals.ts'
 
 describeParallel('db/models/s_expression.ts', () => {
   afterAll(() => db.destroy())
@@ -202,4 +203,39 @@ describeParallel('db/models/s_expression.ts', () => {
       assertLength(nasal_structure_shorthand_findings, 1)
     },
   )
+
+  itParallel('respects excluding', async () => {
+    const { employee, patient_id, patient_encounter_id } = await insertPatientSeekingTreatmentWithEmployeeAndCompleteRegistrationForTest(db)
+    const inserted_findings = await patient_findings.insertMany(
+      db,
+      {
+        patient_id,
+        patient_encounter_id,
+        patient_encounter_employee_id: employee.patient_encounter_employee_id,
+        employment_id: employee.employee_id,
+        procedure: {
+          create_with_specific_snomed_concept_id: WORKFLOW_STEP_SNOMED_CONCEPTS.triage!.warning_signs.snomed_concept_id,
+        },
+        findings: [
+          `(clinical_finding (snomed_concept "Insect bite - wound" "disorder"))`,
+        ],
+      },
+    )
+
+    const bite_result = await buildExpression(
+      db,
+      { patient_id, patient_encounter_id },
+      `(clinical_finding (snomed_concept "Bite - wound" "disorder"))`,
+    ).execute()
+
+    assertEquals(bite_result, [{ id: inserted_findings.finding_ids[0] }])
+
+    const excluding_animal_bite_result = await buildExpression(
+      db,
+      { patient_id, patient_encounter_id },
+      `(clinical_finding (snomed_concept "Bite - wound" "disorder") (excluding (clinical_finding (snomed_concept "Animal bite wound" "disorder"))))`,
+    ).execute()
+
+    assertEquals(excluding_animal_bite_result, [])
+  })
 })

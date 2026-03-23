@@ -4,11 +4,11 @@ import cls from '../../util/cls.ts'
 import { HiddenInput } from '../library/HiddenInput.tsx'
 import SectionHeader from '../library/typography/SectionHeader.tsx'
 import { NoTasks } from './tasks/NoTasks.tsx'
-import { TaskGroupCard } from './tasks/TaskGroupCard.tsx'
+import { MeasurementGroup } from './tasks/MeasurementGroup.tsx'
 import { CheckForGroup } from './tasks/CheckForGroup.tsx'
-import { isLink } from './tasks/type-predicates.ts'
 import negate from '../../util/negate.ts'
 import { ReferenceDocs } from './tasks/ReferenceDocs.tsx'
+import { isLink, isManage } from '../../shared/tasks.ts'
 
 export default function AdditionalTasks({
   organization_id,
@@ -27,8 +27,15 @@ export default function AdditionalTasks({
 
   const all_tasks = task_groups.flatMap((task_group) => task_group.tasks)
   const all_due_to = task_groups.flatMap((task_group) => task_group.due_to)
+  const all_completed = task_groups.every((task_group) => task_group.completed)
+  const all_not_completed = task_groups.every((task_group) => !task_group.completed)
 
-  const some_soliticing_finding_task = all_tasks.some(negate(isLink))
+  // Mixed completion means you arrived back on this page because of findings
+  // you submitted on this page, but there are new tasks for you to do and as
+  // a result we show those tasks with an indicator
+  const page_mixed_completion = !!task_groups.length && !all_completed && !all_not_completed
+
+  const some_soliticing_finding_task = all_tasks.filter(negate(isLink)).some(negate(isManage))
   const reference_docs = all_tasks.filter(isLink)
   const reference_docs_el = (
     <ReferenceDocs
@@ -59,12 +66,14 @@ export default function AdditionalTasks({
             </SectionHeader>
             <CheckForGroup
               task_groups={task_groups}
+              page_mixed_completion={page_mixed_completion}
               organization_id={organization_id}
             />
             {task_groups.map((group, index) => (
-              <TaskGroupCard
+              <MeasurementGroup
                 key={index}
                 group={group}
+                page_mixed_completion={page_mixed_completion}
                 organization_id={organization_id}
               />
             ))}

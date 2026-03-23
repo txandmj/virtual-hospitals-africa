@@ -4,20 +4,24 @@ import { hyphenate } from '../../../util/hyphenate.ts'
 import negate from '../../../util/negate.ts'
 import partition from '../../../util/partition.ts'
 import { MeasurementTask } from './Measurement.tsx'
-import { isFinding, isLink, isMeasurement } from './type-predicates.ts'
 import { uniqueIdentifier } from './uniqueIdentifier.ts'
 import { DueTo } from './DueTo.tsx'
+import { isFinding, isLink, isManage, isMeasurement } from '../../../shared/tasks.ts'
+import {} from '../../../shared/vitals.ts'
 
-export function TaskGroupCard({
+export function MeasurementGroup({
   group,
+  page_mixed_completion,
   organization_id,
 }: {
   group: TaskGroup
+  page_mixed_completion: boolean
   organization_id: string
 }) {
   const tasks = group.tasks
     .filter(negate(isLink))
     .filter(negate(isFinding))
+    .filter(negate(isManage))
   if (!tasks.length) return null
   const [measure_tasks, none] = partition(tasks, isMeasurement)
   assert(measure_tasks.length)
@@ -25,7 +29,11 @@ export function TaskGroupCard({
 
   return (
     <div class='task-group-card flex flex-col gap-4' data-due-to={group.due_to.map((x) => hyphenate(x.displays.full)).join('-')}>
-      <DueTo due_to={group.due_to} organization_id={organization_id} />
+      <DueTo
+        due_to={group.due_to}
+        is_follow_up={page_mixed_completion && !group.completed}
+        organization_id={organization_id}
+      />
 
       {measure_tasks.map((task) => (
         <MeasurementTask

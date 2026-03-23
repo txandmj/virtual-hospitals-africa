@@ -9,7 +9,7 @@ import { sExpressionZodValidator } from '../../../../../../../../shared/s_expres
 import { FindingNodeToInsert, MeasurementToInsert, patient_findings } from '../../../../../../../../db/models/patient_findings.ts'
 
 import { promiseProps } from '../../../../../../../../util/promiseProps.ts'
-import { insertable_finding_base, investigation, measurement } from '../../../../../../../../shared/s_expression_schemas.ts'
+import { insertable_finding_base, measurement, to_be_done } from '../../../../../../../../shared/s_expression_schemas.ts'
 import { events } from '../../../../../../../../db/models/events.ts'
 import values from '../../../../../../../../util/values.ts'
 import { assert } from 'std/assert/assert.ts'
@@ -18,13 +18,14 @@ import { NO_QUALIFIER, UNKNOWN_QUALIFIER } from '../../../../../../../../shared/
 import compactMap from '../../../../../../../../util/compactMap.ts'
 import zip from '../../../../../../../../util/zip.ts'
 import { exists } from '../../../../../../../../util/exists.ts'
+import { logJSONToFileIfOnServer } from '../../../../../../../../util/logJSONToFileIfOnServer.ts'
 
 export const TriageAdditionalTasksAndInvestigationsSchema = z.object({
   evaluation_ids: z.string().uuid().array().optional().default([]),
   just_do_it_tasks: z.record(
     z.string(),
     z.object({
-      s_expression: sExpressionZodValidator(investigation),
+      s_expression: sExpressionZodValidator(to_be_done),
     }),
   ).optional().default({}).transform(values),
   check_for: z.record(
@@ -32,7 +33,7 @@ export const TriageAdditionalTasksAndInvestigationsSchema = z.object({
     z.object({
       s_expression: sExpressionZodValidator(insertable_finding_base),
       existence: yes_no_unknown,
-      existing_finding: z.object({
+      existing_record: z.object({
         id: z.string().uuid(),
         existence: yes_no_unknown,
       }).optional(),
@@ -44,7 +45,7 @@ export const TriageAdditionalTasksAndInvestigationsSchema = z.object({
       s_expression: sExpressionZodValidator(measurement),
       value: positive_decimal,
       units: z.string().min(1),
-      existing_measurement: z.object({
+      existing_record: z.object({
         id: z.string().uuid(),
         value: positive_decimal,
       }).optional(),
@@ -101,7 +102,7 @@ export const handler = postHandler(
 
     async function insertFindings(): Promise<InsertedSummary> {
       const findings_to_insert: FindingNodeToInsert[] = compactMap(form_values.check_for, (finding) => {
-        if (finding.existing_finding && finding.existing_finding.existence === finding.existence) return
+        if (finding.existing_record && finding.existing_record.existence === finding.existence) return
         return {
           ...finding.s_expression,
           existence: finding.existence,
@@ -118,7 +119,7 @@ export const handler = postHandler(
       })
 
       const measurements_to_insert: MeasurementToInsert[] = compactMap(form_values.measurements, (measurement) => {
-        if (measurement.existing_measurement && measurement.existing_measurement.value.equals(measurement.value)) return
+        if (measurement.existing_record && measurement.existing_record.value.equals(measurement.value)) return
         return {
           atom: '=' as const,
           type: 'measurement' as const,
@@ -184,7 +185,7 @@ export const handler = postHandler(
       if (!completed_procedure) return Promise.resolve()
       const altered_record_ids = compactMap(
         form_values.check_for,
-        ({ existence, existing_finding }) => (existing_finding && existing_finding.existence != existence) && existing_finding.id,
+        ({ existence, existing_record }) => (existing_record && existing_record.existence != existence) && existing_record.id,
       )
 
       return markEnteredInError(trx, {
@@ -205,6 +206,7 @@ export async function TriageAdditionalTasksAndInvestigationsPage(
   await events.allProcessedForEncounter(trx, { patient_encounter_id })
   const { evaluation_ids, task_groups } = await additional_tasks.getTasksGroups(trx, { health_worker_id, encounter })
 
+  logJSONToFileIfOnServer(task_groups)
   const use_pdf_viewer = getCookies(ctx.req.headers)['twa'] === '1'
 
   return (

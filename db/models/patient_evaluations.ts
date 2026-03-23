@@ -21,8 +21,8 @@ export type PatientEvaluationInsert =
     evaluation: string | Lang['evaluation']
     evaluates_record_id?: string | null
     value?: null | {
-      type: 's_expression'
-      s_expression: string
+      type: 'task'
+      task_id: string
     }
   }
   & (
@@ -82,13 +82,13 @@ export function insertOneNestedQuery(
         }).returning('id'),
   )
     .with(
-      'inserting_s_expression',
+      'inserting_task',
       (qb) =>
         value
-          ? qb.insertInto('patient_record_s_expressions')
+          ? qb.insertInto('patient_record_tasks')
             .values({
               id: evaluation_id,
-              s_expression: value.s_expression,
+              task_id: value.task_id,
             })
           : blankSelection(qb),
     )

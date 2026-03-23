@@ -72,10 +72,15 @@ describeParallel('triage/additional_tasks_and_investigations', () => {
       // deno-lint-ignore no-explicit-any
       const additional_tasks_form_values: any = getFormValues($additional_tasks)
 
-      // Check yes for everything
+      // Set sudden-onset itching to Yes (satisfies probable anaphylaxis rule with existing low BP),
+      // everything else to No (avoid triggering cascading tasks like mouth/throat)
       const additional_tasks_post_data = structuredClone(additional_tasks_form_values)
       for (const key in additional_tasks_post_data.check_for) {
-        additional_tasks_post_data.check_for[key].existence = additional_tasks_post_data.check_for[key].existence || 'Yes'
+        if (key === 'finding-sudden-onset-itching') {
+          additional_tasks_post_data.check_for[key].existence = 'Yes'
+        } else if (!additional_tasks_post_data.check_for[key].existence) {
+          additional_tasks_post_data.check_for[key].existence = 'No'
+        }
       }
 
       const $route_patient = await postStep({
@@ -99,7 +104,7 @@ describeParallel('triage/additional_tasks_and_investigations', () => {
       const _route_patient_form_options = getFormOptions($route_patient)
 
       assertMatches(route_patient_form_values, {
-        'next_step': 'hand_over' as const,
+        'next_step': 'manage_and_refer' as const,
         'health_worker_ids_to_be_notified': [shcp.id],
         'notes': null,
       }, { strict: true })
