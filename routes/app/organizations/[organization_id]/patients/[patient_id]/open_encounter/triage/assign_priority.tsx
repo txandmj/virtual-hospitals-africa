@@ -32,10 +32,10 @@ import { events } from '../../../../../../../../db/models/events.ts'
 import { assertEquals } from 'std/assert/assert_equals.ts'
 import { ORDERED_PRIORITIES } from '../../../../../../../../shared/priorities.ts'
 import sumBy from '../../../../../../../../util/sumBy.ts'
-import { logJSONToFileIfOnServer } from '../../../../../../../../util/logJSONToFileIfOnServer.ts'
 import { diagnoses } from '../../../../../../../../db/models/diagnoses.ts'
 import { additional_tasks } from '../../../../../../../../db/models/additional_tasks.ts'
 import { assertOrRedirect } from '../../../../../../../../util/assertOr.ts'
+import { logJSONToFileIfOnServer } from '../../../../../../../../util/logJSONToFileIfOnServer.ts'
 
 export const TriageAssignPrioritySchema = z.object({})
 
@@ -228,8 +228,9 @@ async function redirectIfIncompleteNonManageTasks(
 ) {
   const { trx, health_worker_id, encounter, open_encounter_pathname } = ctx.state
   const { task_groups } = await additional_tasks.getTasksGroups(trx, { health_worker_id, encounter })
+  logJSONToFileIfOnServer(task_groups)
   const some_non_manage_task_incomplete = task_groups.some(task_group => 
-    !task_group.completed && task_group.tasks.some(task => task.atom !== 'procedure'))
+    !task_group.completed && task_group.tasks.some(task => task.atom === 'finding' || task.atom === 'measurement'))
   
   assertOrRedirect(!some_non_manage_task_incomplete, `${open_encounter_pathname}/triage/additional_tasks_and_investigations`)
 }

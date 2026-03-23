@@ -1,4 +1,4 @@
-import { Maybe, Names, Priority, RenderedEmployeeWithPresence } from '../../types.ts'
+import { Maybe, Names, Priority, RenderedEmployeeWithPresence, RenderedTaskToBeDone } from '../../types.ts'
 import { EncounterReason } from '../../db.d.ts'
 import { TextArea } from '../../islands/form/inputs/textarea.tsx'
 import FormRow from '../../components/library/FormRow.tsx'
@@ -12,6 +12,7 @@ import { organizationOf } from '../../shared/employees.ts'
 import { TriageRoutePatientNextStep } from '../../shared/triage_route_patient.ts'
 import { NextStepSelect } from '../../components/library/NextStepSelect.tsx'
 import ProvidersSelect from '../ProvidersSelect.tsx'
+import SectionHeader from '../../components/library/typography/SectionHeader.tsx'
 
 function defaultNextStep(priority: Priority): TriageRoutePatientNextStep {
   switch (priority) {
@@ -51,7 +52,7 @@ function defaultToBeNotified(next_step: TriageRoutePatientNextStep, clinic_emplo
 }
 
 export default function TriageRoutePatientSection(
-  { this_visit, patient, priority, clinic_employees }: {
+  { this_visit, patient, priority, clinic_employees, manage_patient_tasks }: {
     this_visit: {
       reason: Maybe<EncounterReason>
       notes?: Maybe<string>
@@ -65,6 +66,7 @@ export default function TriageRoutePatientSection(
       target_treatment_time: Date | null
     }
     clinic_employees: RenderedEmployeeWithPresence[]
+    manage_patient_tasks: Array<RenderedTaskToBeDone & { atom: 'procedure' }>
   },
 ) {
   const default_next_step = defaultNextStep(priority.name)
@@ -72,7 +74,7 @@ export default function TriageRoutePatientSection(
   const to_be_notified = useSignal<RenderedEmployeeWithPresence[]>(defaultToBeNotified(default_next_step, clinic_employees))
   const to_be_notified_display = computed(() => [...to_be_notified.value].map(employeeDisplay).map((e) => e.display_name))
 
-  return (
+  const main_content = (
     <>
       <FormSection id='route_patient_next_step' header='Next Step'>
         <FormRow>
@@ -81,6 +83,7 @@ export default function TriageRoutePatientSection(
             priority={priority}
             default_next_step={default_next_step}
             to_be_notified={to_be_notified_display.value}
+            manage_patient_tasks={manage_patient_tasks}
             onSelect={(step) => next_step.value = step}
           />
         </FormRow>
@@ -108,5 +111,25 @@ export default function TriageRoutePatientSection(
         value={[...to_be_notified.value].map((x) => x.id)}
       />
     </>
+  )
+
+  if (!manage_patient_tasks.length) {
+    return main_content
+  }
+
+  return (
+    <div class='grid gap-6 grid-cols-1 xl:grid-cols-2'>
+      <div>{main_content}</div>
+      <div class='order-first xl:order-last'>
+        <div class='rounded-lg border border-gray-200 bg-white p-6 shadow-sm'>
+          <SectionHeader>Manage patient tasks</SectionHeader>
+          <ul class='mt-3 list-disc list-inside space-y-1'>
+            {manage_patient_tasks.map((task, i) => (
+              <li key={i} class='text-sm text-gray-700'>{task.description}</li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </div>
   )
 }

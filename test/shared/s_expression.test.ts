@@ -1,6 +1,6 @@
 import { describe, it } from 'std/testing/bdd.ts'
 import { assertEquals } from 'std/assert/assert_equals.ts'
-import { normalForm, parseExpressionExpectingAtom } from '../../shared/s_expression.ts'
+import { normalForm, parseExpressionExpectingAtom, parseWithSchema } from '../../shared/s_expression.ts'
 import * as schemas from '../../shared/s_expression_schemas.ts'
 import { inverseSExpression } from '../../shared/s_expression_inverse.ts'
 import { CLINICAL_FINDING, HEMOGLOBIN_SATURATION_WITH_OXYGEN, STATUS_ATTRIBUTE } from '../../shared/snomed_concepts.ts'

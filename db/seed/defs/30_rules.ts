@@ -51,7 +51,7 @@ function dueToInsert(due_to: QueryableEvidenceNode): DueToInsert[] {
         }]
       }
       assert(due_to.specific_snomed_concept, `Must have a specific_snomed_concept\n${inverseSExpression(due_to)}`)
-      const always_applies_if_present = !due_to.attributes.length && !due_to.qualifiers.length
+      const always_applies_if_present = !due_to.attributes.length && !due_to.qualifiers.length && !due_to.excluding.length
       return [{
         ...due_to,
         type: 'finding',

@@ -14,7 +14,7 @@ import { events } from './events.ts'
 import { CERTAINTY_QUALIFIER_TO_CONCEPT, diagnosisToEvaluation } from '../../shared/diagnosis.ts'
 import { rules } from './rules.ts'
 import isString from '../../util/isString.ts'
-import { JsonValue } from '../../db.d.ts'
+import { JsonValue, SnomedCategory } from '../../db.d.ts'
 import { exists } from '../../util/exists.ts'
 import { pMap } from '../../util/inParallel.ts'
 import compact from '../../util/compact.ts'
@@ -37,18 +37,37 @@ const CERTAINTY_ORDER: Record<ApplicableRuleEffectSystemSystemDiagnosisRule['cer
   improbable: 0,
 }
 
-function shouldInsertNewDiagnosisAsPresentDiagnosisIsNonExistentOrLowerCertainty(
+type PresentDiagnosis = {
+  id: string
+  certainty: "definite" | "probable" | "equivocal" | "possible" | "improbable"
+}
+
+type InsertDiagnosisResult = {
+  certainty: "definite" | "probable" | "equivocal" | "possible" | "improbable"
+  record_id: string
+  specific_snomed_concept: { name: string, category: SnomedCategory }
+  result: "already_present" | "inserted"
+}
+
+function presentDiagnosis(
   present_diagnosis: {
     id: string
     value: JsonValue
   } | undefined,
+) {
+  if (!present_diagnosis) return
+  assert(isObjectLike(present_diagnosis.value))
+  assert(isKeyOf(present_diagnosis.value.name, concept_to_certainty_qualifier_map))
+  const certainty = concept_to_certainty_qualifier_map[present_diagnosis.value.name]
+  return { id: present_diagnosis.id, certainty }
+}
+
+function shouldInsertNewDiagnosisAsPresentDiagnosisIsNonExistentOrLowerCertainty(
+  present_diagnosis: PresentDiagnosis | undefined,
   rule_effect: ApplicableRuleEffectSystemSystemDiagnosisRule,
 ) {
   if (!present_diagnosis) return true
-  assert(isObjectLike(present_diagnosis.value))
-  assert(isKeyOf(present_diagnosis.value.name, concept_to_certainty_qualifier_map))
-  const present_diagnosis_certainty = concept_to_certainty_qualifier_map[present_diagnosis.value.name]
-  switch (present_diagnosis_certainty) {
+  switch (present_diagnosis.certainty) {
     case 'definite':
       return false
     case 'probable':
@@ -145,7 +164,7 @@ export const system_diagnosis_rules = {
       procedure_id: string
     },
     rules_result: string | ApplicableRule[],
-  ): Promise<InsertedDiagnosis[]> {
+  ): Promise<InsertDiagnosisResult[]> {
     if (isString(rules_result)) return Promise.resolve([])
 
     const diagnosis_rules = rules_result.filter((r): r is ApplicableRule & { rule_effect: ApplicableRuleEffectSystemSystemDiagnosisRule } =>
@@ -165,7 +184,7 @@ export const system_diagnosis_rules = {
         certainty_qualifier: highest_certainty_rule.rule_effect.certainty,
       })
 
-      const present_diagnosis = await EXPRESSION_BUILDERS.evaluation(
+      const already_present_diagnosis = await EXPRESSION_BUILDERS.evaluation(
         trx,
         input,
         diagnosis_node,
@@ -175,16 +194,32 @@ export const system_diagnosis_rules = {
         .orderBy('patient_records_aggregated.created_at', 'desc')
         .limit(1)
         .executeTakeFirst()
+        .then(presentDiagnosis)
 
-      const do_insert = shouldInsertNewDiagnosisAsPresentDiagnosisIsNonExistentOrLowerCertainty(present_diagnosis, highest_certainty_rule.rule_effect)
+      const do_insert = shouldInsertNewDiagnosisAsPresentDiagnosisIsNonExistentOrLowerCertainty(already_present_diagnosis, highest_certainty_rule.rule_effect)
 
-      if (!do_insert) return
+      if (!do_insert) {
+        assert(already_present_diagnosis)
+        return { 
+          certainty: already_present_diagnosis.certainty,
+          record_id: already_present_diagnosis.id,
+          specific_snomed_concept: exists(diagnosis_node.specific_snomed_concept),
+          result: "already_present" as const
+        }
+      }
 
-      return system_diagnosis_rules.insertOne(trx, {
+      const inserted_diagnosis = await system_diagnosis_rules.insertOne(trx, {
         ...input,
         diagnosis_node,
         matching_finding_ids,
       })
+
+      return { 
+        certainty: highest_certainty_rule.rule_effect.certainty,
+        record_id: inserted_diagnosis.record_id,
+        specific_snomed_concept: exists(diagnosis_node.specific_snomed_concept),
+        result: "inserted" as const
+      }
     }).then(compact)
   },
   async insertImprobableDiagnoses(
@@ -192,11 +227,7 @@ export const system_diagnosis_rules = {
     input: RuleRunnerInput & {
       procedure_id: string
     },
-    inserted_diagnoses: {
-      record_id: string
-      specific_snomed_concept_id: string
-      value_snomed_concept_id: string
-    }[],
+    inserted_diagnoses: InsertDiagnosisResult[],
   ) {
     const possible_diagnoses_now_completed = await trx
       .selectFrom('patient_record_relations as done_relations')
@@ -220,8 +251,8 @@ export const system_diagnosis_rules = {
       .selectAll('diagnosis_records')
       .execute()
 
-    const possible_diagnoses_now_improbable = possible_diagnoses_now_completed.filter(({ specific_snomed_concept_id }) => {
-      const inserted_diagnosis_for_same_condition = inserted_diagnoses.some(matching({ specific_snomed_concept_id }))
+    const possible_diagnoses_now_improbable = possible_diagnoses_now_completed.filter(({ specific_snomed_concept_name, specific_snomed_concept_category }) => {
+      const inserted_diagnosis_for_same_condition = inserted_diagnoses.some()
       return !inserted_diagnosis_for_same_condition
     })
 

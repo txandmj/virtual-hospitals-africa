@@ -16,6 +16,7 @@ TODO
 - Publish tests in human readable format
 
 - db/models/s_expression.ts can find swelling (face structure) from a query for Facial Swelling (joining through associated morphology & finding site)
+- improbable diagnosis only uses "No" findings that, if yes, would have been part of the evidence
 
 Triage Route Patient Next Steps
   3 Options

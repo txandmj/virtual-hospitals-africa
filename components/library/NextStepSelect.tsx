@@ -8,7 +8,7 @@ import { ActionsRadioGroupSelect } from './ActionsRadioGroupSelect.tsx'
 import { objectPronoun, posessivePronoun, pronoun } from '../../shared/sex_and_gender.ts'
 
 export function NextStepSelect(
-  { patient, default_next_step, priority, to_be_notified, onSelect }: {
+  { patient, default_next_step, priority, to_be_notified, manage_patient_tasks, onSelect }: {
     patient: {
       names: Names
       gender: string | null
@@ -19,6 +19,7 @@ export function NextStepSelect(
       target_treatment_time: Date | null
     }
     to_be_notified: string[]
+    manage_patient_tasks: Array<{ description: string }>
     onSelect(next_step: TriageRoutePatientNextStep): void
   },
 ) {
@@ -48,7 +49,7 @@ export function NextStepSelect(
         },
         {
           id: 'hand_over' satisfies TriageRoutePatientNextStep,
-          name: 'Manage and refer',
+          name: manage_patient_tasks.length > 0 ? 'Manage and refer' : 'Refer',
           icon: AtSymbolIcon,
           iconForeground: 'text-sky-700',
           iconBackground: 'bg-sky-50',

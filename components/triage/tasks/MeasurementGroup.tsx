@@ -4,9 +4,10 @@ import { hyphenate } from '../../../util/hyphenate.ts'
 import negate from '../../../util/negate.ts'
 import partition from '../../../util/partition.ts'
 import { MeasurementTask } from './Measurement.tsx'
-import { isFinding, isLink, isManage, isMeasurement } from './type-predicates.ts'
 import { uniqueIdentifier } from './uniqueIdentifier.ts'
 import { DueTo } from './DueTo.tsx'
+import { isLink, isFinding, isManage, isMeasurement } from '../../../shared/tasks.ts'
+import {  } from '../../../shared/vitals.ts'
 
 export function MeasurementGroup({
   group,

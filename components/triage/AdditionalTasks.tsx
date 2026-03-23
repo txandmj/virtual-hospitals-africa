@@ -6,9 +6,9 @@ import SectionHeader from '../library/typography/SectionHeader.tsx'
 import { NoTasks } from './tasks/NoTasks.tsx'
 import { MeasurementGroup } from './tasks/MeasurementGroup.tsx'
 import { CheckForGroup } from './tasks/CheckForGroup.tsx'
-import { isLink } from './tasks/type-predicates.ts'
 import negate from '../../util/negate.ts'
 import { ReferenceDocs } from './tasks/ReferenceDocs.tsx'
+import { isLink, isManage } from '../../shared/tasks.ts'
 
 export default function AdditionalTasks({
   organization_id,
@@ -35,7 +35,7 @@ export default function AdditionalTasks({
   // a result we show those tasks with an indicator
   const page_mixed_completion = !!task_groups.length && !all_completed && !all_not_completed
 
-  const some_soliticing_finding_task = all_tasks.some(negate(isLink))
+  const some_soliticing_finding_task = all_tasks.filter(negate(isLink)).some(negate(isManage))
   const reference_docs = all_tasks.filter(isLink)
   const reference_docs_el = (
     <ReferenceDocs

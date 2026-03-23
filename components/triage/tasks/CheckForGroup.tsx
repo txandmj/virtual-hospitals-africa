@@ -1,9 +1,9 @@
 import { YesNoGrid } from '../../../islands/form/inputs/yes_no.tsx'
+import { isFinding } from '../../../shared/tasks.ts'
 import { TaskGroup } from '../../../types.ts'
 import cls from '../../../util/cls.ts'
 import { CheckForTask } from './CheckFor.tsx'
 import { DueTo } from './DueTo.tsx'
-import { isFinding } from './type-predicates.ts'
 import { uniqueIdentifier } from './uniqueIdentifier.ts'
 
 export function CheckForGroup({

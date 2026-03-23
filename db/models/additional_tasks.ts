@@ -53,6 +53,7 @@ import { patient_procedures } from './patient_procedures.ts'
 import { humanReadableJson } from '../../util/humanReadableJson.ts'
 import { logJSONToFileIfOnServer } from '../../util/logJSONToFileIfOnServer.ts'
 import sortBy from '../../util/sortBy.ts'
+import { assertUnreachable } from '../../util/assertUnreachable.ts'
 
 type TaskToInsert = {
   id: string
@@ -189,6 +190,8 @@ export const additional_tasks = {
       const task = getTaskById(evaluation.value.task_id)
       return { ...evaluation, task }
     })
+
+    logJSONToFileIfOnServer(evaluations_with_proto_tasks)
 
     const s_expression_to_existing_findings = new Map<string, Lang['finding' | 'measurement']>()
     const s_expression_to_already_done = new Map<string, ToBeDone>()
@@ -333,8 +336,7 @@ export const additional_tasks = {
     )
 
     const evaluation_ids: string[] = []
-    const task_groups: TaskGroup[] = []
-    const seen_finding_s_expressions = new Set<string>()
+    const unsorted_task_groups_with_potentially_duplicative_findings: TaskGroup[] = []
 
     for (const [record_ids_joined, evaluations] of task_group_map) {
       const due_to = record_ids_joined.split(';').map((record_id) =>
@@ -369,12 +371,6 @@ export const additional_tasks = {
         if (isCheckFor(to_be_done)) {
           return compactMap(to_be_done.value, (finding) => {
             const s_expression = inverseSExpression(finding)
-
-            if (seen_finding_s_expressions.has(s_expression)) {
-              return undefined
-            }
-            seen_finding_s_expressions.add(s_expression)
-
             const { displays } = formatRecord(toDisplayableRecord(finding))
             const existing_record: null | RenderedFindingRelativeToHealthWorker = existing_findings.find(matching({ s_expression })) || null
 
@@ -390,12 +386,6 @@ export const additional_tasks = {
         if (isMeasurements(to_be_done)) {
           return compactMap(to_be_done.value, (measurement) => {
             const s_expression = inverseSExpression(measurement)
-
-            if (seen_finding_s_expressions.has(s_expression)) {
-              return undefined
-            }
-            seen_finding_s_expressions.add(s_expression)
-
             const { displays } = formatRecord(toDisplayableRecord(measurement))
 
             return {
@@ -417,15 +407,39 @@ export const additional_tasks = {
         throw new Error(`to_be_done unclear ${humanReadableJson(to_be_done)}`)
       })
 
-      const completed = tasks.every((task) => {
-        return task.atom === 'link' || task.existing_record
-      })
+      const completed = tasks.every((task) => task.atom === 'link' || task.existing_record)
 
-      task_groups.push({ due_to, completed, tasks: sortBy(tasks, task => task.existing_record ? 1 : 0) })
+      unsorted_task_groups_with_potentially_duplicative_findings.push({ due_to, completed, tasks: sortBy(tasks, task => task.existing_record ? 1 : 0) })
     }
 
+
+    const task_groups_complete_first_with_potentially_duplicative_findings = sortBy(unsorted_task_groups_with_potentially_duplicative_findings, (task_group) => task_group.completed ? 0 : 1)
+    
+    const seen_finding_s_expressions = new Set<string>()
+    const task_groups_complete_first = task_groups_complete_first_with_potentially_duplicative_findings.map(task_group => ({
+      ...task_group,
+      tasks: task_group.tasks.filter(task => {
+        switch (task.atom) {
+          case 'link': case 'procedure': return true
+          case 'finding': case 'measurement': {
+            if (seen_finding_s_expressions.has(task.s_expression)) {
+              return false
+            }
+            seen_finding_s_expressions.add(task.s_expression)
+            return true
+          }
+          default:
+            return assertUnreachable(task)
+        }
+      })
+    }))
+
+
     // incomplete first
-    return { evaluation_ids, task_groups: sortBy(task_groups, (task_group) => task_group.completed ? 1 : 0) }
+    return { 
+      evaluation_ids, 
+      task_groups: task_groups_complete_first.toReversed()
+    }
   },
   async procedureCompletedTasks(
     trx: TrxOrDbOrQueryCreator,

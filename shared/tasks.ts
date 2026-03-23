@@ -7,6 +7,7 @@ import { ADULT_PAC_SYMPTOMS_TABLE_OF_CONTENTS } from './pack-adult.ts'
 import { task } from './s_expression_schemas.ts'
 import { TASKS_LISP } from '../s_expression/tasks.ts'
 import findMatching from '../util/findMatching.ts'
+import { RenderedTaskToBeDone } from '../types.ts'
 
 function asTask(task_s_expression: string) {
   return parseWithSchema(task_s_expression, task)
@@ -61,4 +62,20 @@ export const TASKS = TASK_DEFS.map(asTask)
 // TODO: We may need to distinguish these for management tasks where the same task is done for different conditions
 export function getTaskById(id: string) {
   return findMatching(TASKS, { description: id })
+}
+
+export function isLink(task: RenderedTaskToBeDone): task is RenderedTaskToBeDone & { atom: 'link' } {
+  return task.atom === 'link'
+}
+
+export function isFinding(task: RenderedTaskToBeDone): task is RenderedTaskToBeDone & { atom: 'finding' } {
+  return task.atom === 'finding'
+}
+
+export function isManage(task: RenderedTaskToBeDone): task is RenderedTaskToBeDone & { atom: 'procedure' } {
+  return task.atom === 'procedure'
+}
+
+export function isMeasurement(task: RenderedTaskToBeDone): task is RenderedTaskToBeDone & { atom: 'measurement' } {
+  return task.atom === 'measurement'
 }

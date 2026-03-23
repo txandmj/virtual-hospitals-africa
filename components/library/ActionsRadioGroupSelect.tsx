@@ -21,7 +21,7 @@ export function ActionsRadioGroupSelect(
 ) {
   return (
     <fieldset>
-      <div className='divide-y divide-gray-200 overflow-hidden rounded-lg bg-gray-200 shadow md:grid md:grid-cols-2 sm:divide-y-0'>
+      <div className='divide-y divide-gray-200 overflow-hidden rounded-lg bg-gray-200 shadow'>
         {options.map((option, idx) => (
           <label
             key={option.id}
@@ -30,10 +30,8 @@ export function ActionsRadioGroupSelect(
               'focus-within:outline focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-indigo-600',
               'has-[:checked]:bg-indigo-50 has-[:checked]:outline has-[:checked]:outline-2 has-[:checked]:-outline-offset-2 has-[:checked]:outline-indigo-600',
               {
-                'rounded-tl-lg rounded-tr-lg sm:rounded-tr-none': idx === 0,
-                'sm:rounded-tr-lg': idx === 1,
-                'sm:rounded-bl-lg': idx === options.length - 2,
-                'rounded-bl-lg rounded-br-lg sm:rounded-bl-none': idx === options.length - 1,
+                'rounded-tl-lg rounded-tr-lg': idx === 0,
+                'rounded-bl-lg rounded-br-lg': idx === options.length - 1,
               },
             )}
             data-option-value={option.id}
