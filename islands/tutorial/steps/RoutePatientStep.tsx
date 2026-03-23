@@ -3,7 +3,7 @@
 // Route patient step - wraps RegistrationRoutePatientSection with mock data
 // =============================================================================
 
-import { getTutorialRoutePatientData, TUTORIAL_CLINIC_EMPLOYEES } from '../../../shared/tutorial/mock-data.ts'
+import { getTutorialRoutePatientData, TUTORIAL_CLINIC_EMPLOYEES, TUTORIAL_MANAGE_PATIENT_TASKS } from '../../../shared/tutorial/mock-data.ts'
 import TriageRoutePatientSection from '../../triage/RoutePatientSection.tsx'
 
 /**
@@ -26,6 +26,7 @@ export function RoutePatientStep() {
           target_treatment_time: new Date(),
         }}
         clinic_employees={TUTORIAL_CLINIC_EMPLOYEES}
+        manage_patient_tasks={TUTORIAL_MANAGE_PATIENT_TASKS}
       />
     </div>
   )

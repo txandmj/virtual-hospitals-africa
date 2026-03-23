@@ -27,8 +27,8 @@ export default function AdditionalTasks({
 
   const all_tasks = task_groups.flatMap((task_group) => task_group.tasks)
   const all_due_to = task_groups.flatMap((task_group) => task_group.due_to)
-  const all_completed = task_groups.every(task_group => task_group.completed)
-  const all_not_completed = task_groups.every(task_group => !task_group.completed)
+  const all_completed = task_groups.every((task_group) => task_group.completed)
+  const all_not_completed = task_groups.every((task_group) => !task_group.completed)
 
   // Mixed completion means you arrived back on this page because of findings
   // you submitted on this page, but there are new tasks for you to do and as

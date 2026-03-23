@@ -15,6 +15,7 @@ import type {
   RenderedFindingRelativeToHealthWorker,
   RenderedPatientCompletedRegistration,
   RenderedSidebarWorkflow,
+  RenderedTaskToBeDone,
   RenderedWaitingRoom,
   SnomedWarningSignSearchResult,
   TaskGroup,
@@ -5204,3 +5205,58 @@ export const TUTORIAL_ASSIGN_PRIORITY = {
   'priority': 'Urgent',
   'total_score': { 'score': 1, 'priority': 'Non-urgent' },
 }
+
+export const TUTORIAL_MANAGE_PATIENT_TASKS: Array<
+  RenderedTaskToBeDone & {
+    atom: 'procedure'
+  }
+> = [
+  {
+    'atom': 'procedure' as const,
+    'root_snomed_concept': {
+      'atom': 'snomed_concept' as const,
+      'name': 'Procedure',
+      'category': 'procedure',
+    },
+    'specific_snomed_concept': {
+      'atom': 'snomed_concept' as const,
+      'name': 'Patient management procedure',
+      'category': 'procedure',
+    },
+    'qualifiers': [],
+    'attributes': [],
+    'value': { 'atom': 'snomed_concept', 'name': 'Oxygen therapy', 'category': 'procedure' },
+    'displays': {
+      'finding': 'Patient management procedure Procedure',
+      'value': 'Oxygen therapy',
+      'full': 'Patient management procedure Procedure: Oxygen therapy',
+    },
+    's_expression': '(manage (snomed_concept "Oxygen therapy" "procedure"))',
+    'existing_record': null,
+    'description': 'Administer oxygen for anaphylaxis patient',
+  },
+  {
+    'atom': 'procedure' as const,
+    'root_snomed_concept': {
+      'atom': 'snomed_concept' as const,
+      'name': 'Procedure',
+      'category': 'procedure',
+    },
+    'specific_snomed_concept': {
+      'atom': 'snomed_concept' as const,
+      'name': 'Patient management procedure',
+      'category': 'procedure',
+    },
+    'qualifiers': [],
+    'attributes': [],
+    'value': { 'atom': 'snomed_concept' as const, 'name': 'Elevation of lower limb', 'category': 'procedure' },
+    'displays': {
+      'finding': 'Patient management procedure Procedure',
+      'value': 'Elevation of lower limb',
+      'full': 'Patient management procedure Procedure: Elevation of lower limb',
+    },
+    's_expression': '(manage (snomed_concept "Elevation of lower limb" "procedure"))',
+    'existing_record': null,
+    'description': 'Raise legs for anaphylaxis patient',
+  },
+]

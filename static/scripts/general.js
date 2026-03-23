@@ -306,6 +306,10 @@ addEventListener('submit', function (event) {
         })
       case 500:
         return response.text().then(function (text) {
+          if (text.startsWith('<!DOCTYPE html>')) {
+            load(text)
+            return history.pushState({}, '', response.url)
+          }
           return onError('Internal Server Error: ' + text)
         })
       default:

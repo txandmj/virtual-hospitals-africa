@@ -51,7 +51,7 @@ import { getTaskById } from '../../shared/tasks.ts'
 import isObjectLike from '../../util/isObjectLike.ts'
 import { patient_procedures } from './patient_procedures.ts'
 import { humanReadableJson } from '../../util/humanReadableJson.ts'
-import { logJSONToFileIfOnServer } from '../../util/logJSONToFileIfOnServer.ts'
+
 import sortBy from '../../util/sortBy.ts'
 import { assertUnreachable } from '../../util/assertUnreachable.ts'
 
@@ -190,8 +190,6 @@ export const additional_tasks = {
       const task = getTaskById(evaluation.value.task_id)
       return { ...evaluation, task }
     })
-
-    logJSONToFileIfOnServer(evaluations_with_proto_tasks)
 
     const s_expression_to_existing_findings = new Map<string, Lang['finding' | 'measurement']>()
     const s_expression_to_already_done = new Map<string, ToBeDone>()
@@ -409,19 +407,24 @@ export const additional_tasks = {
 
       const completed = tasks.every((task) => task.atom === 'link' || task.existing_record)
 
-      unsorted_task_groups_with_potentially_duplicative_findings.push({ due_to, completed, tasks: sortBy(tasks, task => task.existing_record ? 1 : 0) })
+      unsorted_task_groups_with_potentially_duplicative_findings.push({ due_to, completed, tasks: sortBy(tasks, (task) => task.existing_record ? 1 : 0) })
     }
 
+    const task_groups_complete_first_with_potentially_duplicative_findings = sortBy(
+      unsorted_task_groups_with_potentially_duplicative_findings,
+      (task_group) => task_group.completed ? 0 : 1,
+    )
 
-    const task_groups_complete_first_with_potentially_duplicative_findings = sortBy(unsorted_task_groups_with_potentially_duplicative_findings, (task_group) => task_group.completed ? 0 : 1)
-    
     const seen_finding_s_expressions = new Set<string>()
-    const task_groups_complete_first = task_groups_complete_first_with_potentially_duplicative_findings.map(task_group => ({
+    const task_groups_complete_first = task_groups_complete_first_with_potentially_duplicative_findings.map((task_group) => ({
       ...task_group,
-      tasks: task_group.tasks.filter(task => {
+      tasks: task_group.tasks.filter((task) => {
         switch (task.atom) {
-          case 'link': case 'procedure': return true
-          case 'finding': case 'measurement': {
+          case 'link':
+          case 'procedure':
+            return true
+          case 'finding':
+          case 'measurement': {
             if (seen_finding_s_expressions.has(task.s_expression)) {
               return false
             }
@@ -431,14 +434,13 @@ export const additional_tasks = {
           default:
             return assertUnreachable(task)
         }
-      })
+      }),
     }))
 
-
     // incomplete first
-    return { 
-      evaluation_ids, 
-      task_groups: task_groups_complete_first.toReversed()
+    return {
+      evaluation_ids,
+      task_groups: task_groups_complete_first.toReversed(),
     }
   },
   async procedureCompletedTasks(

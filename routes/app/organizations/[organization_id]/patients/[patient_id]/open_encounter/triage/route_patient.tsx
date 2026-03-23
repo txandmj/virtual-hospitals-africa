@@ -17,6 +17,7 @@ import { redirectToFirstIncompleteStep } from '../index.tsx'
 import { additional_tasks } from '../../../../../../../../db/models/additional_tasks.ts'
 import { assertOrRedirect } from '../../../../../../../../util/assertOr.ts'
 import { isManage } from '../../../../../../../../shared/tasks.ts'
+import { logReadableJson } from '../../../../../../../../util/humanReadableJson.ts'
 
 export const TriageRoutePatientSchema = z.object({
   next_step: z.enum(TRIAGE_ROUTE_PATIENT_NEXT_STEPS),
@@ -59,7 +60,8 @@ export const handler = postHandler(
           `/app/organizations/${organization.id}/waiting_room`,
         ))
       }
-      case 'hand_over': {
+      case 'manage_and_refer':
+      case 'refer': {
         const { redirect_to } = await promiseProps({
           completing_last_step,
           redirect_to: startWorkflow(
@@ -92,12 +94,13 @@ async function managePatientTasks(
 ) {
   const { trx, health_worker_id, encounter, open_encounter_pathname } = ctx.state
   const { task_groups } = await additional_tasks.getTasksGroups(trx, { health_worker_id, encounter })
-  const some_non_manage_task_incomplete = task_groups.some(task_group => 
-    !task_group.completed && task_group.tasks.some(task => task.atom === 'finding' || task.atom === 'measurement'))
-  
+  const some_non_manage_task_incomplete = task_groups.some((task_group) =>
+    !task_group.completed && task_group.tasks.some((task) => task.atom === 'finding' || task.atom === 'measurement')
+  )
+
   assertOrRedirect(!some_non_manage_task_incomplete, `${open_encounter_pathname}/triage/additional_tasks_and_investigations`)
 
-  const manage_patient_tasks = task_groups.flatMap(task_group => task_group.tasks.filter(isManage))
+  const manage_patient_tasks = task_groups.flatMap((task_group) => task_group.tasks.filter(isManage))
   return manage_patient_tasks
 }
 
@@ -125,8 +128,10 @@ export async function PatientTriageRoutePatientPage(
       organization_id,
       excluding_health_worker_id: health_worker_id,
     }),
-    manage_patient_tasks: managePatientTasks(ctx)
+    manage_patient_tasks: managePatientTasks(ctx),
   })
+
+  logReadableJson(manage_patient_tasks)
 
   return (
     <TriageRoutePatientSection

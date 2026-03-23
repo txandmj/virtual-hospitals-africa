@@ -4,6 +4,10 @@ set -euo pipefail
 cmd="$1"
 shift
 
+if ! diff .env .env.local >/dev/null; then
+  exit 0
+fi
+
 deno task switch:local
 
 if [[ "$cmd" == db:* ]]; then

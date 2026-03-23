@@ -6,8 +6,8 @@ import partition from '../../../util/partition.ts'
 import { MeasurementTask } from './Measurement.tsx'
 import { uniqueIdentifier } from './uniqueIdentifier.ts'
 import { DueTo } from './DueTo.tsx'
-import { isLink, isFinding, isManage, isMeasurement } from '../../../shared/tasks.ts'
-import {  } from '../../../shared/vitals.ts'
+import { isFinding, isLink, isManage, isMeasurement } from '../../../shared/tasks.ts'
+import {} from '../../../shared/vitals.ts'
 
 export function MeasurementGroup({
   group,
@@ -29,11 +29,10 @@ export function MeasurementGroup({
 
   return (
     <div class='task-group-card flex flex-col gap-4' data-due-to={group.due_to.map((x) => hyphenate(x.displays.full)).join('-')}>
-      <DueTo 
+      <DueTo
         due_to={group.due_to}
-        group_completed={group.completed}
-        page_mixed_completion={page_mixed_completion}
-        organization_id={organization_id} 
+        is_follow_up={page_mixed_completion && !group.completed}
+        organization_id={organization_id}
       />
 
       {measure_tasks.map((task) => (

@@ -223,17 +223,17 @@ describeParallel('db/models/s_expression.ts', () => {
     )
 
     const bite_result = await buildExpression(
-      db, 
+      db,
       { patient_id, patient_encounter_id },
-      `(clinical_finding (snomed_concept "Bite - wound" "disorder"))`
+      `(clinical_finding (snomed_concept "Bite - wound" "disorder"))`,
     ).execute()
 
     assertEquals(bite_result, [{ id: inserted_findings.finding_ids[0] }])
 
     const excluding_animal_bite_result = await buildExpression(
-      db, 
+      db,
       { patient_id, patient_encounter_id },
-      `(clinical_finding (snomed_concept "Bite - wound" "disorder") (excluding (clinical_finding (snomed_concept "Animal bite wound" "disorder"))))`
+      `(clinical_finding (snomed_concept "Bite - wound" "disorder") (excluding (clinical_finding (snomed_concept "Animal bite wound" "disorder"))))`,
     ).execute()
 
     assertEquals(excluding_animal_bite_result, [])

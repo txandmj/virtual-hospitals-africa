@@ -5,7 +5,7 @@ import { ApplicableRule, ApplicableRuleEffectSystemSystemDiagnosisRule, RuleRunn
 import { blankSelection, success_true } from '../helpers.ts'
 import { DONE, EVIDENCE_OF_CONTEXTUAL_QUALIFIER, RELATIONSHIP, TO_BE_DONE } from '../../shared/snomed_concepts.ts'
 import { parseWithSchema } from '../../shared/s_expression.ts'
-import { system_diagnosis_rule } from '../../shared/s_expression_schemas.ts'
+import { Lang, system_diagnosis_rule } from '../../shared/s_expression_schemas.ts'
 import { SYSTEM_DIAGNOSIS_RULES_LISP } from '../../s_expression/system_diagnosis_rules.ts'
 import generateUUID from '../../util/uuid.ts'
 import isObjectLike from '../../util/isObjectLike.ts'
@@ -20,8 +20,14 @@ import { pMap } from '../../util/inParallel.ts'
 import compact from '../../util/compact.ts'
 import uniq from '../../util/uniq.ts'
 import compactMap from '../../util/compactMap.ts'
-import matching from '../../util/matching.ts'
 import { groupBy } from '../../util/groupBy.ts'
+import { logJSONToFileIfOnServer } from '../../util/logJSONToFileIfOnServer.ts'
+import { getTaskById } from '../../shared/tasks.ts'
+import { allEvidenceToLookFor } from './s_expression_evidence.ts'
+import { isCheckFor } from './additional_tasks.ts'
+import { inverseSExpression } from '../../shared/s_expression_inverse.ts'
+import { asNormalFormSExpression } from '../../shared/patient_records.ts'
+import { patient_findings } from './patient_findings.ts'
 
 export const SYSTEM_DIAGNOSIS_RULES_PARSED = SYSTEM_DIAGNOSIS_RULES_LISP.map((d) => parseWithSchema(d, system_diagnosis_rule))
 
@@ -39,14 +45,14 @@ const CERTAINTY_ORDER: Record<ApplicableRuleEffectSystemSystemDiagnosisRule['cer
 
 type PresentDiagnosis = {
   id: string
-  certainty: "definite" | "probable" | "equivocal" | "possible" | "improbable"
+  certainty: 'definite' | 'probable' | 'equivocal' | 'possible' | 'improbable'
 }
 
 type InsertDiagnosisResult = {
-  certainty: "definite" | "probable" | "equivocal" | "possible" | "improbable"
+  certainty: 'definite' | 'probable' | 'equivocal' | 'possible' | 'improbable'
   record_id: string
-  specific_snomed_concept: { name: string, category: SnomedCategory }
-  result: "already_present" | "inserted"
+  specific_snomed_concept: { name: string; category: SnomedCategory }
+  result: 'already_present' | 'inserted'
 }
 
 function presentDiagnosis(
@@ -200,11 +206,11 @@ export const system_diagnosis_rules = {
 
       if (!do_insert) {
         assert(already_present_diagnosis)
-        return { 
+        return {
           certainty: already_present_diagnosis.certainty,
           record_id: already_present_diagnosis.id,
           specific_snomed_concept: exists(diagnosis_node.specific_snomed_concept),
-          result: "already_present" as const
+          result: 'already_present' as const,
         }
       }
 
@@ -214,28 +220,40 @@ export const system_diagnosis_rules = {
         matching_finding_ids,
       })
 
-      return { 
+      return {
         certainty: highest_certainty_rule.rule_effect.certainty,
         record_id: inserted_diagnosis.record_id,
         specific_snomed_concept: exists(diagnosis_node.specific_snomed_concept),
-        result: "inserted" as const
+        result: 'inserted' as const,
       }
     }).then(compact)
   },
+  // TODO: revisit this whole idea
   async insertImprobableDiagnoses(
     trx: TrxOrDb,
     input: RuleRunnerInput & {
       procedure_id: string
     },
-    inserted_diagnoses: InsertDiagnosisResult[],
+    _inserted_diagnoses_results: InsertDiagnosisResult[],
   ) {
-    const possible_diagnoses_now_completed = await trx
+    const possible_diagnosis_tasks_now_completed_with_no_other_diagnoses = await trx
       .selectFrom('patient_record_relations as done_relations')
       .innerJoin('patient_records_aggregated as done_records', 'done_relations.id', 'done_records.id')
       .innerJoin('patient_records_aggregated as task_records', 'done_relations.destination_id', 'task_records.id')
       .innerJoin('patient_record_relations as due_to_relations', 'due_to_relations.source_id', 'task_records.id')
       .innerJoin('patient_records_aggregated as due_to_records', 'due_to_records.id', 'due_to_relations.id')
       .innerJoin('patient_records_aggregated as diagnosis_records', 'diagnosis_records.id', 'due_to_relations.destination_id')
+      .leftJoin('patient_records_aggregated as other_diagnosis', (join) =>
+        join
+          .onRef('other_diagnosis.specific_snomed_concept_id', '=', 'diagnosis_records.specific_snomed_concept_id')
+          .on(
+            'other_diagnosis.id',
+            'in',
+            buildExpression(trx, input, diagnosisToEvaluation({ certainty_qualifier: 'probable' }))
+              .union(buildExpression(trx, input, diagnosisToEvaluation({ certainty_qualifier: 'improbable' })))
+              .union(buildExpression(trx, input, diagnosisToEvaluation({ certainty_qualifier: 'equivocal' })))
+              .union(buildExpression(trx, input, diagnosisToEvaluation({ certainty_qualifier: 'definite' }))),
+          ))
       .where('task_records.specific_snomed_concept_id', '=', TO_BE_DONE.id)
       .where('done_relations.source_id', '=', input.procedure_id)
       .where('done_records.specific_snomed_concept_id', '=', DONE.id)
@@ -248,15 +266,43 @@ export const system_diagnosis_rules = {
           diagnosisToEvaluation({ certainty_qualifier: 'possible' }),
         ),
       )
+      .where('other_diagnosis.id', 'is', null)
       .selectAll('diagnosis_records')
+      .select('task_records.value as task_value')
       .execute()
 
-    const possible_diagnoses_now_improbable = possible_diagnoses_now_completed.filter(({ specific_snomed_concept_name, specific_snomed_concept_category }) => {
-      const inserted_diagnosis_for_same_condition = inserted_diagnoses.some()
-      return !inserted_diagnosis_for_same_condition
-    })
+    if (!possible_diagnosis_tasks_now_completed_with_no_other_diagnoses.length) return []
 
-    return pMap(possible_diagnoses_now_improbable, (possible_diagnosis) => {
+    //       .then(tasks => tasks.map(
+    //     possible_diagnosis => {
+
+    //     }
+    //   )
+    // )
+
+    // logJSONToFileIfOnServer(possible_diagnoses_now_completed)
+
+    // // While we have filtered out diagnoses just made, that's not a guarantee that there aren't already diaganoses in the database, so another pass is needed below
+    // const possible_diagnoses_now_maybe_improbable = possible_diagnoses_now_completed.filter(({ specific_snomed_concept_name, specific_snomed_concept_category }) => {
+    //   const inserted_diagnosis_for_same_condition = inserted_diagnoses_results.some(inserted_diagnosis_result =>
+    //     inserted_diagnosis_result.specific_snomed_concept.name === specific_snomed_concept_name &&
+    //     inserted_diagnosis_result.specific_snomed_concept.category === specific_snomed_concept_category
+    //   )
+    //   return !inserted_diagnosis_for_same_condition
+    // })
+
+    const no_record_ids = compactMap(input.records, (record) => record.existence === 'No' && record.id)
+    const no_findings = await patient_findings.getByIds(trx, no_record_ids, { include_negative: true })
+
+    logJSONToFileIfOnServer(
+      no_findings.map((no_finding) => ({
+        ...no_finding,
+        as_normal_form_s_expression: asNormalFormSExpression(no_finding),
+      })),
+    )
+
+    return pMap(groupBy(possible_diagnosis_tasks_now_completed_with_no_other_diagnoses, 'specific_snomed_concept_id').values(), (possible_diagnosis_tasks) => {
+      const [possible_diagnosis] = possible_diagnosis_tasks
       const diagnosis_node = diagnosisToEvaluation({
         snomed_concept: {
           atom: 'snomed_concept',
@@ -265,11 +311,41 @@ export const system_diagnosis_rules = {
         },
         certainty_qualifier: 'improbable',
       })
-      const matching_finding_ids = compactMap(input.records, (record) => record.existence === 'No' && record.id)
+
+      const matching_finding_ids = new Set<string>()
+      for (const possible_diagnosis_task of possible_diagnosis_tasks) {
+        assert(possible_diagnosis_task.task_value)
+        assert(isObjectLike(possible_diagnosis_task.task_value))
+        assert(isString(possible_diagnosis_task.task_value.task_id))
+        const { to_be_done } = getTaskById(possible_diagnosis_task.task_value.task_id)
+
+        if (isCheckFor(to_be_done)) {
+          for (const finding of to_be_done.value as unknown as Lang['finding'][]) {
+            for (const evidence of allEvidenceToLookFor(finding)) {
+              for (const record of no_findings) {
+                if (
+                  inverseSExpression(evidence) === asNormalFormSExpression({
+                    ...record,
+                    value: null,
+                  })
+                ) {
+                  matching_finding_ids.add(record.id)
+                }
+              }
+            }
+          }
+        }
+      }
+
+      logJSONToFileIfOnServer({
+        no_findings,
+        possible_diagnosis_tasks,
+      })
+
       return system_diagnosis_rules.insertOne(trx, {
         ...input,
         diagnosis_node,
-        matching_finding_ids,
+        matching_finding_ids: Array.from(matching_finding_ids),
       })
     })
   },
@@ -282,8 +358,6 @@ export const system_diagnosis_rules = {
     const rules_result = await rules.getApplicableBasedOnNewRecords(trx, input, 'system_diagnosis_rule')
     const inserted_diagnoses = await system_diagnosis_rules.insertPositiveDiagnoses(trx, input, rules_result)
     const improbable_diagnoses = await system_diagnosis_rules.insertImprobableDiagnoses(trx, input, inserted_diagnoses)
-
-    console.log({ rules_result, inserted_diagnoses, improbable_diagnoses })
 
     return compact([
       inserted_diagnoses.length && `Inserted ${inserted_diagnoses.length} diagnosis(es): ${inserted_diagnoses.map((d) => d.record_id).join(', ')}`,

@@ -36,3 +36,11 @@
     (snomed_concept "Elevation of lower limb" "procedure")
   )
 )
+(task
+  "Administer oxygen for anaphylaxis patient"
+  adult
+  (active_condition (snomed_concept "Anaphylaxis" "disorder"))
+  (manage
+    (snomed_concept "Oxygen therapy" "procedure")
+  )
+)

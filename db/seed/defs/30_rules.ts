@@ -224,4 +224,4 @@ export default define([
       .returning('id')
       .executeTakeFirstOrThrow()
   })
-})
+}, { never_dump: true })

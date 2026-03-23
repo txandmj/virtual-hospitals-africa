@@ -32,8 +32,7 @@ export function CheckForGroup({
             key={index}
             due_to={group.due_to}
             organization_id={organization_id}
-            group_completed={group.completed}
-            page_mixed_completion={page_mixed_completion}
+            is_follow_up={page_mixed_completion && !group.completed}
             className={cls('col-span-4 pl-4', {
               'pt-1': index === 0,
               'pt-5': index > 0,
