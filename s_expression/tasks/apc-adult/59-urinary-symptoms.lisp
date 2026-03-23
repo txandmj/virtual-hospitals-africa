@@ -11,7 +11,7 @@
     (clinical_finding (snomed_concept "Right flank pain" "finding") (qualifier (snomed_concept "Sudden onset" "qualifier value")) (qualifier (snomed_concept "Severe (severity modifier)" "qualifier value")))
     (clinical_finding (snomed_concept "Blood in urine" "finding"))
     (clinical_finding (snomed_concept "Oliguria" "finding"))
-    (clinical_finding (snomed_concept "Facial swelling" "finding") (qualifier (snomed_concept "New" "qualifier value")))
+    (clinical_finding (snomed_concept "Swelling" "finding") (finding_site (snomed_concept "Face structure" "body structure")) (qualifier (snomed_concept "New" "qualifier value")))
     (clinical_finding (snomed_concept "Swelling of bilateral feet" "finding") (qualifier (snomed_concept "New" "qualifier value")))
     (clinical_finding (snomed_concept "Proteinuria" "finding"))
     (clinical_finding (snomed_concept "Left inguinal pain" "finding") (qualifier (snomed_concept "Sudden onset" "qualifier value")) (qualifier (snomed_concept "Severe (severity modifier)" "qualifier value")))

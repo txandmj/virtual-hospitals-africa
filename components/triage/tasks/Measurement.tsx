@@ -11,7 +11,7 @@ export function MeasurementTask({ organization_id, task }: { organization_id: st
       <VitalsInputRow
         required
         name={name}
-        most_recent_patient_finding={task.existing_measurement}
+        most_recent_patient_finding={task.existing_record}
         label={task.snomed_concept.name}
         organization_id={organization_id}
         input_width='w-32'
@@ -20,7 +20,7 @@ export function MeasurementTask({ organization_id, task }: { organization_id: st
             required
             units={task.units}
             name={name}
-            value={task.existing_measurement?.value.value}
+            value={task.existing_record?.value.value}
             label=''
           />
         }
@@ -30,12 +30,12 @@ export function MeasurementTask({ organization_id, task }: { organization_id: st
         value={task.s_expression}
       />
       <HiddenInput
-        name={`${name}.existing_measurement.id`}
-        value={task.existing_measurement?.id}
+        name={`${name}.existing_record.id`}
+        value={task.existing_record?.id}
       />
       <HiddenInput
-        name={`${name}.existing_measurement.value`}
-        value={task.existing_measurement?.value.value}
+        name={`${name}.existing_record.value`}
+        value={task.existing_record?.value.value}
       />
     </>
   )

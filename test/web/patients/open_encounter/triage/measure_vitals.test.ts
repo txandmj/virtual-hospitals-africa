@@ -912,7 +912,7 @@ describeParallel('triage/measure_vitals', () => {
                   finding: 'Hemoglobin saturation with oxygen',
                   full: 'Hemoglobin saturation with oxygen',
                 },
-                existing_measurement: null,
+                existing_record: null,
               },
             ],
           },

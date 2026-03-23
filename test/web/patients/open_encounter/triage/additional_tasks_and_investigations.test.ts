@@ -116,7 +116,7 @@ describeParallel('triage/additional_tasks_and_investigations', () => {
           'existence': 'Any',
           's_expression': '(finding (snomed_concept "Clinical finding" "finding") (snomed_concept "Pulse irregular" "finding"))',
           'displays': { 'value': null, 'finding': 'Pulse irregular', 'full': 'Pulse irregular' },
-          'existing_finding': null,
+          'existing_record': null,
         },
         {
           'atom': 'finding',
@@ -130,7 +130,7 @@ describeParallel('triage/additional_tasks_and_investigations', () => {
           'existence': 'Any',
           's_expression': '(finding (snomed_concept "Clinical finding" "finding") (snomed_concept "Severe pain" "finding"))',
           'displays': { 'value': null, 'finding': 'Severe pain', 'full': 'Severe pain' },
-          'existing_finding': {
+          'existing_record': {
             'finding_s_expression': '(finding (snomed_concept "Clinical finding" "finding") (snomed_concept "Severe pain" "finding"))',
             'specific_snomed_concept_name': 'Severe pain',
             'specific_snomed_concept_category': 'finding',
@@ -188,7 +188,7 @@ describeParallel('triage/additional_tasks_and_investigations', () => {
           's_expression':
             '(finding (snomed_concept "Clinical finding" "finding") (snomed_concept "Chest pain" "finding") (qualifier (snomed_concept "New" "qualifier value")))',
           'displays': { 'value': null, 'finding': 'New Chest pain', 'full': 'New Chest pain' },
-          'existing_finding': null,
+          'existing_record': null,
         },
         {
           'atom': 'finding',
@@ -209,7 +209,7 @@ describeParallel('triage/additional_tasks_and_investigations', () => {
           's_expression':
             '(finding (snomed_concept "Clinical finding" "finding") (snomed_concept "Chest discomfort" "finding") (qualifier (snomed_concept "New" "qualifier value")))',
           'displays': { 'value': null, 'finding': 'New Chest discomfort', 'full': 'New Chest discomfort' },
-          'existing_finding': null,
+          'existing_record': null,
         },
         {
           'atom': 'finding',
@@ -223,7 +223,7 @@ describeParallel('triage/additional_tasks_and_investigations', () => {
           'existence': 'Any',
           's_expression': '(finding (snomed_concept "Clinical finding" "finding") (snomed_concept "Nausea" "finding"))',
           'displays': { 'value': null, 'finding': 'Nausea', 'full': 'Nausea' },
-          'existing_finding': null,
+          'existing_record': null,
         },
         {
           'atom': 'finding',
@@ -237,7 +237,7 @@ describeParallel('triage/additional_tasks_and_investigations', () => {
           'existence': 'Any',
           's_expression': '(finding (snomed_concept "Clinical finding" "finding") (snomed_concept "Finding of vomiting" "finding"))',
           'displays': { 'value': null, 'finding': 'Vomiting', 'full': 'Vomiting' },
-          'existing_finding': null,
+          'existing_record': null,
         },
         {
           'atom': 'finding',
@@ -251,7 +251,7 @@ describeParallel('triage/additional_tasks_and_investigations', () => {
           'existence': 'Any',
           's_expression': '(finding (snomed_concept "Clinical finding" "finding") (snomed_concept "Pallor of skin of face" "finding"))',
           'displays': { 'value': null, 'finding': 'Pallor of skin of face', 'full': 'Pallor of skin of face' },
-          'existing_finding': null,
+          'existing_record': null,
         },
         {
           'atom': 'finding',
@@ -265,7 +265,7 @@ describeParallel('triage/additional_tasks_and_investigations', () => {
           'existence': 'Any',
           's_expression': '(finding (snomed_concept "Clinical finding" "finding") (snomed_concept "Sweating" "finding"))',
           'displays': { 'value': null, 'finding': 'Sweating', 'full': 'Sweating' },
-          'existing_finding': null,
+          'existing_record': null,
         },
         {
           'atom': 'finding',
@@ -279,7 +279,7 @@ describeParallel('triage/additional_tasks_and_investigations', () => {
           'existence': 'Any',
           's_expression': '(finding (snomed_concept "Clinical finding" "finding") (snomed_concept "Radiating chest pain" "finding"))',
           'displays': { 'value': null, 'finding': 'Radiating chest pain', 'full': 'Radiating chest pain' },
-          'existing_finding': null,
+          'existing_record': null,
         },
         {
           'atom': 'finding',
@@ -293,7 +293,7 @@ describeParallel('triage/additional_tasks_and_investigations', () => {
           'existence': 'Any',
           's_expression': '(finding (snomed_concept "Clinical finding" "finding") (snomed_concept "Pain radiating to jaw" "finding"))',
           'displays': { 'value': null, 'finding': 'Pain radiating to jaw', 'full': 'Pain radiating to jaw' },
-          'existing_finding': null,
+          'existing_record': null,
         },
         {
           'atom': 'finding',
@@ -307,7 +307,7 @@ describeParallel('triage/additional_tasks_and_investigations', () => {
           'existence': 'Any',
           's_expression': '(finding (snomed_concept "Clinical finding" "finding") (snomed_concept "Pain radiating to neck" "finding"))',
           'displays': { 'value': null, 'finding': 'Pain radiating to neck', 'full': 'Pain radiating to neck' },
-          'existing_finding': null,
+          'existing_record': null,
         },
         {
           'atom': 'finding',
@@ -325,7 +325,7 @@ describeParallel('triage/additional_tasks_and_investigations', () => {
           'existence': 'Any',
           's_expression': '(finding (snomed_concept "Clinical finding" "finding") (snomed_concept "Pain radiating to left arm" "finding"))',
           'displays': { 'value': null, 'finding': 'Pain radiating to left arm', 'full': 'Pain radiating to left arm' },
-          'existing_finding': null,
+          'existing_record': null,
         },
         {
           'atom': 'finding',
@@ -343,7 +343,7 @@ describeParallel('triage/additional_tasks_and_investigations', () => {
           'existence': 'Any',
           's_expression': '(finding (snomed_concept "Clinical finding" "finding") (snomed_concept "Pain radiating to right arm" "finding"))',
           'displays': { 'value': null, 'finding': 'Pain radiating to right arm', 'full': 'Pain radiating to right arm' },
-          'existing_finding': null,
+          'existing_record': null,
         },
         {
           'atom': 'finding',
@@ -365,7 +365,7 @@ describeParallel('triage/additional_tasks_and_investigations', () => {
             'finding': 'Pain radiating to left shoulder',
             'full': 'Pain radiating to left shoulder',
           },
-          'existing_finding': null,
+          'existing_record': null,
         },
         {
           'atom': 'finding',
@@ -387,7 +387,7 @@ describeParallel('triage/additional_tasks_and_investigations', () => {
             'finding': 'Pain radiating to right shoulder',
             'full': 'Pain radiating to right shoulder',
           },
-          'existing_finding': null,
+          'existing_record': null,
         },
         {
           'atom': 'finding',
@@ -401,7 +401,7 @@ describeParallel('triage/additional_tasks_and_investigations', () => {
           'existence': 'Any',
           's_expression': '(finding (snomed_concept "Clinical finding" "finding") (snomed_concept "Difficulty breathing" "finding"))',
           'displays': { 'value': null, 'finding': 'Difficulty breathing', 'full': 'Difficulty breathing' },
-          'existing_finding': null,
+          'existing_record': null,
         },
         {
           'atom': 'finding',
@@ -424,7 +424,7 @@ describeParallel('triage/additional_tasks_and_investigations', () => {
             'finding': 'History of treatment for ischemic heart disease',
             'full': 'History of treatment for ischemic heart disease',
           },
-          'existing_finding': null,
+          'existing_record': null,
         },
         {
           'atom': 'finding',
@@ -453,7 +453,7 @@ describeParallel('triage/additional_tasks_and_investigations', () => {
             'finding': 'Known present Diabetes mellitus',
             'full': 'Known present Diabetes mellitus',
           },
-          'existing_finding': null,
+          'existing_record': null,
         },
         {
           'atom': 'finding',
@@ -467,7 +467,7 @@ describeParallel('triage/additional_tasks_and_investigations', () => {
           'existence': 'Any',
           's_expression': '(finding (snomed_concept "Clinical finding" "finding") (snomed_concept "Smoker" "finding"))',
           'displays': { 'value': null, 'finding': 'Smoker', 'full': 'Smoker' },
-          'existing_finding': null,
+          'existing_record': null,
         },
         {
           'atom': 'finding',
@@ -500,7 +500,7 @@ describeParallel('triage/additional_tasks_and_investigations', () => {
             'finding': 'Known present Hypertensive disorder, systemic arterial',
             'full': 'Known present Hypertensive disorder, systemic arterial',
           },
-          'existing_finding': null,
+          'existing_record': null,
         },
         {
           'atom': 'finding',
@@ -529,7 +529,7 @@ describeParallel('triage/additional_tasks_and_investigations', () => {
             'finding': 'Known present Hypercholesterolemia',
             'full': 'Known present Hypercholesterolemia',
           },
-          'existing_finding': null,
+          'existing_record': null,
         },
         {
           'atom': 'finding',
@@ -551,7 +551,7 @@ describeParallel('triage/additional_tasks_and_investigations', () => {
             'finding': 'Family history of ischemic heart disease',
             'full': 'Family history of ischemic heart disease',
           },
-          'existing_finding': null,
+          'existing_record': null,
         },
         {
           'atom': 'finding',
@@ -565,7 +565,7 @@ describeParallel('triage/additional_tasks_and_investigations', () => {
           'existence': 'Any',
           's_expression': '(finding (snomed_concept "Clinical finding" "finding") (snomed_concept "ST segment elevation" "finding"))',
           'displays': { 'value': null, 'finding': 'St segment elevation', 'full': 'St segment elevation' },
-          'existing_finding': null,
+          'existing_record': null,
         },
         {
           'atom': 'finding',
@@ -579,7 +579,7 @@ describeParallel('triage/additional_tasks_and_investigations', () => {
           'existence': 'Any',
           's_expression': '(finding (snomed_concept "Clinical finding" "finding") (snomed_concept "ST segment depression" "finding"))',
           'displays': { 'value': null, 'finding': 'St segment depression', 'full': 'St segment depression' },
-          'existing_finding': null,
+          'existing_record': null,
         },
         {
           'atom': 'finding',
@@ -601,7 +601,7 @@ describeParallel('triage/additional_tasks_and_investigations', () => {
             'finding': 'Electrocardiographic left bundle branch block',
             'full': 'Electrocardiographic left bundle branch block',
           },
-          'existing_finding': null,
+          'existing_record': null,
         },
         {
           'atom': 'finding',
@@ -619,7 +619,7 @@ describeParallel('triage/additional_tasks_and_investigations', () => {
           'existence': 'Any',
           's_expression': '(finding (snomed_concept "Clinical finding" "finding") (snomed_concept "Chest pain on breathing" "finding"))',
           'displays': { 'value': null, 'finding': 'Chest pain on breathing', 'full': 'Chest pain on breathing' },
-          'existing_finding': null,
+          'existing_record': null,
         },
         {
           'atom': 'finding',
@@ -633,7 +633,7 @@ describeParallel('triage/additional_tasks_and_investigations', () => {
           'existence': 'Any',
           's_expression': '(finding (snomed_concept "Clinical finding" "finding") (snomed_concept "Pleuritic pain" "finding"))',
           'displays': { 'value': null, 'finding': 'Pleuritic pain', 'full': 'Pleuritic pain' },
-          'existing_finding': null,
+          'existing_record': null,
         },
       ],
       (task) => task.atom === 'link' ? 0 : 1,
@@ -820,7 +820,7 @@ describeParallel('triage/additional_tasks_and_investigations', () => {
           },
           'finding-insect-bite-wound': {
             s_expression: '(finding (snomed_concept "Clinical finding" "finding") (snomed_concept "Insect bite - wound" "disorder"))',
-            existing_finding: {
+            existing_record: {
               id: z.string().uuid(),
               existence: 'Yes',
             },
@@ -993,8 +993,8 @@ describeParallel('triage/additional_tasks_and_investigations', () => {
             },
             'finding-insect-bite-wound': {
               s_expression: '(finding (snomed_concept "Clinical finding" "finding") (snomed_concept "Insect bite - wound" "disorder"))',
-              existing_finding: {
-                id: form_values['check_for']['finding-insect-bite-wound']['existing_finding']['id'] as string,
+              existing_record: {
+                id: form_values['check_for']['finding-insect-bite-wound']['existing_record']['id'] as string,
                 existence: 'Yes',
               },
               existence: 'Yes',
@@ -1118,7 +1118,7 @@ describeParallel('triage/additional_tasks_and_investigations', () => {
         'Priority / Score': '',
       }, { strict: true })
 
-      // GET the additional_tasks page again to get updated form values with existing_finding IDs
+      // GET the additional_tasks page again to get updated form values with existing_record IDs
       const $additional_tasks_2 = await getStep('additional_tasks_and_investigations')
 
       // deno-lint-ignore no-explicit-any

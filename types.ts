@@ -2771,22 +2771,24 @@ export type RenderedRoom = {
 }
 
 export type RenderedTaskToBeDone =
-  | Lang['link']
+  | Lang['link'] & {
+    existing_record?: never
+  }
   | Lang['procedure'] & {
     description: string
     displays: RecordDisplays
     s_expression: string
-    existing_procedure: null | RenderedProcedureRelativeToHealthWorker
+    existing_record: null | RenderedProcedureRelativeToHealthWorker
   }
   | Lang['finding'] & {
     displays: RecordDisplays
     s_expression: string
-    existing_finding: null | RenderedFindingRelativeToHealthWorker
+    existing_record: null | RenderedFindingRelativeToHealthWorker
   }
   | Lang['measurement'] & {
     displays: RecordDisplays
     s_expression: string
-    existing_measurement: null | (RenderedFindingRelativeToHealthWorker & { value: RecordValueMeasurement })
+    existing_record: null | (RenderedFindingRelativeToHealthWorker & { value: RecordValueMeasurement })
   }
 // & {
 //   task: {
@@ -2796,6 +2798,7 @@ export type RenderedTaskToBeDone =
 //   // atom: 'link' | 'finding' | 'measurement'
 // }
 export type TaskGroup = {
+  completed: boolean
   due_to: Array<RenderedFindingRelativeToHealthWorker | RenderedEvaluationRelativeToHealthWorker>
   tasks: RenderedTaskToBeDone[]
   // description?: string

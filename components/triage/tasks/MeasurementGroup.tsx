@@ -8,11 +8,13 @@ import { isFinding, isLink, isManage, isMeasurement } from './type-predicates.ts
 import { uniqueIdentifier } from './uniqueIdentifier.ts'
 import { DueTo } from './DueTo.tsx'
 
-export function TaskGroupCard({
+export function MeasurementGroup({
   group,
+  page_mixed_completion,
   organization_id,
 }: {
   group: TaskGroup
+  page_mixed_completion: boolean
   organization_id: string
 }) {
   const tasks = group.tasks
@@ -26,7 +28,12 @@ export function TaskGroupCard({
 
   return (
     <div class='task-group-card flex flex-col gap-4' data-due-to={group.due_to.map((x) => hyphenate(x.displays.full)).join('-')}>
-      <DueTo due_to={group.due_to} organization_id={organization_id} />
+      <DueTo 
+        due_to={group.due_to}
+        group_completed={group.completed}
+        page_mixed_completion={page_mixed_completion}
+        organization_id={organization_id} 
+      />
 
       {measure_tasks.map((task) => (
         <MeasurementTask

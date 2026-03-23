@@ -100,8 +100,8 @@ export async function PatientTriageRoutePatientPage(
   }
   assert(completedPersonal(patient))
 
-  const { evaluation_ids, task_groups } = await additional_tasks.getTasksGroups(trx, { health_worker_id, encounter })
-  console.log({task_groups})
+  const { /*evaluation_ids, */ task_groups } = await additional_tasks.getTasksGroups(trx, { health_worker_id, encounter })
+  console.log({ task_groups })
 
   const clinic_employees = await employees_presence.findAll(trx, {
     organization_id,
@@ -115,7 +115,7 @@ export async function PatientTriageRoutePatientPage(
       priority={priority}
       clinic_employees={clinic_employees}
     />
-)
+  )
 }
 
 export default OpenEncounterWorkflowPage(PatientTriageRoutePatientPage)

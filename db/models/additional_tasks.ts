@@ -52,6 +52,7 @@ import isObjectLike from '../../util/isObjectLike.ts'
 import { patient_procedures } from './patient_procedures.ts'
 import { humanReadableJson } from '../../util/humanReadableJson.ts'
 import { logJSONToFileIfOnServer } from '../../util/logJSONToFileIfOnServer.ts'
+import sortBy from '../../util/sortBy.ts'
 
 type TaskToInsert = {
   id: string
@@ -188,8 +189,6 @@ export const additional_tasks = {
       const task = getTaskById(evaluation.value.task_id)
       return { ...evaluation, task }
     })
-
-    logJSONToFileIfOnServer(evaluations_with_proto_tasks)
 
     const s_expression_to_existing_findings = new Map<string, Lang['finding' | 'measurement']>()
     const s_expression_to_already_done = new Map<string, ToBeDone>()
@@ -357,12 +356,12 @@ export const additional_tasks = {
           const { displays } = formatRecord(toDisplayableRecord(to_be_done))
           const s_expression = inverseSExpression(to_be_done)
           // const existing_procedure: null | RenderedProcedureRelativeToHealthWorker = already_done.find(matching({ s_expression })) || null
-          const existing_procedure = already_done.find(matching({ s_expression })) || null
+          const existing_record = already_done.find(matching({ s_expression })) || null
           return [{
             ...to_be_done,
             displays,
             s_expression,
-            existing_procedure,
+            existing_record,
             description: evaluation.task.description,
           }]
         }
@@ -377,14 +376,13 @@ export const additional_tasks = {
             seen_finding_s_expressions.add(s_expression)
 
             const { displays } = formatRecord(toDisplayableRecord(finding))
-            const existing_finding: null | RenderedFindingRelativeToHealthWorker = existing_findings.find(matching({ s_expression })) || null
+            const existing_record: null | RenderedFindingRelativeToHealthWorker = existing_findings.find(matching({ s_expression })) || null
 
             return {
               ...finding,
               displays,
               s_expression,
-              existing_finding,
-              // description: evaluation.task.description,
+              existing_record,
             }
           })
         }
@@ -404,15 +402,14 @@ export const additional_tasks = {
               ...measurement,
               displays,
               s_expression,
-              existing_measurement: existingMeasurement(),
-              // description: evaluation.task.description,
+              existing_record: existingMeasurement(),
             }
 
             function existingMeasurement() {
-              const existing_measurement: null | RenderedFindingRelativeToHealthWorker = existing_findings.find(matching({ s_expression })) || null
-              if (!existing_measurement) return null
-              assert(isMeasurement(existing_measurement))
-              return existing_measurement
+              const existing_record: null | RenderedFindingRelativeToHealthWorker = existing_findings.find(matching({ s_expression })) || null
+              if (!existing_record) return null
+              assert(isMeasurement(existing_record))
+              return existing_record
             }
           })
         }
@@ -420,10 +417,15 @@ export const additional_tasks = {
         throw new Error(`to_be_done unclear ${humanReadableJson(to_be_done)}`)
       })
 
-      task_groups.push({ due_to, tasks })
+      const completed = tasks.every((task) => {
+        return task.atom === 'link' || task.existing_record
+      })
+
+      task_groups.push({ due_to, completed, tasks: sortBy(tasks, task => task.existing_record ? 1 : 0) })
     }
 
-    return { evaluation_ids, task_groups }
+    // incomplete first
+    return { evaluation_ids, task_groups: sortBy(task_groups, (task_group) => task_group.completed ? 1 : 0) }
   },
   async procedureCompletedTasks(
     trx: TrxOrDbOrQueryCreator,

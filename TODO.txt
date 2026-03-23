@@ -14,11 +14,8 @@ TODO
 - Add all additional tasks from SATS
   - Add test to ensure that cases that are supposed to be escalated to SHCP jump straight to that screen
 - Publish tests in human readable format
-- Create a script that sets up a mock patient for each of the conditions
-  - This way Dr. Skhu can log in and the patients are already set up and you can go manually check that the "check for" and "measure" tasks make sense
-- Ask Claude to take another pass at documenting likely = probable
-- Create a script that sets up a mock patient exercises each test case
-  - This way Dr. Skhu can log in and the patients are already set up and you can go manually review
+
+- db/models/s_expression.ts can find swelling (face structure) from a query for Facial Swelling (joining through associated morphology & finding site)
 
 Triage Route Patient Next Steps
   3 Options

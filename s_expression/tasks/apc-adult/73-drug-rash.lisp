@@ -4,8 +4,8 @@
   adult
   (clinical_finding (snomed_concept "Eruption caused by drug" "disorder"))
   (check_for
-    (clinical_finding (snomed_concept "Facial swelling" "finding"))
-    (clinical_finding (snomed_concept "Tongue swelling" "finding"))
+    (clinical_finding (snomed_concept "Swelling" "finding") (finding_site (snomed_concept "Face structure" "body structure")))
+    (clinical_finding (snomed_concept "Swelling" "finding") (finding_site (snomed_concept "Tongue structure" "body structure")))
     (clinical_finding (snomed_concept "Difficulty breathing" "finding"))
     (clinical_finding (snomed_concept "Abdominal pain" "finding"))
     (clinical_finding (snomed_concept "Finding of vomiting" "finding"))

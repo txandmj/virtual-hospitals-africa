@@ -34,6 +34,8 @@ import { ORDERED_PRIORITIES } from '../../../../../../../../shared/priorities.ts
 import sumBy from '../../../../../../../../util/sumBy.ts'
 import { logJSONToFileIfOnServer } from '../../../../../../../../util/logJSONToFileIfOnServer.ts'
 import { diagnoses } from '../../../../../../../../db/models/diagnoses.ts'
+import { additional_tasks } from '../../../../../../../../db/models/additional_tasks.ts'
+import { assertOrRedirect } from '../../../../../../../../util/assertOr.ts'
 
 export const TriageAssignPrioritySchema = z.object({})
 
@@ -221,6 +223,17 @@ async function sortedVitals(
   }))
 }
 
+async function redirectIfIncompleteNonManageTasks(
+  ctx: OpenEncounterWorkflowContext,
+) {
+  const { trx, health_worker_id, encounter, open_encounter_pathname } = ctx.state
+  const { task_groups } = await additional_tasks.getTasksGroups(trx, { health_worker_id, encounter })
+  const some_non_manage_task_incomplete = task_groups.some(task_group => 
+    !task_group.completed && task_group.tasks.some(task => task.atom !== 'procedure'))
+  
+  assertOrRedirect(!some_non_manage_task_incomplete, `${open_encounter_pathname}/triage/additional_tasks_and_investigations`)
+}
+
 export async function TriageAssignPriorityPage(
   ctx: OpenEncounterWorkflowContext,
 ) {
@@ -254,6 +267,7 @@ export async function TriageAssignPriorityPage(
           organization_id,
         }))
       ),
+    redirect_if_incomplete_non_manage_tasks: redirectIfIncompleteNonManageTasks(ctx)
   })
 
   assertEquals(
@@ -276,8 +290,6 @@ export async function TriageAssignPriorityPage(
     ...vitals,
     ...additional_tasks,
   ]
-
-  logJSONToFileIfOnServer({ rows, priority, total_score })
 
   return (
     <TriageAssignPriorityTable

@@ -33,7 +33,7 @@ export const TriageAdditionalTasksAndInvestigationsSchema = z.object({
     z.object({
       s_expression: sExpressionZodValidator(insertable_finding_base),
       existence: yes_no_unknown,
-      existing_finding: z.object({
+      existing_record: z.object({
         id: z.string().uuid(),
         existence: yes_no_unknown,
       }).optional(),
@@ -45,7 +45,7 @@ export const TriageAdditionalTasksAndInvestigationsSchema = z.object({
       s_expression: sExpressionZodValidator(measurement),
       value: positive_decimal,
       units: z.string().min(1),
-      existing_measurement: z.object({
+      existing_record: z.object({
         id: z.string().uuid(),
         value: positive_decimal,
       }).optional(),
@@ -102,7 +102,7 @@ export const handler = postHandler(
 
     async function insertFindings(): Promise<InsertedSummary> {
       const findings_to_insert: FindingNodeToInsert[] = compactMap(form_values.check_for, (finding) => {
-        if (finding.existing_finding && finding.existing_finding.existence === finding.existence) return
+        if (finding.existing_record && finding.existing_record.existence === finding.existence) return
         return {
           ...finding.s_expression,
           existence: finding.existence,
@@ -119,7 +119,7 @@ export const handler = postHandler(
       })
 
       const measurements_to_insert: MeasurementToInsert[] = compactMap(form_values.measurements, (measurement) => {
-        if (measurement.existing_measurement && measurement.existing_measurement.value.equals(measurement.value)) return
+        if (measurement.existing_record && measurement.existing_record.value.equals(measurement.value)) return
         return {
           atom: '=' as const,
           type: 'measurement' as const,
@@ -185,7 +185,7 @@ export const handler = postHandler(
       if (!completed_procedure) return Promise.resolve()
       const altered_record_ids = compactMap(
         form_values.check_for,
-        ({ existence, existing_finding }) => (existing_finding && existing_finding.existence != existence) && existing_finding.id,
+        ({ existence, existing_record }) => (existing_record && existing_record.existence != existence) && existing_record.id,
       )
 
       return markEnteredInError(trx, {
@@ -205,7 +205,6 @@ export async function TriageAdditionalTasksAndInvestigationsPage(
   const { trx, encounter, health_worker_id, organization_id, patient_encounter_id } = ctx.state
   await events.allProcessedForEncounter(trx, { patient_encounter_id })
   const { evaluation_ids, task_groups } = await additional_tasks.getTasksGroups(trx, { health_worker_id, encounter })
-  logJSONToFileIfOnServer(task_groups)
 
   const use_pdf_viewer = getCookies(ctx.req.headers)['twa'] === '1'
 
