@@ -225,7 +225,6 @@ export const system_diagnosis_rules = {
       }
     }).then(compact)
   },
-  // TODO: revisit this whole idea
   async insertImprobableDiagnoses(
     trx: TrxOrDb,
     input: RuleRunnerInput & {

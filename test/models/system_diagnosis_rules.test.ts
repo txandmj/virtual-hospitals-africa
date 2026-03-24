@@ -530,8 +530,6 @@ describeParallel('db/models/system_diagnosis_rules.ts', () => {
         s_expression: `(diagnosis (snomed_concept "Anaphylaxis" "disorder") improbable)`,
       })
 
-      improbable_diagnosis_evaluation.destination_relations
-
       assert(improbable_diagnosis_evaluation.destination_relations.some((relation) =>
         relation.relation_name === 'Evidence of' &&
         relation.displays.full === 'Sudden onset Eruption: No'
