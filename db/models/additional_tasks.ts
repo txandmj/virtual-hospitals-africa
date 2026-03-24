@@ -21,19 +21,15 @@ import { promiseProps } from '../../util/promiseProps.ts'
 import matching from '../../util/matching.ts'
 import { groupBy } from '../../util/groupBy.ts'
 import { patient_record_providers } from './patient_record_providers.ts'
-
 import { ACTION_STATUS, DONE, DUE_TO, RELATIONSHIP, TO_BE_DONE } from '../../shared/snomed_concepts.ts'
-
 import { assert } from 'std/assert/assert.ts'
 import { inverseSExpression } from '../../shared/s_expression_inverse.ts'
 import { formatRecord, toDisplayableRecord } from '../../shared/patient_records.ts'
 import { patient_findings } from './patient_findings.ts'
-import { parseWithSchema } from '../../shared/s_expression.ts'
 import {
   Lang,
   MatchingFinding,
   QueryableEvidenceNode,
-  to_be_done,
   ToBeDone,
   ToBeDoneProcedureCheckFor,
   ToBeDoneProcedureLink,
@@ -90,18 +86,18 @@ export const additional_tasks = {
 
     return pMap(applicable_rules, async ({ rule_effect, ...applicable_rule }) => {
       if (rule_effect.type !== 'task') return
-      const to_be_done_node = parseWithSchema(rule_effect.to_be_done_s_expression, to_be_done)
+      const { to_be_done } = getTaskById(applicable_rule.id)
 
       const existing_procedure = await buildExpression(
         trx,
         new_records,
-        to_be_done_node,
+        to_be_done,
       ).limit(1).executeTakeFirst()
 
       return {
         ...applicable_rule,
         procedure_id: existing_procedure?.id || null,
-        to_be_done: to_be_done_node,
+        to_be_done,
       }
     }).then(compact)
   },

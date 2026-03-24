@@ -13,9 +13,7 @@ import { insertPatientSeekingTreatmentWithEmployeeAndCompleteRegistrationForTest
 import { WORKFLOW_STEP_SNOMED_CONCEPTS } from '../../shared/workflow.ts'
 import { additional_tasks, isCheckFor, isMeasurements } from '../../db/models/additional_tasks.ts'
 import { assertMatches } from '../../util/assertMatches.ts'
-import { traceTime } from '../../util/traceTime.ts'
-import range from '../../util/range.ts'
-import { logReadableJson } from '../../util/humanReadableJson.ts'
+
 import isString from '../../util/isString.ts'
 import sortBy from '../../util/sortBy.ts'
 import { Lang } from '../../shared/s_expression_schemas.ts'
@@ -80,168 +78,13 @@ describeParallel('db/models/additional_tasks.ts', () => {
         existence: 'Yes',
       }],
     })
-    assertMatches(tasks_to_insert, [
-      {
-        description: 'Check for urgent bite/sting conditions',
-      },
-      {
-        description: 'Display medical guidance for Bites',
-      },
-      {
-        description: 'Display medical guidance for Injured patient',
-      },
+    assert(!isString(tasks_to_insert))
+
+    assertMatches(sortBy(tasks_to_insert, 'description'), [
+      { description: 'Check for urgent bite/sting conditions' },
+      { description: 'Display medical guidance for Bites' },
+      { description: 'Display medical guidance for Injured patient' },
     ])
-  })
-
-  itParallel('adds reference docs and check_for tasks for an Insect bite - wound', async () => {
-    const { employee, patient_id, patient_encounter_id } = await insertPatientSeekingTreatmentWithEmployeeAndCompleteRegistrationForTest(db)
-    const inserted_findings = await patient_findings.insertMany(
-      db,
-      {
-        patient_id,
-        patient_encounter_id,
-        patient_encounter_employee_id: employee.patient_encounter_employee_id,
-        employment_id: employee.employee_id,
-        procedure: {
-          create_with_specific_snomed_concept_id: WORKFLOW_STEP_SNOMED_CONCEPTS.triage!.warning_signs.snomed_concept_id,
-        },
-        findings: [
-          `(clinical_finding (snomed_concept "Insect bite - wound" "disorder"))`,
-        ],
-      },
-    )
-
-    assert(inserted_findings.finding_ids[0])
-    console.time('xxy')
-    const tasks_to_insert = await additional_tasks.getTasksToInsertUsingPreComputedTables(db, {
-      patient_id,
-      patient_encounter_id,
-      patient_age_determination: 'adult',
-      records: [{
-        id: inserted_findings.finding_ids[0],
-        existence: 'Yes',
-      }],
-    })
-    console.timeEnd('xxy')
-    logReadableJson(tasks_to_insert)
-  })
-
-  itParallel.skip('is timed', async () => {
-    await Promise.all(
-      range(1).map(async () => {
-        const { employee, patient_id, patient_encounter_id } = await insertPatientSeekingTreatmentWithEmployeeAndCompleteRegistrationForTest(db)
-        const inserted_findings = await patient_findings.insertMany(
-          db,
-          {
-            patient_id,
-            patient_encounter_id,
-            patient_encounter_employee_id: employee.patient_encounter_employee_id,
-            employment_id: employee.employee_id,
-            procedure: {
-              create_with_specific_snomed_concept_id: WORKFLOW_STEP_SNOMED_CONCEPTS.triage!.warning_signs.snomed_concept_id,
-            },
-            findings: [
-              `(clinical_finding (snomed_concept "Insect bite - wound" "disorder"))`,
-            ],
-          },
-        )
-
-        assert(inserted_findings.finding_ids[0])
-        const inserted_evalution = await patient_evaluations.insertOneNested(
-          db,
-          {
-            patient_id,
-            patient_encounter_id,
-            by_system: true,
-            evaluates_record_id: inserted_findings.finding_ids[0],
-            evaluation: `(diagnosis (snomed_concept "Anaphylaxis" "disorder") possible)`,
-          },
-        ).executeTakeFirstOrThrow()
-        assert(inserted_evalution.success)
-
-        const tasks_to_insert = await traceTime('additional_tasks.getTasksToInsert', () =>
-          additional_tasks.getTasksToInsertUsingPreComputedTables(db, {
-            patient_id,
-            patient_encounter_id,
-            patient_age_determination: 'adult',
-            records: [{
-              id: inserted_evalution.evaluation_id,
-              existence: 'Yes',
-            }],
-          }))
-        assert(!isString(tasks_to_insert))
-        assertMatches(sortBy(tasks_to_insert, 'description'), [
-          {
-            description: 'Check for Anaphylaxis',
-            due_to: {
-              atom: 'diagnosis',
-              certainty_qualifier: 'possible',
-              snomed_concept: {
-                atom: 'snomed_concept',
-                name: 'Anaphylaxis',
-                category: 'disorder',
-              },
-            },
-            to_be_done: {
-              atom: 'procedure',
-              root_snomed_concept: {
-                atom: 'snomed_concept',
-                id: '71388002',
-                name: 'Procedure',
-                category: 'procedure',
-                snomed_concept_id: '71388002',
-                s_expression: '(snomed_concept "Procedure" "procedure")',
-              },
-              specific_snomed_concept: {
-                atom: 'snomed_concept',
-                id: '409060008',
-                name: 'Evaluation for signs and symptoms of physical health problems',
-                category: 'procedure',
-                snomed_concept_id: '409060008',
-                s_expression: '(snomed_concept "Evaluation for signs and symptoms of physical health problems" "procedure")',
-              },
-              qualifiers: [],
-              attributes: [],
-            },
-            procedure_id: null,
-          },
-          {
-            description: 'Display medical guidance for Anaphylaxis',
-            due_to: {
-              atom: 'active_condition',
-              snomed_concept: {
-                atom: 'snomed_concept',
-                name: 'Anaphylaxis',
-                category: 'disorder',
-              },
-              possible: true,
-            },
-            to_be_done: {
-              atom: 'procedure',
-              root_snomed_concept: {
-                atom: 'snomed_concept',
-                name: 'Procedure',
-                category: 'procedure',
-              },
-              specific_snomed_concept: {
-                atom: 'snomed_concept',
-                name: 'Reference documentation',
-                category: 'qualifier value',
-              },
-              qualifiers: [],
-              attributes: [],
-              value: {
-                atom: 'link',
-                title: 'APC 2023 — Anaphylaxis',
-                href: '/medical-resources/primary-care/adult.pdf#page=20',
-                thumbnail_href: '/medical-resources/za/primary-care/adult/thumbnails/400/20.png',
-              },
-            },
-            procedure_id: null,
-          },
-        ])
-      }),
-    )
   })
 
   itParallel('adds a reference doc task to check for conditions realted to anaphylaxis due to a possible diagnosis of anaphylaxis', async () => {

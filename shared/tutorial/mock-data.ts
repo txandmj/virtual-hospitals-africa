@@ -1792,6 +1792,7 @@ const ANAPHYLAXIS_DIAGNOSIS: RenderedEvaluationRelativeToHealthWorker = {
   modifiers: [],
   attributes: [],
   evaluations: [],
+  employment_id: '',
   destination_relations: [],
   displays: {
     finding: 'Anaphylaxis',
@@ -2565,6 +2566,7 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
         },
         'evaluations': [],
         'priority': null,
+        'employment_id': '',
         'destination_relations': [
           {
             'id': '57c72e85-7f2a-4d94-b06b-245776479b35',

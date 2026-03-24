@@ -1,8 +1,6 @@
 import { assert } from 'std/assert/assert.ts'
 import { MailingListRecipient } from '../types.ts'
 
-
-
 const MAILERLITE_API_TOKEN = Deno.env.get('MAILERLITE_API_TOKEN')
 
 export async function addSubscriber(recipient: MailingListRecipient) {

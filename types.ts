@@ -54,6 +54,8 @@ export type BlankRecord = Record<string, never>
 
 export type AnyRecord = Record<string, unknown>
 
+export type Dict<T> = Record<string, T>
+
 export type Values<R> = R extends Record<any, infer V> ? V : never
 
 export type NonNullableProperty<T, K extends keyof T> =
@@ -2663,6 +2665,7 @@ export type RenderedRecordRelativeToHealthWorkerDef<Type extends string, Rest> =
   }
 
 export type RenderedEvaluationRelativeToHealthWorker = RenderedRecordRelativeToHealthWorkerDef<'evaluation', {
+  employment_id: null | string
   provider: null | RenderedRecordProvider
   as_part_of_procedure: null | AsPartOfProcedure
   score?: never
@@ -3003,7 +3006,6 @@ export type NewRecordsToConsider = {
 
 export type ApplicableRuleEffectTask = {
   type: 'task'
-  to_be_done_s_expression: string
 }
 
 export type ApplicableRuleEffectSystemPriorityEvaluation = {

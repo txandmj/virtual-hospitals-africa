@@ -1,5 +1,5 @@
 import { sql } from 'kysely'
-import { IdSelection, TrxOrDbOrQueryCreator } from '../../types.ts'
+import { IdSelection, RenderedEvaluationRelativeToHealthWorker, TrxOrDbOrQueryCreator } from '../../types.ts'
 import { asText, blankSelection, caseWhenMatching, jsonBuildNullableObject, literalString, success_true } from '../helpers.ts'
 import generateUUID from '../../util/uuid.ts'
 import { parseExpressionExpectingAtom } from '../../shared/s_expression.ts'
@@ -164,7 +164,9 @@ export function baseQuery(
 export const patient_evaluations = base({
   top_level_table: 'patient_evaluations',
   baseQuery,
-  formatResult: formatRecord,
+  formatResult(evaluation): Omit<RenderedEvaluationRelativeToHealthWorker, 'provider'> {
+    return formatRecord(evaluation)
+  },
   insertOneNested,
   insertOneNestedQuery,
 })

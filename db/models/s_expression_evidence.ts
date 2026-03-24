@@ -5,7 +5,7 @@ import { literalString } from '../helpers.ts'
 import { inverseSExpression } from '../../shared/s_expression_inverse.ts'
 import { Lang, MeasurementComparison, QueryableEvidenceNode } from '../../shared/s_expression_schemas.ts'
 
-type Evidence = Lang['finding' | 'evaluation' | 'diagnosis' | 'active_condition'] | MeasurementComparison
+export type Evidence = Lang['finding' | 'evaluation' | 'diagnosis' | 'active_condition'] | MeasurementComparison
 
 export function* allEvidenceToLookFor(node: QueryableEvidenceNode): Generator<Evidence> {
   switch (node.atom) {

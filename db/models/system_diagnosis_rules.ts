@@ -1,7 +1,7 @@
 import { assert } from 'std/assert/assert.ts'
 import { patient_evaluations } from './patient_evaluations.ts'
 import { buildExpression, EXPRESSION_BUILDERS } from './s_expression.ts'
-import { ApplicableRule, ApplicableRuleEffectSystemSystemDiagnosisRule, RuleRunnerInput, TrxOrDb } from '../../types.ts'
+import { ApplicableRule, ApplicableRuleEffectSystemSystemDiagnosisRule, RecordValueTask, RuleRunnerInput, TrxOrDb } from '../../types.ts'
 import { blankSelection, success_true } from '../helpers.ts'
 import { DONE, EVIDENCE_OF_CONTEXTUAL_QUALIFIER, RELATIONSHIP, TO_BE_DONE } from '../../shared/snomed_concepts.ts'
 import { parseWithSchema } from '../../shared/s_expression.ts'
@@ -19,15 +19,12 @@ import { exists } from '../../util/exists.ts'
 import { pMap } from '../../util/inParallel.ts'
 import compact from '../../util/compact.ts'
 import uniq from '../../util/uniq.ts'
-import compactMap from '../../util/compactMap.ts'
 import { groupBy } from '../../util/groupBy.ts'
-import { logJSONToFileIfOnServer } from '../../util/logJSONToFileIfOnServer.ts'
+
 import { getTaskById } from '../../shared/tasks.ts'
-import { allEvidenceToLookFor } from './s_expression_evidence.ts'
-import { isCheckFor } from './additional_tasks.ts'
-import { inverseSExpression } from '../../shared/s_expression_inverse.ts'
-import { asNormalFormSExpression } from '../../shared/patient_records.ts'
-import { patient_findings } from './patient_findings.ts'
+import { s_expression_evidence } from './s_expression_evidence.ts'
+
+import partition from '../../util/partition.ts'
 
 export const SYSTEM_DIAGNOSIS_RULES_PARSED = SYSTEM_DIAGNOSIS_RULES_LISP.map((d) => parseWithSchema(d, system_diagnosis_rule))
 
@@ -228,7 +225,6 @@ export const system_diagnosis_rules = {
       }
     }).then(compact)
   },
-  // TODO: revisit this whole idea
   async insertImprobableDiagnoses(
     trx: TrxOrDb,
     input: RuleRunnerInput & {
@@ -268,84 +264,53 @@ export const system_diagnosis_rules = {
       )
       .where('other_diagnosis.id', 'is', null)
       .selectAll('diagnosis_records')
-      .select('task_records.value as task_value')
+      .select((eb) => [
+        eb.ref('task_records.value').$castTo<RecordValueTask>().as('task_value'),
+      ])
       .execute()
 
-    if (!possible_diagnosis_tasks_now_completed_with_no_other_diagnoses.length) return []
-
-    //       .then(tasks => tasks.map(
-    //     possible_diagnosis => {
-
-    //     }
-    //   )
-    // )
-
-    // logJSONToFileIfOnServer(possible_diagnoses_now_completed)
-
-    // // While we have filtered out diagnoses just made, that's not a guarantee that there aren't already diaganoses in the database, so another pass is needed below
-    // const possible_diagnoses_now_maybe_improbable = possible_diagnoses_now_completed.filter(({ specific_snomed_concept_name, specific_snomed_concept_category }) => {
-    //   const inserted_diagnosis_for_same_condition = inserted_diagnoses_results.some(inserted_diagnosis_result =>
-    //     inserted_diagnosis_result.specific_snomed_concept.name === specific_snomed_concept_name &&
-    //     inserted_diagnosis_result.specific_snomed_concept.category === specific_snomed_concept_category
-    //   )
-    //   return !inserted_diagnosis_for_same_condition
-    // })
-
-    const no_record_ids = compactMap(input.records, (record) => record.existence === 'No' && record.id)
-    const no_findings = await patient_findings.getByIds(trx, no_record_ids, { include_negative: true })
-
-    logJSONToFileIfOnServer(
-      no_findings.map((no_finding) => ({
-        ...no_finding,
-        as_normal_form_s_expression: asNormalFormSExpression(no_finding),
-      })),
+    const [check_fors, others] = partition(
+      possible_diagnosis_tasks_now_completed_with_no_other_diagnoses,
+      (task) => task.task_value.task_id.startsWith('Check for'),
     )
+    for (const task of others) {
+      assert(task.task_value.task_id.startsWith('Display medical guidance'))
+    }
 
-    return pMap(groupBy(possible_diagnosis_tasks_now_completed_with_no_other_diagnoses, 'specific_snomed_concept_id').values(), (possible_diagnosis_tasks) => {
-      const [possible_diagnosis] = possible_diagnosis_tasks
+    return pMap(check_fors, async (check_for) => {
+      // While we do have record_ids of "No" records on hand,
+      // The user could have entered "No" records at any point
+      // So more accurate to go and find any that _could_ have contributed
+      // explicitly
+      const task = getTaskById(check_for.task_value.task_id)
+      const explicit_no_finding_nodes: Lang['finding'][] = []
+      for (const finding of task.to_be_done.value as unknown as Lang['finding'][]) {
+        explicit_no_finding_nodes.push({ ...finding, existence: 'No' })
+      }
+      assert(explicit_no_finding_nodes.length)
+      const explicit_no_findings = await s_expression_evidence.evaluate(
+        trx,
+        input,
+        {
+          atom: 'or' as const,
+          expressions: explicit_no_finding_nodes,
+        },
+      )
+      assert(explicit_no_findings.satisfies)
+
       const diagnosis_node = diagnosisToEvaluation({
         snomed_concept: {
           atom: 'snomed_concept',
-          name: possible_diagnosis.specific_snomed_concept_name,
-          category: possible_diagnosis.specific_snomed_concept_category,
+          name: check_for.specific_snomed_concept_name,
+          category: check_for.specific_snomed_concept_category,
         },
         certainty_qualifier: 'improbable',
-      })
-
-      const matching_finding_ids = new Set<string>()
-      for (const possible_diagnosis_task of possible_diagnosis_tasks) {
-        assert(possible_diagnosis_task.task_value)
-        assert(isObjectLike(possible_diagnosis_task.task_value))
-        assert(isString(possible_diagnosis_task.task_value.task_id))
-        const { to_be_done } = getTaskById(possible_diagnosis_task.task_value.task_id)
-
-        if (isCheckFor(to_be_done)) {
-          for (const finding of to_be_done.value as unknown as Lang['finding'][]) {
-            for (const evidence of allEvidenceToLookFor(finding)) {
-              for (const record of no_findings) {
-                if (
-                  inverseSExpression(evidence) === asNormalFormSExpression({
-                    ...record,
-                    value: null,
-                  })
-                ) {
-                  matching_finding_ids.add(record.id)
-                }
-              }
-            }
-          }
-        }
-      }
-
-      logJSONToFileIfOnServer({
-        no_findings,
-        possible_diagnosis_tasks,
       })
 
       return system_diagnosis_rules.insertOne(trx, {
         ...input,
         diagnosis_node,
-        matching_finding_ids: Array.from(matching_finding_ids),
+        matching_finding_ids: explicit_no_findings.contributing_records,
       })
     })
   },

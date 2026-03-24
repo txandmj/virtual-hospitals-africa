@@ -36,7 +36,18 @@ jobs:
         deno task db:migrate all
         deno task build
       run: |
-        deno task test --use-build
+        deno task test --use-build test/web 
+
+  test_non_web:
+    uses: ./.github/workflows/test-with-db.yml
+    with:
+      setup-lfs: true
+      artifact-name: test-web-logs
+      build: |
+        deno task db:restore snomed
+        deno task db:migrate all
+      run: |
+        deno task test --ignore=test/web
 
   # TODO turn back on
   # test_chatbot:

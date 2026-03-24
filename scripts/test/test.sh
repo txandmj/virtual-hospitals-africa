@@ -79,13 +79,41 @@ done
 # Replace positional parameters with resolved args
 set -- "${resolved_args[@]}"
 
+# Collect paths passed via --ignore / --ignore=<path>
+ignored_paths=()
+next_is_ignore=false
+for arg in "${resolved_args[@]}"; do
+  if $next_is_ignore; then
+    ignored_paths+=("$arg")
+    next_is_ignore=false
+  elif [[ "$arg" == --ignore=* ]]; then
+    ignored_paths+=("${arg#--ignore=}")
+  elif [[ "$arg" == --ignore ]]; then
+    next_is_ignore=true
+  fi
+done
+
+is_ignored() {
+  local path="$1"
+  for ignored in "${ignored_paths[@]}"; do
+    if [[ "$path" == "$ignored" || "$path" == "$ignored"/* ]]; then
+      return 0
+    fi
+  done
+  return 1
+}
+
 if [[ $# -eq 0 ]]; then
-  use_test_servers=true
+  if ! is_ignored "test/web"; then
+    use_test_servers=true
+  fi
 else
   for arg in "$@"; do
     if [[ "$arg" == "test/web" || "$arg" == test/web/* ]]; then
-      use_test_servers=true
-      break
+      if ! is_ignored "$arg"; then
+        use_test_servers=true
+        break
+      fi
     fi
   done
 fi

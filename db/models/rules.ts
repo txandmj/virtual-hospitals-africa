@@ -1,6 +1,6 @@
 import { sql } from 'kysely'
 import { AgeDetermination, ApplicableRule, NewRecordsToConsider, TrxOrDbOrQueryCreator } from '../../types.ts'
-import { asText, debugLog, jsonBuildObject, literalString } from '../helpers.ts'
+import { asText, jsonBuildObject, literalString } from '../helpers.ts'
 import { groupBy } from '../../util/groupBy.ts'
 import { FINDING_SITE } from '../../shared/snomed_concepts.ts'
 import { parseWithSchema } from '../../shared/s_expression.ts'
@@ -10,21 +10,24 @@ import partition from '../../util/partition.ts'
 import { s_expression_evidence } from './s_expression_evidence.ts'
 import { exists } from '../../util/exists.ts'
 import compactMap from '../../util/compactMap.ts'
+import { base, identity } from './_base.ts'
+import { arrayIsEmpty } from '../../util/arraySize.ts'
+import { assert } from 'std/assert/assert.ts'
 
-export const rules = {
-  async getApplicableBasedOnNewRecords(
-    trx: TrxOrDbOrQueryCreator,
-    { patient_id, patient_age_determination, /*procedure_id, */ records: findings }: NewRecordsToConsider,
-    type?: 'task' | 'system_priority_evaluation' | 'system_diagnosis_rule',
-  ): Promise<string | ApplicableRule[]> {
-    if (!patient_age_determination) return 'Skipped: patient age determination is unknown'
-
-    // TODO, maybe handle negative findings? There could be tasks that call for them
-    const positive_record_ids = findings
-      .filter((f) => f.existence === 'Yes')
-      .map((f) => f.id)
-    if (!positive_record_ids.length) return 'Skipped: no positive findings to check'
-
+export const rules = base({
+  top_level_table: 'rules',
+  baseQuery(trx: TrxOrDbOrQueryCreator, {
+    // patient_id,
+    patient_age_determination,
+    positive_record_ids,
+    type,
+  }: {
+    patient_id: string
+    patient_age_determination: AgeDetermination
+    positive_record_ids: string[]
+    type?: 'task' | 'system_priority_evaluation' | 'system_diagnosis_rule'
+  }) {
+    assert(positive_record_ids.length)
     const by_findings_query = trx.selectFrom('rules')
       .innerJoin('rule_due_to_findings', 'rules.id', 'rule_due_to_findings.rule_id')
       .innerJoin(
@@ -139,7 +142,7 @@ export const rules = {
         'rule_due_to_measurements.always_applies_if_present',
       ])
 
-    const full_query = trx.with('matching_rule_findings', () =>
+    return trx.with('matching_rule_findings', () =>
       by_findings_query
         .unionAll(by_finding_sites_query)
         .unionAll(by_measurements_query))
@@ -158,7 +161,6 @@ export const rules = {
           .when('tasks.id', 'is not', null)
           .then(jsonBuildObject({
             type: literalString('task' as const),
-            to_be_done_s_expression: eb.ref('tasks.to_be_done_s_expression').$notNull(),
           }))
           .when('system_priority_evaluations.id', 'is not', null)
           .then(jsonBuildObject({
@@ -180,10 +182,30 @@ export const rules = {
       .$if(type === 'task', (qb) => qb.where('tasks.id', 'is not', null))
       .$if(type === 'system_diagnosis_rule', (qb) => qb.where('system_diagnosis_rules.id', 'is not', null))
       .$if(type === 'system_priority_evaluation', (qb) => qb.where('system_priority_evaluations.id', 'is not', null))
+  },
 
-    debugLog(full_query)
+  formatResult: identity,
 
-    const tasks_matching_some_finding = await full_query.execute()
+  async getApplicableBasedOnNewRecords(
+    trx: TrxOrDbOrQueryCreator,
+    { patient_id, patient_age_determination, /*procedure_id, */ records: findings }: NewRecordsToConsider,
+    type?: 'task' | 'system_priority_evaluation' | 'system_diagnosis_rule',
+  ): Promise<string | ApplicableRule[]> {
+    if (!patient_age_determination) return 'Skipped: patient age determination is unknown'
+
+    // TODO, maybe handle negative findings? There could be tasks that call for them
+    const positive_record_ids = findings
+      .filter((f) => f.existence === 'Yes')
+      .map((f) => f.id)
+
+    if (arrayIsEmpty(positive_record_ids)) return 'Skipped: no positive findings to check'
+
+    const tasks_matching_some_finding = await rules.findAll(trx, {
+      patient_id,
+      patient_age_determination,
+      positive_record_ids,
+      type,
+    })
 
     const all_tasks = groupBy(tasks_matching_some_finding, 'rule_id').values().toArray()
 
@@ -221,4 +243,4 @@ export const rules = {
 
     return [...certain_results, ...uncertain_results]
   },
-}
+})

@@ -7,11 +7,16 @@ import { patient_findings } from '../../db/models/patient_findings.ts'
 import { WORKFLOW_STEP_SNOMED_CONCEPTS } from '../../shared/workflow.ts'
 import { insertPatientSeekingTreatmentWithEmployeeAndCompleteRegistrationForTest } from 'test/_helpers/workflows.ts'
 import { parseWithSchema } from '../../shared/s_expression.ts'
-import { measurement_comparator } from '../../shared/s_expression_schemas.ts'
+import { insertable_finding_base, measurement_comparator } from '../../shared/s_expression_schemas.ts'
 import { assertEquals } from 'std/assert/assert_equals.ts'
 import { patient_evaluations } from '../../db/models/patient_evaluations.ts'
 import { assertMatches } from '../../util/assertMatches.ts'
 import { assertArrayEmpty } from '../../util/arraySize.ts'
+import { additional_tasks } from '../../db/models/additional_tasks.ts'
+import { patient_encounters } from '../../db/models/patient_encounters.ts'
+import assertLength from '../../util/assertLength.ts'
+import { check_for } from '../../db/models/check_for.ts'
+import { exists } from '../../util/exists.ts'
 
 describeParallel('db/models/system_diagnosis_rules.ts', () => {
   afterAll(() => db.destroy())
@@ -381,6 +386,161 @@ describeParallel('db/models/system_diagnosis_rules.ts', () => {
       const evaluations = await patient_evaluations.findAll(db, { patient_id })
       const tension_pneumothorax = evaluations.find((evaluation) => evaluation.specific_snomed_concept_name === 'Tension pneumothorax')
       assert(!tension_pneumothorax)
+    },
+  )
+
+  itParallel(
+    'downgrades a possible anaphylaxis to improbable when what you were prompted to check for comes back negative',
+    async () => {
+      const { employee, patient_id, patient_encounter_id } = await insertPatientSeekingTreatmentWithEmployeeAndCompleteRegistrationForTest(db)
+      const inserted_findings = await patient_findings.insertMany(
+        db,
+        {
+          patient_id,
+          patient_encounter_id,
+          patient_encounter_employee_id: employee.patient_encounter_employee_id,
+          employment_id: employee.employee_id,
+          procedure: {
+            create_with_specific_snomed_concept_id: WORKFLOW_STEP_SNOMED_CONCEPTS.triage!.warning_signs.snomed_concept_id,
+          },
+          findings: [
+            `(clinical_finding (snomed_concept "Insect bite - wound" "disorder"))`,
+          ],
+          measurements: [
+            parseWithSchema(`(= (measurement (snomed_concept "Systolic blood pressure" "observable entity") mmHg) 85)`, measurement_comparator),
+          ],
+        },
+      )
+
+      assert(inserted_findings.finding_ids[0])
+      await additional_tasks.insertTasksIfNotAlreadyIdentified(db, {
+        patient_id,
+        patient_encounter_id,
+        patient_age_determination: 'adult',
+        records: [
+          { id: inserted_findings.finding_ids[0], existence: 'Yes' },
+          { id: inserted_findings.measurement_ids[0], existence: 'Yes' },
+        ],
+      })
+      const diagnoses_result = await system_diagnosis_rules.insertSystemDiagnosesIfNotAlreadyIdentified(db, {
+        listener_id: 'test',
+        listener_name: 'test',
+        patient_id,
+        patient_encounter_id,
+        patient_age_determination: 'adult',
+        procedure_id: inserted_findings.procedure_id,
+        records: [
+          { id: inserted_findings.finding_ids[0], existence: 'Yes' },
+          { id: inserted_findings.measurement_ids[0], existence: 'Yes' },
+        ],
+      })
+      assert(diagnoses_result.startsWith('Inserted 1 diagnosis(es): '))
+      const possible_diagnosis_evaluation = await patient_evaluations.findOne(db, {
+        patient_id,
+        s_expression: `(diagnosis (snomed_concept "Anaphylaxis" "disorder") possible)`,
+      })
+      assertMatches(possible_diagnosis_evaluation, {
+        'root_snomed_concept_name': 'Diagnosis',
+        'specific_snomed_concept_name': 'Anaphylaxis',
+        'value': {
+          'name': 'Possible diagnosis (contextual qualifier)',
+        },
+      })
+
+      await additional_tasks.insertTasksIfNotAlreadyIdentified(db, {
+        patient_id,
+        patient_encounter_id,
+        patient_age_determination: 'adult',
+        records: [
+          { id: possible_diagnosis_evaluation.id, existence: 'Yes' },
+        ],
+      })
+
+      const encounter = await patient_encounters.getById(db, patient_encounter_id)
+
+      const task_groups = await additional_tasks.getTasksGroups(db, {
+        health_worker_id: employee.health_worker_id,
+        encounter,
+      })
+
+      assertLength(task_groups.task_groups, 2)
+      const due_to_possible_anaphylaxis_diagnosis = exists(
+        task_groups.task_groups.find((task_group) => task_group.due_to[0].specific_snomed_concept_name === 'Anaphylaxis'),
+      )
+      exists(task_groups.task_groups.find((task_group) => task_group.due_to[0].specific_snomed_concept_name === 'Insect bite - wound'))
+
+      const all_no_insertable_possible_anaphylaxis_findings = check_for.asInsertableFindings(
+        due_to_possible_anaphylaxis_diagnosis
+          .tasks
+          .filter(check_for.isCheckFor)
+          .map((task) =>
+            check_for.Schema.parse({
+              ...task,
+              existence: 'No' as const,
+            })
+          ),
+      )
+
+      const random_finding = check_for.asInsertableFindings([
+        {
+          s_expression: parseWithSchema(`(clinical_finding (snomed_concept "Weight reduction diet" "finding"))`, insertable_finding_base),
+          existence: 'No' as const,
+        },
+      ])
+
+      const inserted_additional_task_findings = await patient_findings.insertMany(
+        db,
+        {
+          patient_id,
+          patient_encounter_id,
+          patient_encounter_employee_id: employee.patient_encounter_employee_id,
+          employment_id: employee.employee_id,
+          procedure: {
+            create_with_specific_snomed_concept_id: WORKFLOW_STEP_SNOMED_CONCEPTS.triage!.additional_tasks_and_investigations.snomed_concept_id,
+          },
+          findings: [
+            ...all_no_insertable_possible_anaphylaxis_findings,
+            ...random_finding,
+          ],
+        },
+      )
+      await additional_tasks.procedureCompletedTasks(db, {
+        patient_id,
+        patient_encounter_id,
+        procedure_id: inserted_additional_task_findings.procedure_id,
+        evaluation_ids: task_groups.evaluation_ids,
+      })
+
+      const improbable_diagnoses_result = await system_diagnosis_rules.insertSystemDiagnosesIfNotAlreadyIdentified(db, {
+        listener_id: 'test',
+        listener_name: 'test',
+        patient_id,
+        patient_encounter_id,
+        patient_age_determination: 'adult',
+        procedure_id: inserted_additional_task_findings.procedure_id,
+        records: inserted_additional_task_findings.finding_ids.map((id) => ({
+          id,
+          existence: 'No',
+        })),
+      })
+      assert(improbable_diagnoses_result.startsWith('Inserted 1 improbable diagnosis(es): '))
+
+      const improbable_diagnosis_evaluation = await patient_evaluations.findOne(db, {
+        patient_id,
+        s_expression: `(diagnosis (snomed_concept "Anaphylaxis" "disorder") improbable)`,
+      })
+
+      assert(improbable_diagnosis_evaluation.destination_relations.some((relation) =>
+        relation.relation_name === 'Evidence of' &&
+        relation.displays.full === 'Sudden onset Eruption: No'
+      ))
+
+      assert(
+        !improbable_diagnosis_evaluation.destination_relations.some((relation) =>
+          relation.relation_name === 'Evidence of' &&
+          relation.displays.full === 'Weight reduction diet: No'
+        ),
+      )
     },
   )
 })
