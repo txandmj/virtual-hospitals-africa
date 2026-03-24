@@ -73,6 +73,7 @@ type ColumnWithContents<T extends Row> = TableColumn<T> & {
 }
 
 type TableProps<T extends Row> = {
+  id?: string
   columns: TableColumn<T>[]
   rows: T[]
   className?: string
@@ -318,7 +319,7 @@ function* columnsWithSomeNonNullValue<T extends Row>(
 }
 
 export default function Table<T extends Row>(
-  { columns, rows, className, EmptyState, pagination, tableClassName }: TableProps<T>,
+  { id, columns, rows, className, EmptyState, pagination, tableClassName }: TableProps<T>,
 ): JSX.Element {
   if (rows.length === 0) {
     return <EmptyState />
@@ -328,6 +329,7 @@ export default function Table<T extends Row>(
 
   const table = (
     <div
+      id={id}
       className={cls(
         className,
         'overflow-x-auto w-full',

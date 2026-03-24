@@ -8,7 +8,7 @@ import { exists } from '../../util/exists.ts'
 import { addTestEmployee } from '../../mocks/testEmployee.ts'
 import { addTestEmployeeWithSession } from '../../test/_helpers/employees.ts'
 import { insertPatientSeekingTreatmentWithEmployeeAndCompleteRegistrationForTest } from '../../test/_helpers/workflows.ts'
-import { TEST_ORGANIZATION_UUIDS } from '../../test/_helpers/organizations.ts'
+
 import {
   asVitalAssessmentFormValues,
   asVitalMeasurementFormValues,
@@ -29,6 +29,7 @@ import { snomed_warning_signs } from '../../db/models/snomed_warning_signs.ts'
 import { WarningSignPriority } from '../../db.d.ts'
 import { snomedConceptBase } from '../../db/models/s_expression.ts'
 import { assert } from 'std/assert/assert.ts'
+import { createTestOrganization } from 'test/_helpers/organizations.ts'
 
 type Evidence = ReturnType<typeof allEvidenceToLookFor> extends Generator<infer T> ? T : never
 
@@ -156,10 +157,7 @@ async function createSamplePatientsForEachAPCPage() {
   const task_file_paths = exists(s_expression_directory.get('tasks'))
     .filter((path) => path.includes('apc-adult'))
 
-  const clinic = {
-    id: TEST_ORGANIZATION_UUIDS.ZA.clinic,
-  }
-  // await createTestOrganization(db)
+  const clinic = await createTestOrganization(db)
 
   const [nurse, shcp] = await Promise.all([
     addTestEmployeeWithSession(db, {

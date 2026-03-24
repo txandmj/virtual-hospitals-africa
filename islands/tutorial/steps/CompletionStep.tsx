@@ -64,7 +64,7 @@ export function CompletionStep() {
 
         <div className='flex items-center gap-3 pt-4'>
           <img
-            src={SPEAKERS.guide.avatar}
+            src={SPEAKERS.guide.avatar_src}
             alt={SPEAKERS.guide.name}
             className='w-12 h-12 rounded-full border-2 border-indigo-500'
             style={{ imageRendering: 'pixelated' }}

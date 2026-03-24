@@ -4,7 +4,7 @@
 // =============================================================================
 
 import { useEffect } from 'preact/hooks'
-import type { ScriptItem, TutorialHashState } from '../../shared/tutorial/types.ts'
+import { type ScriptItem, SPEAKERS, type TutorialHashState } from '../../shared/tutorial/types.ts'
 import { advance } from '../../shared/tutorial/state.ts'
 import { TutorialDialogue } from './TutorialDialogue.tsx'
 import { TutorialSpotlight } from './TutorialSpotlight.tsx'
@@ -183,7 +183,7 @@ function DialogueRenderer({
       <TutorialSpotlight target={item.highlight} portal={item.portal} />
       <TutorialDialogue
         key={item.speaker}
-        speaker={item.speaker}
+        speaker={SPEAKERS[item.speaker]}
         text={item.text}
         dangerousHTML={!!item.dangerousHTML}
         onNext={onNext}
@@ -243,7 +243,7 @@ function WaitClickRenderer({
     <>
       <TutorialSpotlight target={item.target} clickable />
       <TutorialDialogue
-        speaker='guide'
+        speaker={SPEAKERS.guide}
         text={item.text ?? 'Complete the action highlighted above to continue.'}
         dangerousHTML={!!item.dangerousHTML}
         position={item.position || 'bottom-left'}

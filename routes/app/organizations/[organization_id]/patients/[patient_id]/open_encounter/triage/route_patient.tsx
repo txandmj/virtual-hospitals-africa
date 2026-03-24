@@ -17,7 +17,6 @@ import { redirectToFirstIncompleteStep } from '../index.tsx'
 import { additional_tasks } from '../../../../../../../../db/models/additional_tasks.ts'
 import { assertOrRedirect } from '../../../../../../../../util/assertOr.ts'
 import { isManage } from '../../../../../../../../shared/tasks.ts'
-import { logReadableJson } from '../../../../../../../../util/humanReadableJson.ts'
 
 export const TriageRoutePatientSchema = z.object({
   next_step: z.enum(TRIAGE_ROUTE_PATIENT_NEXT_STEPS),
@@ -130,8 +129,6 @@ export async function PatientTriageRoutePatientPage(
     }),
     manage_patient_tasks: managePatientTasks(ctx),
   })
-
-  logReadableJson(manage_patient_tasks)
 
   return (
     <TriageRoutePatientSection

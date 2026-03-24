@@ -4,33 +4,20 @@
 // Guide (Dr. Lindiwe) always bottom-left, Patient always top-right
 // =============================================================================
 
-import { memo } from 'preact/compat'
-import type { Speaker } from '../../shared/tutorial/types.ts'
-import { SPEAKERS } from '../../shared/tutorial/types.ts'
 import cls from '../../util/cls.ts'
+import { SpeakerImage } from './TutorialSpeakerImage.tsx'
+
+export const TUTORIAL_BUTTON_CLASSNAME =
+  'px-4 md:px-6 py-2 md:py-3 text-base md:text-xl font-bold text-white transition-transform active:translate-y-0.5 bg-indigo-500 border-[3px] border-[#1a1a2e] shadow-[4px_4px_0px_#1a1a2e] [font-family:GeistPixel,monospace]'
 
 type Position = 'bottom-left' | 'top-left' | 'top-right' | 'bottom-right'
 
-/**
- * Map speaker to their badge background class.
- */
-function getSpeakerBgClass(speaker: Speaker): string {
-  switch (speaker) {
-    case 'guide':
-      return 'bg-indigo-500'
-    case 'patient':
-      return 'bg-emerald-500'
-    case 'nurse':
-      return 'bg-violet-500'
-    case 'doctor':
-      return 'bg-blue-500'
-    case 'pharmacist':
-      return 'bg-teal-500'
-  }
-}
-
 type Props = {
-  speaker: Speaker
+  speaker: {
+    name: string
+    avatar_src: string
+    bg_class: string
+  }
   text: string
   dangerousHTML?: boolean // Render text as HTML via dangerouslySetInnerHTML
   button_text?: string // Custom button text (default: "Next")
@@ -38,23 +25,6 @@ type Props = {
   onNext?: () => void // Optional - hide Next button if not provided
   link?: { title: string; href: string } // Optional small link shown bottom-left
 }
-
-const SpeakerImage = memo(({ speaker }: { speaker: Speaker }) => {
-  return (
-    <div className='flex-shrink-0'>
-      <div className='w-20 h-20 md:w-44 md:h-44 rounded-lg overflow-hidden border-4 border-[#1a1a2e] shadow-[4px_4px_0px_#1a1a2e] [image-rendering:pixelated]'>
-        {(Object.keys(SPEAKERS) as Speaker[]).map((s) => (
-          <img
-            key={s}
-            src={SPEAKERS[s].avatar}
-            alt={SPEAKERS[s].name}
-            className={`w-full h-full object-cover [image-rendering:pixelated] ${s === speaker ? 'block' : 'hidden'}`}
-          />
-        ))}
-      </div>
-    </div>
-  )
-})
 
 /**
  * Pixel-game style dialogue box with character avatar
@@ -69,8 +39,6 @@ export function TutorialDialogue({
   position,
   link,
 }: Props) {
-  const speaker_info = SPEAKERS[speaker]
-
   // Determine position: use override if provided, otherwise derive from speaker
   const effective_position: Position = position
   const is_left_aligned = effective_position.endsWith('left')
@@ -86,20 +54,20 @@ export function TutorialDialogue({
         'flex-row-reverse': !is_left_aligned,
       })}
     >
-      <SpeakerImage speaker={speaker} />
+      <SpeakerImage {...speaker} />
 
       <div className='relative bg-[#f0f0f0] flex-1 p-4 md:p-8 w-80 md:w-120 border-4 border-[#1a1a2e] shadow-[4px_4px_0px_#1a1a2e]'>
         <div
           className={cls(
             'absolute -top-4 md:-top-5 px-3 md:px-5 py-1 md:py-1.5  text-lg xl:text-2xl font-bold text-white border-[3px] border-[#1a1a2e] [font-family:GeistPixel,monospace]',
-            getSpeakerBgClass(speaker),
+            speaker.bg_class,
             {
               'left-3 right-auto': is_left_aligned,
               'right-3 left-auto': !is_left_aligned,
             },
           )}
         >
-          {speaker_info.name}
+          {speaker.name}
         </div>
 
         <div
@@ -139,7 +107,7 @@ export function TutorialDialogue({
               <button
                 type='button'
                 onClick={onNext}
-                className='px-4 md:px-6 py-2 md:py-3 text-base md:text-xl font-bold text-white transition-transform active:translate-y-0.5 bg-indigo-500 border-[3px] border-[#1a1a2e] shadow-[4px_4px_0px_#1a1a2e] [font-family:GeistPixel,monospace]'
+                className={TUTORIAL_BUTTON_CLASSNAME}
               >
                 {button_text}
               </button>
