@@ -97,7 +97,7 @@ export default function TriageRoutePatientSection(
         <FormRow>
           <ProvidersSelect
             providers={clinic_employees}
-            initialSelected={to_be_notified.value}
+            initial_selected={to_be_notified.value}
             onChange={(employees) => to_be_notified.value = employees}
           />
         </FormRow>

@@ -7,6 +7,7 @@ import { Priority } from '../shared/priorities.ts'
 import { HiddenInput } from '../components/library/HiddenInput.tsx'
 import { HealthWorkerPresence } from '../components/HealthWorkerPresence.tsx'
 import OnlineIndicator from '../components/library/OnlineIndicator.tsx'
+import sortBy from '../util/sortBy.ts'
 
 export type AvailabilityInfo = {
   label: string
@@ -90,13 +91,15 @@ type TrackFormDataSomehow = {
 }
 
 export default function ProvidersSelect(
-  { providers, name = 'employee_ids', className, onChange, initialSelected = [] }: {
+  { providers, name = 'employee_ids', className, onChange, initial_selected = [] }: {
     providers: RenderedEmployeeWithPresence[]
     className?: string
-    initialSelected?: RenderedEmployeeWithPresence[]
+    initial_selected?: RenderedEmployeeWithPresence[]
   } & TrackFormDataSomehow,
 ) {
-  const selected = useSignal<Set<RenderedEmployeeWithPresence>>(new Set(initialSelected))
+  const providers_with_initially_selected_first = initial_selected ? sortBy(providers, (provider) => initial_selected.includes(provider) ? 0 : 1) : providers
+
+  const selected = useSignal<Set<RenderedEmployeeWithPresence>>(new Set(initial_selected))
 
   if (!providers.length) {
     return (
@@ -109,7 +112,7 @@ export default function ProvidersSelect(
   return (
     <>
       <fieldset className={cls('grid md:grid-cols-2 xl:grid-cols-3 gap-2 w-full', className)}>
-        {providers.map((provider) => (
+        {providers_with_initially_selected_first.map((provider) => (
           <ProviderSelectOption
             key={provider.employee_id}
             provider={provider}
