@@ -46,3 +46,21 @@
     (snomed_concept "Oxygen therapy" "procedure")
   )
 )
+(task
+  "Administer epinephrine for anaphylaxis patient"
+  adult
+  (active_condition (snomed_concept "Anaphylaxis" "disorder"))
+  (manage
+    (snomed_concept "Product containing epinephrine" "medicinal product")
+    (permission (role nurse) (specialty "Primary care"))
+  )
+)
+(task
+  "Administer sodium chloride 0.9% for anaphylaxis patient"
+  adult
+  (active_condition (snomed_concept "Anaphylaxis" "disorder"))
+  (manage
+    (snomed_concept "Product containing precisely sodium chloride 9 milligram/1 milliliter conventional release solution for infusion and/or injection" "clinical drug")
+    (permission (role nurse) (specialty "Primary care"))
+  )
+)

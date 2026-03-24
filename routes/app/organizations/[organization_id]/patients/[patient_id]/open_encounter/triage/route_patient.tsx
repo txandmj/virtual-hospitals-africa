@@ -17,6 +17,7 @@ import { redirectToFirstIncompleteStep } from '../index.tsx'
 import { additional_tasks } from '../../../../../../../../db/models/additional_tasks.ts'
 import { assertOrRedirect } from '../../../../../../../../util/assertOr.ts'
 import { isManage } from '../../../../../../../../shared/tasks.ts'
+import partition from '../../../../../../../../util/partition.ts'
 
 export const TriageRoutePatientSchema = z.object({
   next_step: z.enum(TRIAGE_ROUTE_PATIENT_NEXT_STEPS),
@@ -111,6 +112,7 @@ export async function PatientTriageRoutePatientPage(
     patient,
     health_worker_id,
     organization_id,
+    organization_employment,
     encounter,
   } = ctx.state
   const { reason, notes, priority } = encounter
@@ -118,9 +120,6 @@ export async function PatientTriageRoutePatientPage(
     return redirectToFirstIncompleteStep(ctx, { warning_message: 'Please complete triage before routing the patient' })
   }
   assert(completedPersonal(patient))
-
-  const { /*evaluation_ids, */ task_groups } = await additional_tasks.getTasksGroups(trx, { health_worker_id, encounter })
-  console.log({ task_groups })
 
   const { clinic_employees, manage_patient_tasks } = await promiseProps({
     clinic_employees: employees_presence.findAll(trx, {
@@ -130,13 +129,25 @@ export async function PatientTriageRoutePatientPage(
     manage_patient_tasks: managePatientTasks(ctx),
   })
 
+  console.log({ manage_patient_tasks })
+
+  const [tasks_i_can_do, tasks_for_another] = partition(manage_patient_tasks, (task) => {
+    const { permissions } = task
+    if (!permissions?.length) return true
+    return permissions.some((p) =>
+      p.role === (organization_employment.role as 'doctor' | 'nurse' | 'specialist') &&
+        !p.specialty || (organization_employment.active_licences.some((licence) => licence.specialty === p.specialty))
+    )
+  })
+
   return (
     <TriageRoutePatientSection
       this_visit={{ reason, notes }}
       patient={patient}
       priority={priority}
       clinic_employees={clinic_employees}
-      manage_patient_tasks={manage_patient_tasks}
+      tasks_i_can_do={tasks_i_can_do}
+      tasks_for_another={tasks_for_another}
     />
   )
 }

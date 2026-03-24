@@ -17,6 +17,7 @@ function insertLevel(
     procedure_id,
     evaluates_record_ids,
     triage_level,
+    system_priority_evaluation_id,
   }: {
     patient_id: string
     patient_encounter_id: string
@@ -25,6 +26,7 @@ function insertLevel(
     procedure_id?: Maybe<string>
     evaluates_record_ids: string[]
     triage_level: TriageLevel
+    system_priority_evaluation_id?: string
   },
 ) {
   const triage_level_evaluation_id = generateUUID()
@@ -65,6 +67,7 @@ function insertLevel(
           .values({
             id: triage_level_evaluation_id,
             target_treatment_time: sql`now() + interval '${sql.raw(target_treatment_minutes.toString())} minutes'`,
+            system_priority_evaluation_id,
           })
           .returningAll(),
     )
@@ -117,6 +120,7 @@ export const patient_triage = base({
   baseQuery,
   insertLevel,
   formatResult: identity,
+  // TODO: kill this
   associatedFindings(trx: TrxOrDb, priority: NonNullable<RenderedPatientEncounter['priority']>) {
     return trx.selectFrom('patient_triage_level')
       .innerJoin(
@@ -137,7 +141,7 @@ export const patient_triage = base({
         'triage_snomed_inferred_canonical_name_and_category.id',
       )
       .selectAll('patient_records_aggregated')
-      .where('patient_triage_level.id', 'in', priority.record_ids)
+      .where('patient_triage_level.id', 'in', priority.records.map((record) => record.id))
       .execute()
   },
 })

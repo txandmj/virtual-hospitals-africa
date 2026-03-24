@@ -82,6 +82,7 @@ export type MedicationFrequency =
   | 'q2h'
   | 'q30'
   | 'q30h'
+  | 'q3h'
   | 'q48h'
   | 'q4h'
   | 'q6h'
@@ -347,6 +348,16 @@ export interface Devices {
   manufacturer: string
   name: string
   updated_at: Generated<Timestamp>
+}
+
+export interface DueToFindings {
+  created_at: Generated<Timestamp>
+  id: Generated<string>
+  root_snomed_concept_id: Int8 | null
+  s_expression: string
+  specific_snomed_concept_id: Int8
+  updated_at: Generated<Timestamp>
+  value_snomed_concept_id: Int8 | null
 }
 
 export interface Employment {
@@ -1229,6 +1240,7 @@ export interface PatientSymptoms {
 export interface PatientTriageLevel {
   created_at: Generated<Timestamp>
   id: string
+  system_priority_evaluation_id: string | null
   target_treatment_time: Timestamp | null
 }
 
@@ -1262,10 +1274,10 @@ export interface PatientWorkflowStepsCompleted {
 }
 
 export interface PgStatStatements {
+  blk_read_time: number | null
+  blk_write_time: number | null
   calls: Int8 | null
   dbid: number | null
-  jit_deform_count: Int8 | null
-  jit_deform_time: number | null
   jit_emission_count: Int8 | null
   jit_emission_time: number | null
   jit_functions: Int8 | null
@@ -1274,8 +1286,6 @@ export interface PgStatStatements {
   jit_inlining_time: number | null
   jit_optimization_count: Int8 | null
   jit_optimization_time: number | null
-  local_blk_read_time: number | null
-  local_blk_write_time: number | null
   local_blks_dirtied: Int8 | null
   local_blks_hit: Int8 | null
   local_blks_read: Int8 | null
@@ -1286,18 +1296,14 @@ export interface PgStatStatements {
   mean_plan_time: number | null
   min_exec_time: number | null
   min_plan_time: number | null
-  minmax_stats_since: Timestamp | null
   plans: Int8 | null
   query: string | null
   queryid: Int8 | null
   rows: Int8 | null
-  shared_blk_read_time: number | null
-  shared_blk_write_time: number | null
   shared_blks_dirtied: Int8 | null
   shared_blks_hit: Int8 | null
   shared_blks_read: Int8 | null
   shared_blks_written: Int8 | null
-  stats_since: Timestamp | null
   stddev_exec_time: number | null
   stddev_plan_time: number | null
   temp_blk_read_time: number | null
@@ -1382,13 +1388,10 @@ export interface RegulatoryAgencies {
 export interface RuleDueToFindings {
   always_applies_if_present: boolean
   created_at: Generated<Timestamp>
+  due_to_finding_id: string | null
   id: Generated<string>
-  root_snomed_concept_id: Int8 | null
   rule_id: string
-  s_expression: string
-  specific_snomed_concept_id: Int8
   updated_at: Generated<Timestamp>
-  value_snomed_concept_id: Int8 | null
 }
 
 export interface RuleDueToFindingSites {
@@ -1827,6 +1830,7 @@ export interface DB {
   departments: Departments
   device_capabilities: DeviceCapabilities
   devices: Devices
+  due_to_findings: DueToFindings
   employment: Employment
   employment_calendars: EmploymentCalendars
   employment_presence: EmploymentPresence

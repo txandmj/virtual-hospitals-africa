@@ -31,22 +31,24 @@ export function DrawerThisVisit(
   return (
     <div id='patient-drawer-this-visit' className={section_class_name}>
       <Header>This Visit</Header>
-      {this_visit_findings.map((workflow) => <WorkflowSection key={workflow.workflow} workflow={workflow} organization_id={organization_id} />)}
-      {!!this_visit_diagnoses.length && (
-        <WorkflowSection
-          workflow={{
-            workflow: 'diagnoses' as unknown as Workflow,
-            status: 'completed',
-            steps: [{
-              workflow_step: 'diagnoses',
-              title: 'diagnoses',
+      <div className='flex flex-col gap-2.5'>
+        {this_visit_findings.map((workflow) => <WorkflowSection key={workflow.workflow} workflow={workflow} organization_id={organization_id} />)}
+        {!!this_visit_diagnoses.length && (
+          <WorkflowSection
+            workflow={{
+              workflow: 'Diagnoses' as unknown as Workflow,
               status: 'completed',
-              records: this_visit_diagnoses,
-            }],
-          }}
-          organization_id={organization_id}
-        />
-      )}
+              steps: [{
+                workflow_step: 'diagnoses',
+                title: 'Diagnoses',
+                status: 'completed',
+                records: this_visit_diagnoses,
+              }],
+            }}
+            organization_id={organization_id}
+          />
+        )}
+      </div>
     </div>
   )
 }

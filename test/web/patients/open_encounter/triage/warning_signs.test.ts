@@ -440,18 +440,18 @@ describeParallel('triage/warning_signs', () => {
               },
             ],
             'tasks': [
-              { atom: 'finding', displays: { full: 'Current Injury of head' } },
-              { atom: 'finding', displays: { full: 'Unconscious' } },
-              { atom: 'finding', displays: { full: 'Hypoglycemia' } },
-              { atom: 'finding', displays: { full: 'Alcohol use disorder' } },
-              { atom: 'finding', displays: { full: 'Status epilepticus' } },
-              { atom: 'finding', displays: { full: 'Cardiac arrhythmia' } },
               {
                 atom: 'link',
                 title: 'APC 2023 — Seizures',
                 href: '/medical-resources/primary-care/adult.pdf#page=19',
                 thumbnail_href: '/medical-resources/za/primary-care/adult/thumbnails/400/19.png',
               },
+              { atom: 'finding', displays: { full: 'Alcohol use disorder' } },
+              { atom: 'finding', displays: { full: 'Cardiac arrhythmia' } },
+              { atom: 'finding', displays: { full: 'Current Injury of head' } },
+              { atom: 'finding', displays: { full: 'Hypoglycemia' } },
+              { atom: 'finding', displays: { full: 'Status epilepticus' } },
+              { atom: 'finding', displays: { full: 'Unconscious' } },
             ],
           },
         ])
@@ -896,7 +896,7 @@ describeParallel('triage/warning_signs', () => {
           description: 'finding',
           priority: 'Very urgent',
           priority_by_virtue_of_matching_warning_sign: 'Pregnancy and abdominal pain',
-          best_similarity: 1,
+          best_similarity: 1.4,
         })
 
         // deno-lint-ignore no-explicit-any

@@ -1801,10 +1801,15 @@ export type RenderedPatientEncounter = {
     }
   >
   priority: null | {
-    record_ids: string[]
     name: Priority
     value_snomed_concept_id: string
     target_treatment_time: Date | null
+    records: {
+      id: string
+      associated_finding_ids: string[]
+    }[]
+    created_at: Date | string
+    based_on_system_priority_evaluation_description: string | null
   }
   arrived_timestamp: Date
   wait_time: PostgresInterval
@@ -2420,7 +2425,8 @@ export type CurrentWorkflowState = {
 
 export type PatientDrawerV4Props = {
   patient: RenderedPatient
-  priority: Priority | null
+  priority: RenderedPatientEncounter['priority']
+  priority_evaluation: RenderedEvaluationRelativeToHealthWorker | null
   organization_id: string
   this_visit_findings: RenderedSidebarWorkflow[]
   this_visit_diagnoses: RenderedEvaluationRelativeToHealthWorker[]
@@ -2668,6 +2674,17 @@ export type RenderedEvaluationRelativeToHealthWorker = RenderedRecordRelativeToH
   employment_id: null | string
   provider: null | RenderedRecordProvider
   as_part_of_procedure: null | AsPartOfProcedure
+  source_relations?: Array<
+    IntermediateBaseRecord & {
+      relation_name: string
+      displays: RecordDisplays
+      // patient_id: string
+      // relation_snomed_concept_id: string
+      // existence: Existence
+      // attributes: RenderedAttribute[]
+      // modifiers: IntermediateBaseRecord[]
+    }
+  >
   score?: never
 }>
 
@@ -2784,11 +2801,13 @@ export type RenderedTaskToBeDone =
     existing_record: null | RenderedProcedureRelativeToHealthWorker
   }
   | Lang['finding'] & {
+    description: string
     displays: RecordDisplays
     s_expression: string
     existing_record: null | RenderedFindingRelativeToHealthWorker
   }
   | Lang['measurement'] & {
+    description: string
     displays: RecordDisplays
     s_expression: string
     existing_record: null | (RenderedFindingRelativeToHealthWorker & { value: RecordValueMeasurement })

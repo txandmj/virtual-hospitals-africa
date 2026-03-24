@@ -115,6 +115,10 @@ type QueryableSingleBaseLang =
         | MatchingFinding[]
       qualifiers: Lang['qualifier'][]
       attributes: Lang['attribute'][]
+      permissions?: Array<{
+        role: 'doctor' | 'nurse' | 'specialist'
+        specialty?: string
+      }>
     }
     evaluation: {
       root_snomed_concept: Lang['snomed_concept'] | null
@@ -803,12 +807,33 @@ export const measure: z.ZodType<Lang['procedure']> = z.lazy(
     })),
 ).describe('measure')
 
+const permission_role = z.lazy(() =>
+  z.object({
+    atom: z.literal('role'),
+    args: z.tuple([z.enum(['doctor', 'nurse', 'specialist'])]),
+  }).transform(({ args: [role] }) => role)
+)
+
+const permission_specialty = z.lazy(() =>
+  z.object({
+    atom: z.literal('specialty'),
+    args: z.tuple([z.string()]),
+  }).transform(({ args: [specialty] }) => specialty)
+)
+
+const permission_entry = z.lazy(() =>
+  z.object({
+    atom: z.literal('permission'),
+    args: z.tuple([permission_role, permission_specialty.optional()]),
+  }).transform(({ args: [role, specialty] }) => specialty !== undefined ? { role, specialty } : { role })
+)
+
 export const manage: z.ZodType<Lang['procedure']> = z.lazy(
   () =>
     z.object({
       atom: z.literal('manage'),
-      args: z.tuple([snomed_concept]),
-    }).transform(({ args: [snomed_concept] }) => ({
+      args: z.tuple([snomed_concept]).rest(permission_entry),
+    }).transform(({ args: [snomed_concept, ...permissions] }) => ({
       atom: 'procedure' as const,
       root_snomed_concept: {
         atom: 'snomed_concept' as const,
@@ -821,6 +846,7 @@ export const manage: z.ZodType<Lang['procedure']> = z.lazy(
       qualifiers: [],
       attributes: [],
       value: snomed_concept,
+      ...(permissions.length ? { permissions } : {}),
     })),
 ).describe('manage')
 

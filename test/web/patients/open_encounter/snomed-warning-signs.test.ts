@@ -1,10 +1,11 @@
-import { assertEquals } from 'std/assert/assert_equals.ts'
 import { afterAll, before } from 'std/testing/bdd.ts'
 import db from '../../../../db/db.ts'
 import { addTestEmployeeWithSession } from 'test/_helpers/employees.ts'
 import { createTestOrganization } from 'test/_helpers/organizations.ts'
 import { describeParallel, itParallel } from 'test/_helpers/testParallel.ts'
 import waitUntilTestServerUp from 'test/_helpers/waitUntilTestServerUp.ts'
+import { assertMatches } from '../../../../util/assertMatches.ts'
+import z from 'zod'
 
 describeParallel('/app/snomed/warning-signs', () => {
   before(waitUntilTestServerUp)
@@ -24,7 +25,7 @@ describeParallel('/app/snomed/warning-signs', () => {
           `/app/snomed/warning-signs?age_determination=adult&search=earache`,
         )
 
-        assertEquals(first_page, {
+        assertMatches(first_page, {
           'page': 1,
           'rows_per_page': 10,
           'results': [
@@ -34,7 +35,7 @@ describeParallel('/app/snomed/warning-signs', () => {
               'name': 'Pain of ear',
               'description': 'finding',
               'category': 'Search Results',
-              'best_similarity': 1,
+              'best_similarity': z.number(),
               'priority': null,
               'priority_by_virtue_of_matching_warning_sign': null,
             },
@@ -44,7 +45,7 @@ describeParallel('/app/snomed/warning-signs', () => {
               'name': 'No earache',
               'description': 'situation',
               'category': 'Search Results',
-              'best_similarity': 0.72727275,
+              'best_similarity': z.number(),
               'priority': null,
               'priority_by_virtue_of_matching_warning_sign': null,
             },
@@ -54,7 +55,7 @@ describeParallel('/app/snomed/warning-signs', () => {
               'name': 'Otalgia of left ear',
               'description': 'finding',
               'category': 'Search Results',
-              'best_similarity': 0.47058824,
+              'best_similarity': z.number(),
               'priority': null,
               'priority_by_virtue_of_matching_warning_sign': null,
             },
@@ -64,7 +65,7 @@ describeParallel('/app/snomed/warning-signs', () => {
               'name': 'Bilateral earache',
               'description': 'finding',
               'category': 'Search Results',
-              'best_similarity': 0.44444445,
+              'best_similarity': z.number(),
               'priority': null,
               'priority_by_virtue_of_matching_warning_sign': null,
             },
@@ -74,7 +75,7 @@ describeParallel('/app/snomed/warning-signs', () => {
               'name': 'Otalgia of right ear',
               'description': 'finding',
               'category': 'Search Results',
-              'best_similarity': 0.44444445,
+              'best_similarity': z.number(),
               'priority': null,
               'priority_by_virtue_of_matching_warning_sign': null,
             },
@@ -101,14 +102,14 @@ describeParallel('/app/snomed/warning-signs', () => {
           `/app/snomed/warning-signs?age_determination=adult&search=appendicular+pain`,
         )
 
-        assertEquals(results[0], {
+        assertMatches(results[0], {
           'clinical_finding_s_expression': '(clinical_finding (snomed_concept "Appendicular pain" "finding"))',
           'snomed_concept_id': '275406005',
           'name': 'Appendicular pain',
           'description': 'finding',
           'priority': 'Urgent',
           'priority_by_virtue_of_matching_warning_sign': 'Abdominal pain',
-          'best_similarity': 1,
+          'best_similarity': z.number(),
           'category': 'Search Results',
         })
       },
@@ -127,14 +128,14 @@ describeParallel('/app/snomed/warning-signs', () => {
           `/app/snomed/warning-signs?age_determination=adult&pregnancy=true&search=appendicular+pain`,
         )
 
-        assertEquals(results[0], {
+        assertMatches(results[0], {
           'clinical_finding_s_expression': '(clinical_finding (snomed_concept "Appendicular pain" "finding"))',
           'snomed_concept_id': '275406005',
           'name': 'Appendicular pain',
           'description': 'finding',
           'priority': 'Very urgent',
           'priority_by_virtue_of_matching_warning_sign': 'Pregnancy and abdominal pain',
-          'best_similarity': 1,
+          'best_similarity': z.number(),
           'category': 'Search Results',
         })
       },

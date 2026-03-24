@@ -11,35 +11,12 @@ import { TO_COUNTRY_ISO_3601_2 } from '../../models/addresses.ts'
 import { getLocationAddress } from '../../../external-clients/google-maps.ts'
 import { formatAddress } from '../../../shared/addresses.ts'
 
-const ZIMBABWEAN_PHARMACY_TYPES = [
-  'Clinics: Class A',
-  'Clinics: Class B',
-  'Clinics: Class C',
-  'Clinics: Class D',
-  'Dispensing medical practice',
-  'Hospital pharmacies',
-  'Pharmacies: Research',
-  'Pharmacies: Restricted',
-  'Pharmacy in any other location',
-  'Pharmacy in rural area',
-  'Pharmacy located in the CBD',
-  'Wholesalers',
-] as const
-
-function parsePharmacyExpiryDate(s: string): Date {
-  const [mm, dd, yyyy] = s.split('/').map(Number)
-  return new Date(yyyy, mm - 1, dd)
-}
-
 export default define(
   ['addresses', 'organizations'],
   async (trx) => {
-    console.log('await addTestOrganizations(trx)')
     await addTestOrganizations(trx)
-    console.log('await importDataFromCSV(trx)')
     await importDataFromCSV(trx)
-    console.log('await importZimbabweanPharmacies(trx)')
-    await importZimbabweanPharmacies(trx)
+    // await importZimbabweanPharmacies(trx)
   },
 )
 
@@ -126,7 +103,7 @@ export async function addTestOrganizations(trx: TrxOrDb) {
   })
 }
 
-const GET_ADDRESSES_FROM_GOOGLE_MAPS_FOR_COUNTRIES = new Set<string>(['ZA'])
+const GET_ADDRESSES_FROM_GOOGLE_MAPS_FOR_COUNTRIES = new Set<string>(['ZA', 'South Africa'])
 
 const duplicates_file = Deno.cwd() + '/db/resources/organization_duplicates.tsv'
 
@@ -190,6 +167,8 @@ async function importDataFromCSV(trx: TrxOrDb) {
         longitude: Number(row.Long),
       }
 
+      console.log({ country })
+
       const get_google_maps_address = GET_ADDRESSES_FROM_GOOGLE_MAPS_FOR_COUNTRIES.has(country)
 
       const address = get_google_maps_address ? await getLocationAddress(location) : undefined
@@ -227,33 +206,53 @@ async function importDataFromCSV(trx: TrxOrDb) {
   )
 }
 
-async function importZimbabweanPharmacies(trx: TrxOrDb) {
-  const pharmacies = parseTsvTyped(
-    './db/resources/zimbabwe_pharmacies.tsv',
-    z.object({
-      address: z.string().nullable(),
-      town: z.string(),
-      expiry_date: z.string(),
-      licence_number: z.string(),
-      licensee: z.string(),
-      name: z.string(),
-      pharmacies_types: z.enum(ZIMBABWEAN_PHARMACY_TYPES),
-    }),
-  )
-  await forEach(pharmacies, (pharmacy) =>
-    organizations.add(trx, {
-      name: pharmacy.name,
-      category: pharmacy.pharmacies_types,
-      country: 'ZW',
-      licence_number: pharmacy.licence_number,
-      licensee: pharmacy.licensee,
-      expiry_date: parsePharmacyExpiryDate(pharmacy.expiry_date),
-      address: (pharmacy.address || pharmacy.town)
-        ? formatAddress({
-          locality: pharmacy.town,
-          route: pharmacy.address ?? undefined,
-          country: 'Zimbabwe',
-        })
-        : undefined,
-    }))
-}
+// const ZIMBABWEAN_PHARMACY_TYPES = [
+//   'Clinics: Class A',
+//   'Clinics: Class B',
+//   'Clinics: Class C',
+//   'Clinics: Class D',
+//   'Dispensing medical practice',
+//   'Hospital pharmacies',
+//   'Pharmacies: Research',
+//   'Pharmacies: Restricted',
+//   'Pharmacy in any other location',
+//   'Pharmacy in rural area',
+//   'Pharmacy located in the CBD',
+//   'Wholesalers',
+// ] as const
+
+// function parsePharmacyExpiryDate(s: string): Date {
+//   const [mm, dd, yyyy] = s.split('/').map(Number)
+//   return new Date(yyyy, mm - 1, dd)
+// }
+
+// async function importZimbabweanPharmacies(trx: TrxOrDb) {
+//   const pharmacies = parseTsvTyped(
+//     './db/resources/zimbabwe_pharmacies.tsv',
+//     z.object({
+//       address: z.string().nullable(),
+//       town: z.string(),
+//       expiry_date: z.string(),
+//       licence_number: z.string(),
+//       licensee: z.string(),
+//       name: z.string(),
+//       pharmacies_types: z.enum(ZIMBABWEAN_PHARMACY_TYPES),
+//     }),
+//   )
+//   await forEach(pharmacies, (pharmacy) =>
+//     organizations.add(trx, {
+//       name: pharmacy.name,
+//       category: pharmacy.pharmacies_types,
+//       country: 'ZW',
+//       licence_number: pharmacy.licence_number,
+//       licensee: pharmacy.licensee,
+//       expiry_date: parsePharmacyExpiryDate(pharmacy.expiry_date),
+//       address: (pharmacy.address || pharmacy.town)
+//         ? formatAddress({
+//           locality: pharmacy.town,
+//           route: pharmacy.address ?? undefined,
+//           country: 'Zimbabwe',
+//         })
+//         : undefined,
+//     }))
+// }

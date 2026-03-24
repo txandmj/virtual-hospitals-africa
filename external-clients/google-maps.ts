@@ -5,6 +5,8 @@ import { Coordinates, GoogleAddressComponent, LocationDistance } from '../types.
 import { AddressInsert } from '../db/models/addresses.ts'
 import { getEnvVariableRequiredOutsideDockerQuickstart } from '../util/getEnvVariableRequiredOutsideDockerQuickstart.ts'
 import { formatAddress } from '../shared/addresses.ts'
+import compactMap from '../util/compactMap.ts'
+import sortBy from '../util/sortBy.ts'
 
 const GOOGLE_MAPS_API_KEY = getEnvVariableRequiredOutsideDockerQuickstart(
   'GOOGLE_MAPS_API_KEY',
@@ -20,7 +22,7 @@ const GOOGLE_MAPS_API_KEY = getEnvVariableRequiredOutsideDockerQuickstart(
 // )
 
 export async function getLocationAddress(
-  { longitude, latitude }: Coordinates,
+  { latitude, longitude }: Coordinates,
 ): Promise<AddressInsert | null> {
   const results = await getGeocodeData(latitude, longitude)
   return getAddressFromData(results)
@@ -38,6 +40,10 @@ export async function getGeocodeData(
     throw await response.text()
   }
   const data = await response.json()
+  if (data.error_message) {
+    throw new Error(data.error_message)
+  }
+  console.log({ data })
   if (data.status === 'OK' && Array.isArray(data.results)) {
     return data.results
   }
@@ -58,26 +64,30 @@ function isRouteUseful(route: string): boolean {
   return regex.test(route)
 }
 
-function getAddressFromData(
-  results?: GoogleAddressComponent[],
-): AddressInsert | null {
-  if (!results?.length) return null
+function getAddressFromResult(
+  result: GoogleAddressComponent,
+) {
   // deno-lint-ignore no-explicit-any
   const address: any = {}
-  for (const result of results) {
-    const types = result.types.filter((type) => type !== 'political')
-    if (types.length !== 1) continue
-    const [type] = types
-    if (!types_we_care_about.has(type)) continue
-    const address_component = result.address_components[0]
-    assert(address_component)
+  for (const address_component of result.address_components) {
+    const type = address_component.types?.find((type) => types_we_care_about.has(type))
+    if (!type) continue
     const value = address_component.long_name || address_component.slug
     assert(value, `No value for ${type}`)
     if (type === 'route' && !isRouteUseful(value)) continue
     address[type] = value
   }
-  assert(address.country)
+  if (!address.country) return null
   return address
+}
+
+export function getAddressFromData(
+  results?: GoogleAddressComponent[],
+): AddressInsert | null {
+  if (!results?.length) return null
+  const as_addresses = compactMap(results, getAddressFromResult)
+  const best_address = sortBy(as_addresses, (address) => -Object.keys(address).length)[0]
+  return best_address || null
 }
 
 export async function getWalkingDistance(
@@ -185,7 +195,6 @@ export async function getPlaceDetails(
   if (Deno.env.get('IS_TEST')) {
     return {
       google_maps_place_id,
-      formatted: '123 Main St, Cape Town, ZA',
       country: 'ZA',
       locality: 'Cape Town',
       street: '123 Main St',

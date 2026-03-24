@@ -8,7 +8,7 @@ import { activeConditionAsOr } from '../../../shared/s_expression_active_conditi
 import { diagnosisToEvaluation } from '../../../shared/diagnosis.ts'
 import { snomedConceptId } from '../../models/s_expression_snomed_concepts.ts'
 import { inverseSExpression } from '../../../shared/s_expression_inverse.ts'
-import { forEach } from '../../../util/inParallel.ts'
+import { forEach, pMap } from '../../../util/inParallel.ts'
 import { TrxOrDb } from '../../../types.ts'
 import { SYSTEM_DIAGNOSIS_RULES_PARSED } from '../../models/system_diagnosis_rules.ts'
 import { SYSTEM_PRIORITY_EVALUATIONS_PARSED } from '../../models/system_priority_evaluations.ts'
@@ -144,13 +144,22 @@ async function insertRule(
   const measurements = due_to_insert.filter((d): d is Extract<DueToInsert, { type: 'measurement' }> => d.type === 'measurement')
 
   if (findings.length) {
+    const due_to_finding_ids = await pMap(findings, (finding) =>
+      trx.insertInto('due_to_findings')
+        .values({
+          s_expression: inverseSExpression(finding),
+          root_snomed_concept_id: finding.root_snomed_concept ? snomedConceptId(finding.root_snomed_concept) : null,
+          specific_snomed_concept_id: snomedConceptId(finding.specific_snomed_concept),
+          value_snomed_concept_id: finding.value_snomed_concept ? snomedConceptId(finding.value_snomed_concept) : null,
+        })
+        .onConflict((oc) => oc.column('s_expression').doUpdateSet({ s_expression: (eb) => eb.ref('excluded.s_expression') }))
+        .returning('id')
+        .executeTakeFirstOrThrow(), { concurrency: 1 })
+
     await trx.insertInto('rule_due_to_findings')
-      .values(findings.map((finding) => ({
+      .values(findings.map((finding, i) => ({
         rule_id,
-        s_expression: inverseSExpression(finding),
-        root_snomed_concept_id: finding.root_snomed_concept ? snomedConceptId(finding.root_snomed_concept) : null,
-        specific_snomed_concept_id: snomedConceptId(finding.specific_snomed_concept),
-        value_snomed_concept_id: finding.value_snomed_concept ? snomedConceptId(finding.value_snomed_concept) : null,
+        due_to_finding_id: due_to_finding_ids[i].id,
         always_applies_if_present: finding.always_applies_if_present,
       })))
       .execute()
@@ -181,6 +190,7 @@ async function insertRule(
 
 export default define([
   'rules',
+  'due_to_findings',
   'rule_due_to_findings',
   'rule_due_to_finding_sites',
   'rule_due_to_measurements',
@@ -198,7 +208,7 @@ export default define([
       })
       .returning('id')
       .executeTakeFirstOrThrow()
-  })
+  }, { concurrency: 1 })
 
   await forEach(SYSTEM_PRIORITY_EVALUATIONS_PARSED, async (system_priority_evaluation) => {
     await insertRule(trx, system_priority_evaluation)

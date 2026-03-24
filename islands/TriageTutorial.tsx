@@ -123,6 +123,7 @@ export function TriageTutorial({ url, route, patient, employee }: Props) {
         nav_links={TUTORIAL_NAV_LINKS}
         patient={patient}
         priority={null}
+        priority_evaluation={null}
         organization_id='tutorial-org'
         this_visit_findings={sidebar_findings}
         this_visit_diagnoses={sidebar_diagnoses}

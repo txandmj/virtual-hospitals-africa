@@ -5,6 +5,7 @@
 
 import { OpenEncounterWorkflowLayout } from '../components/OpenEncounterWorkflowLayout.tsx'
 import type { MockPatientCase } from '../mocks/data/patients.ts'
+import { PRIORITY_SNOMED_CODES } from '../shared/priorities.ts'
 import { EmergencyCallButton } from './EmergencyCallButton.tsx'
 import { SidebarHealthWorkerMenu } from './sidebar/HealthWorkerMenu.tsx'
 
@@ -40,7 +41,17 @@ export function ExamplePatientView({ url, route, mock_patient }: Props) {
       params={{}}
       nav_links={EXAMPLE_NAV_LINKS}
       patient={mock_patient.patient}
-      priority={mock_patient.priority}
+      priority={mock_patient.priority
+        ? {
+          name: mock_patient.priority,
+          value_snomed_concept_id: PRIORITY_SNOMED_CODES[mock_patient.priority],
+          target_treatment_time: null,
+          records: [],
+          created_at: new Date(),
+          based_on_system_priority_evaluation_description: null,
+        }
+        : null}
+      priority_evaluation={null}
       organization_id='example-org-001'
       this_visit_findings={mock_patient.this_visit_findings}
       this_visit_diagnoses={mock_patient.this_visit_diagnoses}

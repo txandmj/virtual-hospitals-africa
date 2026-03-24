@@ -71,6 +71,7 @@ export function YesNoGrid(
           input.click()
         }
       }
+      document.querySelector<HTMLElement>('.primary-form-submit-button')?.focus()
     }
 
     return (

@@ -168,6 +168,11 @@ export function RecordPanel(
                 right: destination_relation.relation_name,
                 separator: ' → ',
               })),
+              ...('source_relations' in record ? record.source_relations || [] : []).map((source_relation) => ({
+                left: source_relation.relation_name,
+                right: source_relation.displays.full,
+                separator: ': ',
+              })),
             ]}
           />
         </div>

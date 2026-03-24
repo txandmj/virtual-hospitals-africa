@@ -63,7 +63,7 @@ export const system_priority_evaluations = {
     console.time(`${input.listener_name} ${input.listener_id} insert_levels`)
     const inserted = await pMap(
       rules_needing_insert,
-      ({ rule_effect, matching_finding_ids }) => {
+      ({ id, rule_effect, matching_finding_ids }) => {
         assert(rule_effect.type === 'system_priority_evaluation')
         return patient_triage.insertLevel(trx, {
           patient_id: input.patient_id,
@@ -71,6 +71,7 @@ export const system_priority_evaluations = {
           by_system: true,
           triage_level: rule_effect.priority,
           evaluates_record_ids: matching_finding_ids,
+          system_priority_evaluation_id: id,
         })
       },
     )

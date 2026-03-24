@@ -187,6 +187,10 @@ export function fastNormalize([atom, ...rest]: Exclude<SExpressionSimpleNode, st
       assert(item === 'possible')
       return item
     }
+    if (atom === 'role') {
+      assert(isString(item))
+      return item
+    }
     if (isString(item)) return `"${item}"`
     throw new Error(`Unable to normalize ${item}`)
   }).join(' ')

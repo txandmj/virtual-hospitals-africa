@@ -13,7 +13,7 @@ import {
   WorkflowStatus,
 } from '../../../../../../../types.ts'
 import { patient_encounters } from '../../../../../../../db/models/patient_encounters.ts'
-import { this_visit_findings } from '../../../../../../../db/models/this_visit_findings.ts'
+import { groupRecordsByWorkflows } from '../../../../../../../db/models/this_visit_findings.ts'
 import { patient_history } from '../../../../../../../db/models/patient_history.ts'
 import { events } from '../../../../../../../db/models/events.ts'
 import { getRequiredUUIDParam } from '../../../../../../../util/getParam.ts'
@@ -50,13 +50,18 @@ import { presentWithPatient } from '../../../../../../../shared/patient_encounte
 import matching from '../../../../../../../util/matching.ts'
 import { HealthWorkerSidebarBottom } from '../../../../../../../components/library/HealthWorkerSidebarBottom.tsx'
 import { parseExpressionExpectingAtom } from '../../../../../../../shared/s_expression.ts'
-import { PROCEDURE } from '../../../../../../../shared/snomed_concepts.ts'
+import { EVALUATION_ACTION, PROCEDURE, TRIAGE_INDEX } from '../../../../../../../shared/snomed_concepts.ts'
 import { patientAgeDetermination } from '../../../../../../../shared/patient_age_determination.ts'
 import { completedPersonal } from '../../../../../../../shared/patient_registration.ts'
 import { OpenEncounterWorkflowLayout } from '../../../../../../../components/OpenEncounterWorkflowLayout.tsx'
 import { arrayIsNonEmpty } from '../../../../../../../util/arraySize.ts'
 import { diagnoses } from '../../../../../../../db/models/diagnoses.ts'
 import { timeMiddlewareCallNext } from '../../../../../../../backend/timeMiddleware.ts'
+import { patient_findings } from '../../../../../../../db/models/patient_findings.ts'
+import { patient_record_providers } from '../../../../../../../db/models/patient_record_providers.ts'
+import { buildPriorityRecord } from '../../../../../../../db/models/priority.ts'
+import { patient_evaluation_scores } from '../../../../../../../db/models/patient_evaluation_scores.ts'
+import { logJSONToFileIfOnServer } from '../../../../../../../util/logJSONToFileIfOnServer.ts'
 
 type EncounterEmployeePresence = {
   health_worker_id: string
@@ -87,6 +92,7 @@ type WorkflowState = {
   patient_encounter_employee_id: string
   this_visit_findings: RenderedSidebarWorkflow[]
   this_visit_diagnoses: RenderedEvaluationRelativeToHealthWorker[]
+  priority_evaluation: null | RenderedEvaluationRelativeToHealthWorker
   patient_history: RenderedPatientHistory
 }
 
@@ -243,21 +249,27 @@ export const workflowHandler = timeMiddlewareCallNext(async function workflowHan
   )
 
   const fetched = await promiseProps({
-    this_visit_findings: this_visit_findings.get(trx, {
-      encounter,
-      health_worker_id,
-      current_workflow_state: {
-        workflow,
-        step,
-        workflow_snomed_concept,
-        workflow_step_snomed_concept,
-        workflow_status,
-      },
-    }),
+    hydrated_findings: patient_findings.findAll(trx, {
+      patient_id: encounter.patient.id,
+      patient_encounter_id: encounter.patient_encounter_id,
+    }).then((records) =>
+      patient_record_providers.hydrateIntermediateRecords(
+        trx,
+        { records, health_worker_id, encounter },
+      )
+    ),
     this_visit_diagnoses: diagnoses.get(trx, {
       encounter,
       health_worker_id,
     }),
+    total_scores: patient_evaluation_scores.findAll(
+      trx,
+      {
+        patient_id: encounter.patient.id,
+        patient_encounter_id: encounter.patient_encounter_id,
+        s_expression: `(evaluation ${EVALUATION_ACTION.s_expression} ${TRIAGE_INDEX.s_expression})`,
+      },
+    ),
     patient_history: patient_history.get(trx, {
       encounter,
       health_worker_id,
@@ -273,8 +285,24 @@ export const workflowHandler = timeMiddlewareCallNext(async function workflowHan
     ),
   })
 
+  logJSONToFileIfOnServer(fetched)
+
   const previously_completed_step = arrayIsNonEmpty(workflow_status.steps_completed) && workflow_status.steps_completed.includes(
     step,
+  )
+
+  const this_visit_findings = groupRecordsByWorkflows(
+    {
+      encounter,
+      records: fetched.hydrated_findings,
+      current_workflow_state: {
+        workflow,
+        step,
+        workflow_snomed_concept,
+        workflow_step_snomed_concept,
+        workflow_status,
+      },
+    },
   )
 
   const workflow_props: WorkflowState = {
@@ -285,7 +313,10 @@ export const workflowHandler = timeMiddlewareCallNext(async function workflowHan
     encounter_employee_presence,
     patient_encounter_employee_id,
     workflow_step_snomed_concept,
+    this_visit_findings,
     workflow_snomed_concept: WORKFLOW_SNOMED_CONCEPTS[workflow],
+    priority_evaluation: encounter.priority &&
+      buildPriorityRecord(encounter.priority, fetched.hydrated_findings, fetched.this_visit_diagnoses, fetched.total_scores),
     ...fetched,
   }
 
@@ -406,7 +437,7 @@ export function OpenEncounterWorkflowLayoutCtx({ ctx, next_step_text, buttons, c
       ContainerTag='form'
       next_step_text={next_step_text}
       buttons={buttons}
-      priority={ctx.state.encounter.priority?.name || null}
+      priority={ctx.state.encounter.priority}
       nav_links={WORKFLOW_NAV_LINKS[ctx.state.workflow]}
       steps_completed={ctx.state.workflow_status.steps_completed}
       care_team={[]}

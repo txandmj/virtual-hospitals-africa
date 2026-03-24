@@ -7,7 +7,7 @@ import type { DB } from '../../db.d.ts'
 import { base, identity, simpleBaseQuery } from './_base.ts'
 import { HttpError } from 'fresh'
 
-export type AddressInsert = InsertShapeLiteral<InsertObject<DB, 'addresses'>>
+export type AddressInsert = Omit<InsertShapeLiteral<InsertObject<DB, 'addresses'>>, 'formatted'>
 
 const isApartmentOrUnit = (word: string) => {
   const lower_word = word.toLowerCase()
@@ -34,7 +34,7 @@ export const addresses = base({
   baseQuery: simpleBaseQuery('addresses'),
   formatResult: identity<Address>,
 
-  insertValues(address: Omit<AddressInsert, 'formatted'>) {
+  insertValues(address: AddressInsert) {
     let {
       id,
       street_number,
@@ -107,7 +107,7 @@ export const addresses = base({
 
   insert(
     trx: TrxOrDbOrQueryCreator,
-    address: AddressInsert,
+    address: AddressInsert & { formatted: string },
   ) {
     return trx.insertInto('addresses')
       .values(address)
