@@ -1,20 +1,22 @@
-import { HealthWorkerOrganization, TaskGroup } from '../../../types.ts'
+import { HealthWorkerOrganization, RenderedEmployee, TaskGroup } from '../../../types.ts'
 import { hyphenate } from '../../../util/hyphenate.ts'
 import { isManage } from '../../../shared/tasks.ts'
 import { ManagePatientTask } from './ManagePatient.tsx'
 import { DueTo } from './DueTo.tsx'
 import { uniqueIdentifier } from './uniqueIdentifier.ts'
 import partition from '../../../util/partition.ts'
+import { employeeDisplay } from '../../../util/healthWorkerDisplay.ts'
 
-const referral_complete_task = {
+const referral_complete_description = 'Referral complete'
+
+const referral_complete_task_base = {
   atom: 'procedure' as const,
   root_snomed_concept: null,
   specific_snomed_concept: null,
   value: null,
   qualifiers: [],
   attributes: [],
-  description: 'Referral complete',
-  displays: { finding: 'Referral complete', value: null, full: 'Referral complete' },
+  displays: { finding: referral_complete_description, value: null, full: referral_complete_description },
   s_expression: '',
   existing_record: null,
 }
@@ -23,13 +25,21 @@ export function ManagePatientGroup({
   group,
   organization_employment,
   organization_id,
+  primary_care_nurse,
 }: {
   group: TaskGroup
   organization_employment: HealthWorkerOrganization
   organization_id: string
+  primary_care_nurse?: RenderedEmployee | null
 }) {
   const tasks = group.tasks.filter(isManage)
   if (!tasks.length) return null
+
+  const nurse_display_name = primary_care_nurse ? employeeDisplay(primary_care_nurse).display_name : null
+  const referral_complete_task = {
+    ...referral_complete_task_base,
+    description: nurse_display_name ? `${referral_complete_description} – ${nurse_display_name}` : referral_complete_description,
+  }
 
   const [tasks_i_can_do, _tasks_for_another] = partition(tasks, (task) => {
     const { permissions } = task

@@ -44,7 +44,7 @@ export async function startWorkflow<T>(
   assertOr400(workflow_status.status !== 'completed', `${workflow} workflow already completed`)
 
   await Promise.all([
-    startWorkflow(),
+    doStartWorkflow(),
     maybePreCompleteTriageHeightAndWeight(),
     maybeMovePatientIntoWorkflow(),
   ])
@@ -76,7 +76,7 @@ export async function startWorkflow<T>(
     return encounter.workflows[workflow]
   }
 
-  function startWorkflow() {
+  function doStartWorkflow() {
     const { employment_id } = organization_employment
 
     const existing_patient_encounter_employee_id = encounter.all_employees_seen.find(

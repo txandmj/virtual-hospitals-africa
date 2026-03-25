@@ -9,24 +9,65 @@ import { isManage } from '../../../../../../../../shared/tasks.ts'
 import { ManagePatientGroup } from '../../../../../../../../components/triage/tasks/ManagePatientGroup.tsx'
 import SectionHeader from '../../../../../../../../components/library/typography/SectionHeader.tsx'
 import { NoTasks } from '../../../../../../../../components/triage/tasks/NoTasks.tsx'
-import { patient_primary_care } from '../../../../../../../../db/models/patient_primary_care.ts'
 import { employees } from '../../../../../../../../db/models/employees.ts'
 import { employeeDisplay } from '../../../../../../../../util/healthWorkerDisplay.ts'
 import { Person } from '../../../../../../../../components/library/Person.tsx'
 import Badge from '../../../../../../../../components/library/Badge.tsx'
 import { promiseProps } from '../../../../../../../../util/promiseProps.ts'
+import { patient_workflows } from '../../../../../../../../db/models/patient_workflows.ts'
+import { logJSONToFileIfOnServer } from '../../../../../../../../util/logJSONToFileIfOnServer.ts'
 
 const ReferralPlacedConfirmHandoffSchema = z.object({})
 
 export const handler = postHandler(
   ReferralPlacedConfirmHandoffSchema,
   async (ctx: OpenEncounterWorkflowContext, _form_values) => {
-    const { organization_pathname, patient } = ctx.state
+    const { trx, encounter, organization_id, organization_pathname, organization_employment, patient, patient_id, patient_encounter_id } = ctx.state
     await completeLastStep(ctx)
+    // TODO actually put something in the db to retrieve here
+    const primary_care_nurse = await employees.findFirst(trx, { organization_id, can_perform_workflow: 'consultation' })
+    const patient_workflow = await patient_workflows.insertOne(trx, {
+      patient_encounter_id,
+      workflow: 'consultation',
+    })
+
+    await patient_workflows.start(
+      trx,
+      {
+        encounter,
+        employment_id: primary_care_nurse.employee_id,
+        patient_workflow_id: patient_workflow.id,
+        existing_patient_encounter_employee_id: null,
+      },
+    )
+    await trx.updateTable('patient_presence')
+      .set({
+        current_workflow: 'consultation',
+        next_workflow: null,
+        department_name: 'Primary care',
+      })
+      .where('id', '=', patient_id)
+      .execute()
+
+    await trx.updateTable('employment_presence')
+      .set({ with_patient_id: null })
+      .where('id', '=', organization_employment.employment_id)
+      .execute()
+
+    await trx.updateTable('employment_presence')
+      .set({
+        with_patient_id: patient_id,
+      })
+      .where('id', '=', primary_care_nurse.employee_id)
+      .execute()
+
+    logJSONToFileIfOnServer({
+      primary_care_nurse,
+    })
 
     return redirect(
       success(
-        `Handoff confirmed for ${preferredName(patient.names!, 'patient')}.`,
+        `Referral completed for ${preferredName(patient.names!, 'patient')}.`,
         `${organization_pathname}/waiting_room`,
       ),
     )
@@ -36,32 +77,28 @@ export const handler = postHandler(
 async function ReferralPlacedConfirmHandoffPage(
   ctx: OpenEncounterWorkflowContext,
 ) {
-  const { trx, health_worker_id, encounter, organization_employment, organization_id, patient_id } = ctx.state
+  const { trx, health_worker_id, encounter, organization_employment, organization_id } = ctx.state
 
-  const { task_groups, facility } = await promiseProps({
+  const { task_groups } = await promiseProps({
     task_groups: additional_tasks.getTasksGroups(trx, { health_worker_id, encounter }).then((r) => r.task_groups),
-    facility: patient_primary_care.getNearestHealthFacility(trx, { patient_id }),
   })
 
-  const primary_care_nurses = facility
-    ? (await employees.findAll(trx, { organization_id: facility.id, can_perform_workflow: 'consultation' })).filter((e) => e.role === 'nurse')
-    : []
+  // TODO actually put something in the db to retrieve here
+  const primary_care_nurse = await employees.findFirst(trx, { organization_id, can_perform_workflow: 'consultation' })
 
   const groups_with_manage_tasks = task_groups.filter((group) => group.tasks.some(isManage))
 
   return (
     <div class='flex flex-col gap-6'>
-      {primary_care_nurses.length > 0 && (
-        <div class='flex flex-col gap-3 pb-4 pt-2 w-full max-w-3xl'>
-          <SectionHeader>Primary care nurse</SectionHeader>
-          {primary_care_nurses.map((nurse) => (
-            <div key={nurse.id} class='flex items-center gap-3'>
-              <Person person={employeeDisplay(nurse)} />
-              <Badge content='Awaiting handoff' color='yellow' />
-            </div>
-          ))}
-        </div>
-      )}
+      <div class='flex flex-col gap-3 pb-4 pt-2 w-full max-w-3xl'>
+        <SectionHeader>Primary care nurse</SectionHeader>
+        {primary_care_nurse && (
+          <div class='flex items-center gap-3'>
+            <Person person={employeeDisplay(primary_care_nurse)} />
+            <Badge content='Awaiting handoff' color='yellow' />
+          </div>
+        )}
+      </div>
       {groups_with_manage_tasks.length > 0
         ? (
           <div class='flex flex-col gap-3 pb-4 pt-2 w-full max-w-3xl'>
@@ -72,6 +109,7 @@ async function ReferralPlacedConfirmHandoffPage(
                 group={group}
                 organization_employment={organization_employment}
                 organization_id={organization_id}
+                primary_care_nurse={primary_care_nurse}
               />
             ))}
           </div>

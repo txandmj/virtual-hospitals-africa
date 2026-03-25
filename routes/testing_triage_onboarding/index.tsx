@@ -36,7 +36,13 @@ export const handler = postHandler(
         role: 'nurse',
         specialty: 'Primary care',
         organization_id: organization.id,
-      }),
+      }).then((primary_care_nurse) =>
+        trx.insertInto('employment_presence')
+          .values({
+            id: primary_care_nurse.employee_id,
+            at_work: true,
+          }).execute()
+      ),
     })
     return response
 

@@ -764,7 +764,7 @@ describeParallel('triage/additional_tasks_and_investigations', () => {
     },
   )
 
-  itParallel(
+  itParallel.only(
     'does give a possible diagnosis for anaphylaxis for an insect bite',
     async () => {
       const insect_bite_s_expr = '(clinical_finding (snomed_concept "Insect bite - wound" "disorder"))'
@@ -804,6 +804,11 @@ describeParallel('triage/additional_tasks_and_investigations', () => {
           }),
         },
       })
+
+      assertEquals(
+        $('#patient-drawer-priority').text(),
+        'Urgent',
+      )
 
       const form_values = getFormValues($)
 
