@@ -23,6 +23,7 @@ export function OpenEncounterWorkflowLayout({
   children,
   patient,
   priority,
+  priority_evaluation,
   organization_id,
   this_visit_findings,
   this_visit_diagnoses,
@@ -70,6 +71,7 @@ export function OpenEncounterWorkflowLayout({
           <PatientDrawerV4
             patient={patient}
             priority={priority}
+            priority_evaluation={priority_evaluation}
             organization_id={organization_id}
             this_visit_findings={this_visit_findings}
             this_visit_diagnoses={this_visit_diagnoses}
@@ -90,6 +92,7 @@ export function OpenEncounterWorkflowLayout({
               type='submit'
               size='xl'
               onSubmit={onSubmit}
+              className='primary-form-submit-button'
             >
               {next_step_text || (
                 <span className='flex gap-2 items-center'>

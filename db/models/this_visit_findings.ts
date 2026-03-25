@@ -68,7 +68,7 @@ function combineAndSortRecords(records: RenderedFindingRelativeToHealthWorker[])
   )
 }
 
-function groupRecordsByWorkflows(
+export function groupRecordsByWorkflows(
   { records, encounter, current_workflow_state }: {
     records: RenderedFindingRelativeToHealthWorker[]
     encounter: RenderedPatientEncounter

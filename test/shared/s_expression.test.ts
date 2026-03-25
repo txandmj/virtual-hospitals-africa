@@ -1,6 +1,6 @@
 import { describe, it } from 'std/testing/bdd.ts'
 import { assertEquals } from 'std/assert/assert_equals.ts'
-import { normalForm, parseExpressionExpectingAtom } from '../../shared/s_expression.ts'
+import { normalForm, parseExpressionExpectingAtom, parseWithSchema } from '../../shared/s_expression.ts'
 import * as schemas from '../../shared/s_expression_schemas.ts'
 import { inverseSExpression } from '../../shared/s_expression_inverse.ts'
 import { CLINICAL_FINDING, HEMOGLOBIN_SATURATION_WITH_OXYGEN, STATUS_ATTRIBUTE } from '../../shared/snomed_concepts.ts'
@@ -129,5 +129,33 @@ describe('shared/s_expression.ts', () => {
   it('parses excluding', () => {
     const parsed = parseExpressionExpectingAtom(`(finding (excluding (finding ${STATUS_ATTRIBUTE.s_expression})))`, 'finding')
     assertLength(parsed.excluding, 1)
+  })
+
+  it('parses manage with permission: role', () => {
+    const parsed = parseWithSchema(`(manage (snomed_concept "Oxygen therapy" "procedure") (permission (role doctor)))`, schemas.manage)
+    assertEquals(parsed.permissions, [
+      { role: 'doctor' },
+    ])
+  })
+
+  it('parses manage with permission: role/specialty', () => {
+    const parsed = parseWithSchema(
+      `(manage (snomed_concept "Oxygen therapy" "procedure") (permission (role nurse) (specialty "Primary care")))`,
+      schemas.manage,
+    )
+    assertEquals(parsed.permissions, [
+      { role: 'nurse', specialty: 'Primary care' },
+    ])
+  })
+
+  it('parses manage with permission: multiple role/specialties', () => {
+    const parsed = parseWithSchema(
+      `(manage (snomed_concept "Oxygen therapy" "procedure") (permission (role nurse) (specialty "Primary care")) (permission (role nurse) (specialty "Pediatrics")))`,
+      schemas.manage,
+    )
+    assertEquals(parsed.permissions, [
+      { role: 'nurse', specialty: 'Primary care' },
+      { role: 'nurse', specialty: 'Pediatrics' },
+    ])
   })
 })

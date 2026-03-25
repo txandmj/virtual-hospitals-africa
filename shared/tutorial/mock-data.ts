@@ -351,7 +351,9 @@ export const TUTORIAL_WAITING_ROOM: RenderedWaitingRoom[] = [
       name: 'Non-urgent',
       value_snomed_concept_id: '394848005',
       target_treatment_time: new Date(Date.now() + 15 * 60 * 1000),
-      record_ids: [],
+      records: [],
+      created_at: new Date(),
+      based_on_system_priority_evaluation_description: null,
     },
     present_employees: [],
   },
@@ -416,7 +418,9 @@ export const TUTORIAL_WAITING_ROOM: RenderedWaitingRoom[] = [
       name: 'Non-urgent',
       value_snomed_concept_id: '394848005',
       target_treatment_time: new Date(Date.now() + 15 * 60 * 1000),
-      record_ids: [],
+      records: [],
+      created_at: new Date(),
+      based_on_system_priority_evaluation_description: null,
     },
     present_employees: [makeMockWaitingRoomEmployee({
       id: 'tutorial-hw-004',
@@ -456,7 +460,9 @@ export const TUTORIAL_WAITING_ROOM: RenderedWaitingRoom[] = [
       name: 'Non-urgent',
       value_snomed_concept_id: '24484000',
       target_treatment_time: new Date(Date.now() - 15 * 60 * 1000),
-      record_ids: [],
+      records: [],
+      created_at: new Date(),
+      based_on_system_priority_evaluation_description: null,
     },
     present_employees: [makeMockWaitingRoomEmployee({
       id: 'tutorial-hw-bongani',
@@ -2300,6 +2306,8 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
       },
       {
         'atom': 'finding',
+        'description': '',
+
         'root_snomed_concept': { 'atom': 'snomed_concept', 'name': 'Clinical finding', 'category': 'finding' },
         'specific_snomed_concept': {
           'atom': 'snomed_concept',
@@ -2323,6 +2331,8 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
       },
       {
         'atom': 'finding',
+        'description': '',
+
         'root_snomed_concept': { 'atom': 'snomed_concept', 'name': 'Clinical finding', 'category': 'finding' },
         'specific_snomed_concept': {
           'atom': 'snomed_concept',
@@ -2342,6 +2352,8 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
       },
       {
         'atom': 'finding',
+        'description': '',
+
         'root_snomed_concept': { 'atom': 'snomed_concept', 'name': 'Clinical finding', 'category': 'finding' },
         'specific_snomed_concept': {
           'atom': 'snomed_concept',
@@ -2361,6 +2373,8 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
       },
       {
         'atom': 'finding',
+        'description': '',
+
         'root_snomed_concept': { 'atom': 'snomed_concept', 'name': 'Clinical finding', 'category': 'finding' },
         'specific_snomed_concept': {
           'atom': 'snomed_concept',
@@ -2380,6 +2394,8 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
       },
       {
         'atom': 'finding',
+        'description': '',
+
         'root_snomed_concept': { 'atom': 'snomed_concept', 'name': 'Clinical finding', 'category': 'finding' },
         'specific_snomed_concept': { 'atom': 'snomed_concept', 'name': 'Diplopia', 'category': 'disorder' },
         'value_snomed_concept': null,
@@ -2395,6 +2411,8 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
       },
       {
         'atom': 'finding',
+        'description': '',
+
         'root_snomed_concept': { 'atom': 'snomed_concept', 'name': 'Clinical finding', 'category': 'finding' },
         'specific_snomed_concept': {
           'atom': 'snomed_concept',
@@ -2414,6 +2432,8 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
       },
       {
         'atom': 'finding',
+        'description': '',
+
         'root_snomed_concept': { 'atom': 'snomed_concept', 'name': 'Clinical finding', 'category': 'finding' },
         'specific_snomed_concept': { 'atom': 'snomed_concept', 'name': 'Bite - wound', 'category': 'disorder' },
         'value_snomed_concept': null,
@@ -2444,6 +2464,8 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
       },
       {
         'atom': 'finding',
+        'description': '',
+
         'root_snomed_concept': { 'atom': 'snomed_concept', 'name': 'Clinical finding', 'category': 'finding' },
         'specific_snomed_concept': { 'atom': 'snomed_concept', 'name': 'Bite - wound', 'category': 'disorder' },
         'value_snomed_concept': null,
@@ -2474,6 +2496,8 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
       },
       {
         'atom': 'finding',
+        'description': '',
+
         'root_snomed_concept': { 'atom': 'snomed_concept', 'name': 'Clinical finding', 'category': 'finding' },
         'specific_snomed_concept': {
           'atom': 'snomed_concept',
@@ -2493,6 +2517,8 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
       },
       {
         'atom': 'finding',
+        'description': '',
+
         'root_snomed_concept': { 'atom': 'snomed_concept', 'name': 'Clinical finding', 'category': 'finding' },
         'specific_snomed_concept': { 'atom': 'snomed_concept', 'name': 'Bleeding', 'category': 'finding' },
         'value_snomed_concept': null,
@@ -2519,6 +2545,8 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
       },
       {
         'atom': 'finding',
+        'description': '',
+
         'root_snomed_concept': { 'atom': 'snomed_concept', 'name': 'Clinical finding', 'category': 'finding' },
         'specific_snomed_concept': { 'atom': 'snomed_concept', 'name': 'Bleeding', 'category': 'finding' },
         'value_snomed_concept': null,
@@ -2640,6 +2668,7 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
       },
       {
         'atom': 'finding',
+        'description': '',
         'root_snomed_concept': { 'atom': 'snomed_concept', 'name': 'Clinical finding', 'category': 'finding' },
         'specific_snomed_concept': { 'atom': 'snomed_concept', 'name': 'Itching', 'category': 'finding' },
         'value_snomed_concept': null,
@@ -2666,6 +2695,7 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
       },
       {
         'atom': 'finding',
+        'description': '',
         'root_snomed_concept': { 'atom': 'snomed_concept', 'name': 'Clinical finding', 'category': 'finding' },
         'specific_snomed_concept': {
           'atom': 'snomed_concept',
@@ -2696,6 +2726,7 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
       },
       {
         'atom': 'finding',
+        'description': '',
         'root_snomed_concept': { 'atom': 'snomed_concept', 'name': 'Clinical finding', 'category': 'finding' },
         'specific_snomed_concept': {
           'atom': 'snomed_concept',
@@ -2811,6 +2842,7 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
       },
       {
         'atom': 'finding',
+        'description': '',
         'root_snomed_concept': { 'atom': 'snomed_concept', 'name': 'Clinical finding', 'category': 'finding' },
         'specific_snomed_concept': { 'atom': 'snomed_concept', 'name': 'Swelling', 'category': 'finding' },
         'value_snomed_concept': null,
@@ -2851,6 +2883,7 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
       },
       {
         'atom': 'finding',
+        'description': '',
         'root_snomed_concept': { 'atom': 'snomed_concept', 'name': 'Clinical finding', 'category': 'finding' },
         'specific_snomed_concept': { 'atom': 'snomed_concept', 'name': 'Swelling', 'category': 'finding' },
         'value_snomed_concept': null,
@@ -2891,6 +2924,7 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
       },
       {
         'atom': 'finding',
+        'description': '',
         'root_snomed_concept': { 'atom': 'snomed_concept', 'name': 'Clinical finding', 'category': 'finding' },
         'specific_snomed_concept': { 'atom': 'snomed_concept', 'name': 'Dizziness', 'category': 'finding' },
         'value_snomed_concept': null,
@@ -3007,6 +3041,7 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
       },
       {
         'atom': 'finding',
+        'description': '',
         'root_snomed_concept': { 'atom': 'snomed_concept', 'name': 'Clinical finding', 'category': 'finding' },
         'specific_snomed_concept': { 'atom': 'snomed_concept', 'name': 'Collapse', 'category': 'finding' },
         'value_snomed_concept': null,
@@ -3022,6 +3057,7 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
       },
       {
         'atom': 'finding',
+        'description': '',
         'root_snomed_concept': { 'atom': 'snomed_concept', 'name': 'Clinical finding', 'category': 'finding' },
         'specific_snomed_concept': {
           'atom': 'snomed_concept',
@@ -3041,6 +3077,7 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
       },
       {
         'atom': 'finding',
+        'description': '',
         'root_snomed_concept': {
           'atom': 'snomed_concept',
           'name': 'Exposure to (contextual qualifier)',
@@ -3060,6 +3097,7 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
       },
       {
         'atom': 'finding',
+        'description': '',
         'root_snomed_concept': {
           'atom': 'snomed_concept',
           'name': 'Exposure to (contextual qualifier)',
@@ -3079,6 +3117,7 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
       },
       {
         'atom': 'finding',
+        'description': '',
         'root_snomed_concept': {
           'atom': 'snomed_concept',
           'name': 'Exposure to (contextual qualifier)',
@@ -3106,6 +3145,7 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
       },
       {
         'atom': 'finding',
+        'description': '',
         'root_snomed_concept': {
           'atom': 'snomed_concept',
           'name': 'Exposure to (contextual qualifier)',
@@ -3125,6 +3165,7 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
       },
       {
         'atom': 'finding',
+        'description': '',
         'root_snomed_concept': {
           'atom': 'snomed_concept',
           'name': 'Exposure to (contextual qualifier)',

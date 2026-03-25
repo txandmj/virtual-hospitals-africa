@@ -4,6 +4,7 @@ import { literalString, success_true } from '../helpers.ts'
 import generateUUID from '../../util/uuid.ts'
 import { base } from './_base.ts'
 import { patient_evaluations, PatientEvaluationInsert } from './patient_evaluations.ts'
+import { formatRecord } from '../../shared/patient_records.ts'
 
 type PatientEvaluationScoreInsert = PatientEvaluationInsert & {
   score: number
@@ -38,7 +39,7 @@ type PatientEvaluationScoresSearch = {
 export const patient_evaluation_scores = base({
   top_level_table: 'patient_evaluation_scores',
   baseQuery,
-  formatResult: (x) => x,
+  formatResult: formatRecord,
   insertOneNested(
     trx: TrxOrDbOrQueryCreator,
     {

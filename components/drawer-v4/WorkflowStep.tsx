@@ -31,12 +31,8 @@ export function WorkflowStep(
         >
           {step.title}
         </p>
-        {step.status === 'in progress' && (
-          <p className="font-['Inter:Medium_Italic',sans-serif] font-medium italic leading-4 relative shrink-0 text-[#959ca9] text-3 text-nowrap whitespace-pre">
-            In Progress
-          </p>
-        )}
       </div>
+      {step.status === 'in progress' && <NoFindings explanation='In progress' with_padding_x />}
       {step.status !== 'in progress' && arrayIsEmpty(step.records) && <NoFindings explanation='No findings entered' with_padding_x />}
       <RecordChips
         records={step.records}

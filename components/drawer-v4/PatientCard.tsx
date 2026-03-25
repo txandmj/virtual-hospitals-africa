@@ -1,20 +1,18 @@
-import { Priority, PRIORITY_COLORS } from '../../shared/priorities.ts'
-import { Maybe, RenderedPatient } from '../../types.ts'
+import { PRIORITY_COLORS } from '../../shared/priorities.ts'
+import { RenderedEvaluationRelativeToHealthWorker, RenderedPatient, RenderedPatientEncounter } from '../../types.ts'
+import { PriorityChipWithPopover } from '../../islands/PriorityChipWithPopover.tsx'
 import cls from '../../util/cls.ts'
-// import {
-//   IdentificationIcon,
-//   LinkIcon,
-// } from '../library/icons/heroicons/outline.tsx'
 
 // Patient's drawer card component with avatar, name, DOB, and triage
 export function DrawerPatientCard(
-  { patient, organization_id, priority }: {
+  { patient, organization_id, priority, priority_evaluation }: {
     patient: RenderedPatient
     organization_id: string
-    priority: Maybe<Priority>
+    priority: RenderedPatientEncounter['priority']
+    priority_evaluation: RenderedEvaluationRelativeToHealthWorker | null
   },
 ) {
-  const priority_color = priority ? PRIORITY_COLORS[priority] : { bg: 'bg-gray-100', text: 'gray-800' }
+  const priority_color = priority ? PRIORITY_COLORS[priority.name] : { bg: 'bg-gray-100', text: 'text-gray-800' }
 
   const href = patient.completed_registration ? `/app/organizations/${organization_id}/patients/${patient.id}/profile` : undefined
   const Tag = href ? 'a' : 'div'
@@ -37,14 +35,25 @@ export function DrawerPatientCard(
           {patient.description}
         </p>
       </Tag>
-      <div
-        id='patient-drawer-priority'
-        className={cls(
-          "font-['Inter:Semi_Bold',sans-serif] font-semibold leading-6 self-center shrink-0",
-          priority_color.text,
-        )}
-      >
-        {priority || 'Undetermined'}
+      <div id='patient-drawer-priority' className='self-center shrink-0'>
+        {priority
+          ? (
+            <PriorityChipWithPopover
+              priority={priority}
+              priority_evaluation={priority_evaluation!}
+              organization_id={organization_id}
+            />
+          )
+          : (
+            <span
+              className={cls(
+                "font-['Inter:Semi_Bold',sans-serif] font-semibold leading-6",
+                'text-gray-800',
+              )}
+            >
+              Undetermined
+            </span>
+          )}
       </div>
     </div>
   )

@@ -644,3 +644,8 @@ export const PATIENT_MANAGEMENT_PROCEDURE = asConcept({
   name: 'Patient management procedure',
   category: 'procedure' as const,
 })
+export const TRIAGE_INDEX = asConcept({
+  id: '273887006',
+  name: 'Triage index',
+  category: 'assessment scale' as const,
+})

@@ -1,5 +1,5 @@
 import { TRIAGE_ROUTE_PATIENT_NEXT_STEPS, TriageRoutePatientNextStep } from '../../shared/triage_route_patient.ts'
-import { Names, Priority } from '../../types.ts'
+import { Names, Priority, RenderedTaskToBeDone } from '../../types.ts'
 import assertOneOf from '../../util/assertOneOf.ts'
 import capitalize from '../../util/capitalize.ts'
 import compact from '../../util/compact.ts'
@@ -8,7 +8,7 @@ import { ActionsRadioGroupSelect } from './ActionsRadioGroupSelect.tsx'
 import { objectPronoun, posessivePronoun, pronoun } from '../../shared/sex_and_gender.ts'
 
 export function NextStepSelect(
-  { patient, default_next_step, priority, to_be_notified, manage_patient_tasks, onSelect }: {
+  { patient, default_next_step, priority, to_be_notified, tasks_i_can_do, tasks_for_another, onSelect }: {
     patient: {
       names: Names
       gender: string | null
@@ -19,7 +19,8 @@ export function NextStepSelect(
       target_treatment_time: Date | null
     }
     to_be_notified: string[]
-    manage_patient_tasks: Array<{ description: string }>
+    tasks_i_can_do: Array<RenderedTaskToBeDone & { atom: 'procedure' }>
+    tasks_for_another: Array<RenderedTaskToBeDone & { atom: 'procedure' }>
     onSelect(next_step: TriageRoutePatientNextStep): void
   },
 ) {
@@ -47,7 +48,7 @@ export function NextStepSelect(
             `Target treatment time: ${new Date(priority.target_treatment_time).toLocaleTimeString('en', { hour: 'numeric', minute: 'numeric' })}`,
           ]),
         },
-        manage_patient_tasks.length && {
+        tasks_i_can_do.length && {
           id: 'manage_and_refer' satisfies TriageRoutePatientNextStep,
           name: 'Manage and refer',
           icon: AtSymbolIcon,
@@ -56,14 +57,16 @@ export function NextStepSelect(
           description: compact([
             `I will stay here to manage ${patient.names.preferred_name}:`,
             <ul key='manage-tasks' class='mt-1.5 list-disc list-inside space-y-1'>
-              {manage_patient_tasks.map((task, i) => <li key={i} class='text-xs text-gray-700'>{task.description}</li>)}
+              {tasks_i_can_do.map((task, i) => <li key={i} class='text-xs text-gray-700'>{task.description}</li>)}
             </ul>,
-            `${capitalize(staff)} will be notified immediately about ${posessivePronoun(patient)} case and location. They may approve:`,
-            // TODO pending approval tasks
-            <ul key='pending-approval-tasks' class='mt-1.5 list-disc list-inside space-y-1'>
-              <li class='text-xs text-gray-700'>Administer adrenaline</li>
-              <li class='text-xs text-gray-700'>Administer sodium chloride 0.9%</li>
-            </ul>,
+            `${capitalize(staff)} will be notified immediately about ${posessivePronoun(patient)} case and location.${
+              tasks_for_another.length ? ' They may approve:' : ''
+            }`,
+            !!tasks_for_another.length && (
+              <ul key='pending-approval-tasks' class='mt-1.5 list-disc list-inside space-y-1'>
+                {tasks_for_another.map((task, i) => <li key={i} class='text-xs text-gray-700'>{task.description}</li>)}
+              </ul>
+            ),
             default_next_step === 'manage_and_refer' && (
               <span key='recommended' className='italic'>
                 Recommended based on {objectPronoun(patient)} having a {priority.name.toLowerCase()} case and tasks for you to manage.
@@ -71,7 +74,7 @@ export function NextStepSelect(
             ),
           ]),
         },
-        !manage_patient_tasks.length && {
+        !tasks_i_can_do.length && {
           id: 'refer' satisfies TriageRoutePatientNextStep,
           name: 'Refer',
           icon: AtSymbolIcon,

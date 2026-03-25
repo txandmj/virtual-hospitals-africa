@@ -1,0 +1,14 @@
+name	requires_triage	workflows
+Primary care	t	{consultation,referral_placed,create_google_meet}
+Maternity	t	{maternity,referral_placed,create_google_meet}
+Immunizations	t	{referral_placed,create_google_meet}
+Chronic diseases	t	{referral_placed,create_google_meet}
+Reception	f	{registration,emergency_escalation,referral_placed,create_google_meet}
+Waiting room	f	{referral_placed,create_google_meet}
+Triage	f	{emergency_escalation,triage,referral_placed,create_google_meet}
+Administration	f	{referral_placed,create_google_meet}
+Pharmacy	f	{prescription_refill,referral_placed,create_google_meet}
+Oncology	t	{referral_placed,create_google_meet}
+Burns	t	{referral_placed,create_google_meet}
+Remote care	t	{doctor_review,referral_placed,create_google_meet}
+Emergency	f	{stabilization,referral_placed,create_google_meet}

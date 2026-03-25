@@ -180,12 +180,18 @@ export const additional_tasks = {
       return { evaluation_ids: [], task_groups: [] }
     }
 
-    const evaluations_with_proto_tasks = evaluations.map((evaluation) => {
-      assert(evaluation.value)
-      assert(evaluation.value.type === 'task')
-      const task = getTaskById(evaluation.value.task_id)
-      return { ...evaluation, task }
-    })
+    const task_atom_order = { 'link': 0, 'procedure': 1, 'finding': 2, 'measurement': 3 }
+
+    const evaluations_with_proto_tasks = sortBy(
+      evaluations.map((evaluation) => {
+        assert(evaluation.value)
+        assert(evaluation.value.type === 'task')
+        const task = getTaskById(evaluation.value.task_id)
+        return { ...evaluation, task }
+      }),
+      ({ task }) => task_atom_order[task.to_be_done.atom],
+      ({ task }) => task.description,
+    )
 
     const s_expression_to_existing_findings = new Map<string, Lang['finding' | 'measurement']>()
     const s_expression_to_already_done = new Map<string, ToBeDone>()
@@ -373,6 +379,7 @@ export const additional_tasks = {
               displays,
               s_expression,
               existing_record,
+              description: evaluation.task.description,
             }
           })
         }
@@ -387,6 +394,7 @@ export const additional_tasks = {
               displays,
               s_expression,
               existing_record: existingMeasurement(),
+              description: evaluation.task.description,
             }
 
             function existingMeasurement() {
@@ -403,7 +411,15 @@ export const additional_tasks = {
 
       const completed = tasks.every((task) => task.atom === 'link' || task.existing_record)
 
-      unsorted_task_groups_with_potentially_duplicative_findings.push({ due_to, completed, tasks: sortBy(tasks, (task) => task.existing_record ? 1 : 0) })
+      unsorted_task_groups_with_potentially_duplicative_findings.push({
+        due_to,
+        completed,
+        tasks: sortBy(
+          tasks,
+          (task) => task.existing_record ? 1 : 0,
+          (task) => task.atom === 'link' ? '' : task.description,
+        ),
+      })
     }
 
     const task_groups_complete_first_with_potentially_duplicative_findings = sortBy(

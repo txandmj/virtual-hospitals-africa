@@ -2,7 +2,7 @@ import { sql } from 'kysely'
 import { IdSelectable, TrxOrDbOrQueryCreator } from '../../types.ts'
 import { base, identity } from './_base.ts'
 import { SnomedCategory } from '../../db.d.ts'
-import { idSelection } from '../helpers.ts'
+import { debugLog, idSelection } from '../helpers.ts'
 
 type SearchTerms = {
   snomed_concept_id?: IdSelectable
@@ -18,7 +18,24 @@ export const FINDING_LIKE_CATEGORIES: SnomedCategory[] = [
 ]
 
 function baseQuery(trx: TrxOrDbOrQueryCreator, terms: SearchTerms) {
-  const best_similarity = terms.search ? sql<number>`max(similarity(${terms.search}, term))` : sql<number>`0`
+  const has_rule_boost = sql<boolean>`exists (
+    select 1
+    from snomed_concept_active_descendants_realized adr
+    join due_to_findings df on df.specific_snomed_concept_id = adr.ancestor_id
+    where adr.descendant_id = snomed_inferred_canonical_name_and_category.id
+  )`
+
+  const best_similarity = terms.search
+    ? sql<number>`
+    max(similarity(${terms.search}, term)) - (case
+      when snomed_inferred_canonical_name_and_category.category = 'morphologic abnormality'
+        then 0.9
+      when snomed_inferred_canonical_name_and_category.category = 'event'
+        then 0.7
+      else 0
+    end) + (case when ${has_rule_boost} then 0.4 else 0 end)
+  `
+    : sql<number>`(case when ${has_rule_boost} then 0.4 else 0 end)`
 
   let query = trx
     .selectFrom('snomed_concept_finding_like')
@@ -68,6 +85,8 @@ function baseQuery(trx: TrxOrDbOrQueryCreator, terms: SearchTerms) {
       .where(sql<boolean>`${terms.search} <% term`)
       .orderBy(best_similarity, 'desc')
   }
+
+  debugLog(query)
 
   return query
 }

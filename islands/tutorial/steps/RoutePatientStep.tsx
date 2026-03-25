@@ -26,7 +26,8 @@ export function RoutePatientStep() {
           target_treatment_time: new Date(),
         }}
         clinic_employees={TUTORIAL_CLINIC_EMPLOYEES}
-        manage_patient_tasks={TUTORIAL_MANAGE_PATIENT_TASKS}
+        tasks_i_can_do={TUTORIAL_MANAGE_PATIENT_TASKS}
+        tasks_for_another={[]}
       />
     </div>
   )

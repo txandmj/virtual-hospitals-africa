@@ -65,7 +65,7 @@ async function ReferralPlacedConfirmHandoffPage(
       {groups_with_manage_tasks.length > 0
         ? (
           <div class='flex flex-col gap-3 pb-4 pt-2 w-full max-w-3xl'>
-            <SectionHeader>Tasks before handoff</SectionHeader>
+            <SectionHeader>Patient Management Tasks</SectionHeader>
             {groups_with_manage_tasks.map((group, index) => (
               <ManagePatientGroup
                 key={index}

@@ -1,0 +1,37 @@
+Welcome to Virtual Hospitals Africa!
+
+Thanks for taking the time to help us test the platform. Your support is invaluable to helping make sure that we [Next]
+
+Today you'll play the role of a triage nurse at a rural clinic.
+None of patients presented today are real, but the intention is to simulate real world use cases to confirm that patients who present with certain cases are triaged and routed according to the standard treatment guidelines.
+
+We'll be testing four use cases today:
+1. A patient who presents with an insect bite and upon furter assessment of their vitals has probable anaphylaxis
+2. A patient who presents with a cough and breathlessness who upon further assment has probable tension pneumothorax
+3. A patient who presents with a fever and stiff neck who upon further review has probable meningitis
+4. A patient who has an urgent case due to an injury
+
+Click to the button below to open the test clinic and start testing
+
+[Join clinic and start testing]
+
+~~~
+
+Here is the open encounters view. There are four patients awaiting triage. Please select the first one to start triage.
+
+<- highlight the first triage button
+
+~~~
+
+Warning signs page <- instruction to find an insect bite, breathing heavy
+
+Search for this, click on that, enter this
+
+
+
+Email Text
+
+Here's what you're testing and why (basically same as above)
+
+We are in the process of encoding more and more of the primary care guidelines as medical rules that the system will adhere to. Your support will help make that happen. The conditions you're testing today we believe work as intended, but rest assured that if there are discrepancies between how the system is behaving and how you believe it would behave if it adhered to the strictest medical standards, we have time to incorporate your feedback to make this as useful to health workers as it can be.
+

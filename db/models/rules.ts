@@ -15,6 +15,7 @@ import { arrayIsEmpty } from '../../util/arraySize.ts'
 import { assert } from 'std/assert/assert.ts'
 
 export const rules = base({
+  verbose: true,
   top_level_table: 'rules',
   baseQuery(trx: TrxOrDbOrQueryCreator, {
     // patient_id,
@@ -30,22 +31,23 @@ export const rules = base({
     assert(positive_record_ids.length)
     const by_findings_query = trx.selectFrom('rules')
       .innerJoin('rule_due_to_findings', 'rules.id', 'rule_due_to_findings.rule_id')
+      .innerJoin('due_to_findings', 'due_to_findings.id', 'rule_due_to_findings.due_to_finding_id')
       .innerJoin(
         'snomed_concept_active_descendants_realized as specific_descendants',
         'specific_descendants.ancestor_id',
-        'rule_due_to_findings.specific_snomed_concept_id',
+        'due_to_findings.specific_snomed_concept_id',
       )
       .innerJoin('patient_records', 'patient_records.specific_snomed_concept_id', 'specific_descendants.descendant_id')
       .innerJoin('patient_records_still_valid', 'patient_records_still_valid.id', 'patient_records.id')
-      .whereRef('patient_records.root_snomed_concept_id', '=', 'rule_due_to_findings.root_snomed_concept_id')
+      .whereRef('patient_records.root_snomed_concept_id', '=', 'due_to_findings.root_snomed_concept_id')
       .where('rules.age_determinations', '@>', sql<AgeDetermination[]>`ARRAY[${patient_age_determination}]::age_determination[]`)
       .where('patient_records.id', 'in', positive_record_ids)
       .where((eb) =>
         eb.or([
-          eb('rule_due_to_findings.value_snomed_concept_id', 'is', null),
+          eb('due_to_findings.value_snomed_concept_id', 'is', null),
           eb.exists(
             eb.selectFrom('snomed_concept_active_descendants_realized as value_descendants')
-              .whereRef('value_descendants.ancestor_id', '=', 'rule_due_to_findings.value_snomed_concept_id')
+              .whereRef('value_descendants.ancestor_id', '=', 'due_to_findings.value_snomed_concept_id')
               .whereRef('value_descendants.descendant_id', '=', 'patient_records.value_snomed_concept_id'),
           ),
         ])

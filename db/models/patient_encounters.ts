@@ -48,6 +48,7 @@ import { PRIORITY } from '../../shared/snomed_concepts.ts'
 import { groupBy } from '../../util/groupBy.ts'
 import sortBy from '../../util/sortBy.ts'
 import last from '../../util/last.ts'
+import { patient_triage_associated_findings } from './patient_triage_associated_findings.ts'
 
 type EncounterExistingOrToCreate = {
   create: false
@@ -113,14 +114,37 @@ function baseQuery(trx: TrxOrDbOrQueryCreator, opts: EncounterSearch) {
             'patient_records.value_snomed_concept_id',
             'snomed_inferred_canonical_name_and_category.id',
           )
+          .leftJoin(
+            'system_priority_evaluations',
+            'system_priority_evaluations.id',
+            'patient_triage_level.system_priority_evaluation_id',
+          )
+          .leftJoin(
+            'rules',
+            'rules.id',
+            'system_priority_evaluations.id',
+          )
           .whereRef(
             'patient_records.patient_encounter_id',
             '=',
             'patient_encounters.id',
           )
+          // TODO: this handles the main case where one record was enterred in error
+          // If one record was entered in error but another wasn't this would still
+          // keep the priority. Probably not correct, but
+          .where((eb_x) =>
+            eb_x.exists(
+              trx.selectFrom('patient_records_still_valid as associated_findings_still_valid')
+                .innerJoin('patient_record_relations as triage_relations', 'triage_relations.destination_id', 'associated_findings_still_valid.id')
+                .where(
+                  'triage_relations.source_id',
+                  '=',
+                  eb_x.ref('patient_triage_level.id'),
+                ),
+            )
+          )
           .select((eb_patient_triage_level) => [
-            jsonArrayFromColumn(
-              'id',
+            jsonArrayFrom(
               eb_patient_triage_level
                 .selectFrom('patient_triage_level as triage_level_for_this_encounter_with_identical_triage_level')
                 .innerJoin(
@@ -134,8 +158,16 @@ function baseQuery(trx: TrxOrDbOrQueryCreator, opts: EncounterSearch) {
                   'patient_records.value_snomed_concept_id',
                 )
                 .whereRef('patient_records_for_this_encounter_with_identical_triage_level.patient_encounter_id', '=', 'patient_records.patient_encounter_id')
-                .select('triage_level_for_this_encounter_with_identical_triage_level.id'),
-            ).as('record_ids'),
+                .select((eb_x) => [
+                  'triage_level_for_this_encounter_with_identical_triage_level.id',
+                  jsonArrayFromColumn(
+                    'id',
+                    patient_triage_associated_findings.baseQuery(trx, {})
+                      .where('patient_triage_level.id', '=', eb_x.ref('triage_level_for_this_encounter_with_identical_triage_level.id')),
+                  ).as('associated_finding_ids'),
+                ]),
+            ).as('records'),
+
             asText(
               eb_patient_triage_level,
               'patient_records.specific_snomed_concept_id',
@@ -144,8 +176,10 @@ function baseQuery(trx: TrxOrDbOrQueryCreator, opts: EncounterSearch) {
               eb_patient_triage_level,
               'patient_records.value_snomed_concept_id',
             ).as('value_snomed_concept_id'),
+            'patient_records.created_at',
             'snomed_inferred_canonical_name_and_category.name',
             'patient_triage_level.target_treatment_time',
+            'rules.description as based_on_system_priority_evaluation_description',
           ])
           .orderBy((eb_triage_level) =>
             orderByArrayPosition(

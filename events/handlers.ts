@@ -15,7 +15,7 @@ import { additional_tasks } from '../db/models/additional_tasks.ts'
 import { system_priority_evaluations } from '../db/models/system_priority_evaluations.ts'
 import { patient_evaluation_scores } from '../db/models/patient_evaluation_scores.ts'
 import { patient_triage } from '../db/models/patient_triage.ts'
-import { EVALUATION_ACTION, SEVERITY_SCORE } from '../shared/snomed_concepts.ts'
+import { EVALUATION_ACTION, TRIAGE_INDEX } from '../shared/snomed_concepts.ts'
 import { triageLevelFromTEWSTotal } from '../shared/vitals.ts'
 import { system_diagnosis_rules } from '../db/models/system_diagnosis_rules.ts'
 
@@ -157,7 +157,7 @@ export const EVENTS = {
             patient_encounter_id,
             by_system: true,
             evaluates_record_id: procedure_id,
-            evaluation: `(evaluation ${EVALUATION_ACTION.s_expression} ${SEVERITY_SCORE.s_expression})`,
+            evaluation: `(evaluation ${EVALUATION_ACTION.s_expression} ${TRIAGE_INDEX.s_expression})`,
           },
         )
 

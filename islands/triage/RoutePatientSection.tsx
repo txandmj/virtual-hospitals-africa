@@ -49,7 +49,7 @@ function defaultToBeNotified(next_step: TriageRoutePatientNextStep, clinic_emplo
 }
 
 export default function TriageRoutePatientSection(
-  { this_visit, patient, priority, clinic_employees, manage_patient_tasks }: {
+  { this_visit, patient, priority, clinic_employees, tasks_i_can_do, tasks_for_another }: {
     this_visit: {
       reason: Maybe<EncounterReason>
       notes?: Maybe<string>
@@ -63,10 +63,11 @@ export default function TriageRoutePatientSection(
       target_treatment_time: Date | null
     }
     clinic_employees: RenderedEmployeeWithPresence[]
-    manage_patient_tasks: Array<RenderedTaskToBeDone & { atom: 'procedure' }>
+    tasks_i_can_do: Array<RenderedTaskToBeDone & { atom: 'procedure' }>
+    tasks_for_another: Array<RenderedTaskToBeDone & { atom: 'procedure' }>
   },
 ) {
-  const default_next_step = defaultNextStep(priority.name, !!manage_patient_tasks.length)
+  const default_next_step = defaultNextStep(priority.name, !!tasks_i_can_do.length)
   const next_step = useSignal<string>(default_next_step)
   const to_be_notified = useSignal<RenderedEmployeeWithPresence[]>(defaultToBeNotified(default_next_step, clinic_employees))
   const to_be_notified_display = computed(() => [...to_be_notified.value].map(employeeDisplay).map((e) => e.display_name))
@@ -80,17 +81,10 @@ export default function TriageRoutePatientSection(
             priority={priority}
             default_next_step={default_next_step}
             to_be_notified={to_be_notified_display.value}
-            manage_patient_tasks={manage_patient_tasks}
+            tasks_i_can_do={tasks_i_can_do}
+            tasks_for_another={tasks_for_another}
             onSelect={(step) => next_step.value = step}
           />
-          {
-            /* {manage_patient_tasks.length > 0 && <div class='flex flex-col'>
-            <SectionHeader>Manage patient tasks</SectionHeader>
-            <ul class='mt-1.5 list-disc list-inside space-y-1'>
-              {manage_patient_tasks.map((task, i) => <li key={i} class='text-xs text-gray-700'>{task.description}</li>)}
-            </ul>
-          </div>} */
-          }
         </FormRow>
       </FormSection>
       <FormSection header='Staff' always_column>

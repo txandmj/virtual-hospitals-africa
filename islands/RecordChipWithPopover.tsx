@@ -16,8 +16,7 @@ export function RecordChipWithPopover({
       <PopoverButton className={recordChipClassName(record)}>
         {record.displays.full}
       </PopoverButton>
-      <PopoverPanel // anchor={{ to: 'bottom start', gap: 8, padding: 8 }}
-       className='panel z-50 transition duration-100 ease-out'>
+      <PopoverPanel anchor={{ to: 'bottom start', gap: 8, padding: 8 }} className='panel z-50 transition duration-100 ease-out'>
         <RecordPanel record={record} organization_id={organization_id} />
       </PopoverPanel>
     </Popover>

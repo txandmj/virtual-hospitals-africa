@@ -105,6 +105,116 @@ describeParallel('db/models/system_diagnosis_rules.ts', () => {
   )
 
   itParallel(
+    'yields a possible anaphylaxis diagnosis for an Fly bite + _later_ low blood pressure',
+    async () => {
+      const { employee, patient_id, patient_encounter_id } = await insertPatientSeekingTreatmentWithEmployeeAndCompleteRegistrationForTest(db)
+      const inserted_warning_signs = await patient_findings.insertMany(
+        db,
+        {
+          patient_id,
+          patient_encounter_id,
+          patient_encounter_employee_id: employee.patient_encounter_employee_id,
+          employment_id: employee.employee_id,
+          procedure: {
+            create_with_specific_snomed_concept_id: WORKFLOW_STEP_SNOMED_CONCEPTS.triage!.warning_signs.snomed_concept_id,
+          },
+          findings: [
+            `(clinical_finding (snomed_concept "Fly bite" "disorder"))`,
+          ],
+        },
+      )
+
+      assert(inserted_warning_signs.finding_ids[0])
+      const warning_signs_diagnoses_result = await system_diagnosis_rules.insertSystemDiagnosesIfNotAlreadyIdentified(db, {
+        listener_id: 'test',
+        listener_name: 'test',
+        patient_id,
+        patient_encounter_id,
+        patient_age_determination: 'adult',
+        procedure_id: inserted_warning_signs.procedure_id,
+        records: [
+          { id: inserted_warning_signs.finding_ids[0], existence: 'Yes' },
+        ],
+      })
+      assertEquals(warning_signs_diagnoses_result, 'No new system diagnoses to insert')
+
+      const inserted_vitals = await patient_findings.insertMany(
+        db,
+        {
+          patient_id,
+          patient_encounter_id,
+          patient_encounter_employee_id: employee.patient_encounter_employee_id,
+          employment_id: employee.employee_id,
+          procedure: {
+            create_with_specific_snomed_concept_id: WORKFLOW_STEP_SNOMED_CONCEPTS.triage!.measure_vitals.snomed_concept_id,
+          },
+          findings: [],
+          measurements: [
+            parseWithSchema(`(= (measurement (snomed_concept "Systolic blood pressure" "observable entity") mmHg) 85)`, measurement_comparator),
+          ],
+        },
+      )
+
+      const vitals_diagnoses_result = await system_diagnosis_rules.insertSystemDiagnosesIfNotAlreadyIdentified(db, {
+        listener_id: 'test',
+        listener_name: 'test',
+        patient_id,
+        patient_encounter_id,
+        patient_age_determination: 'adult',
+        procedure_id: inserted_vitals.procedure_id,
+        records: [
+          { id: inserted_vitals.measurement_ids[0], existence: 'Yes' },
+        ],
+      })
+      assert(vitals_diagnoses_result.startsWith('Inserted 1 diagnosis(es): '))
+
+      const evaluation = await patient_evaluations.findOne(db, { patient_id })
+      assertMatches(evaluation, {
+        'root_snomed_concept_name': 'Diagnosis',
+        'root_snomed_concept_category': 'observable entity',
+        'specific_snomed_concept_name': 'Anaphylaxis',
+        'specific_snomed_concept_category': 'disorder',
+        'existence': 'Yes',
+        'value': {
+          'name': 'Possible diagnosis (contextual qualifier)',
+        },
+        'destination_relations': [
+          {
+            'root_snomed_concept_name': 'Measurement finding',
+            'root_snomed_concept_category': 'finding',
+            'specific_snomed_concept_name': 'Systolic blood pressure',
+            'specific_snomed_concept_category': 'observable entity',
+            'existence': 'Yes',
+            'value': { 'type': 'measurement', 'units': 'mmHg', 'value': '85' },
+            'relation_name': 'Evidence of',
+          },
+          {
+            'root_snomed_concept_name': 'Clinical finding',
+            'root_snomed_concept_category': 'finding',
+            'specific_snomed_concept_name': 'Fly bite',
+            'specific_snomed_concept_category': 'disorder',
+            'existence': 'Yes',
+            'value': null,
+            'relation_name': 'Evidence of',
+          },
+        ],
+        'type': 'evaluation',
+        'employment_id': null,
+        'by_system': true,
+        'evaluates_record_id': null,
+        'as_part_of_procedure': null,
+        'attributes': [],
+        'displays': {
+          'finding': 'Anaphylaxis Diagnosis',
+          'value': 'Possible diagnosis',
+          'full': 'Anaphylaxis Diagnosis: Possible diagnosis',
+        },
+        'modifiers': [],
+      })
+    },
+  )
+
+  itParallel(
     'low blood pressure alone is not enough for a possible anaphylaxis diagnosis',
     async () => {
       const { employee, patient_id, patient_encounter_id } = await insertPatientSeekingTreatmentWithEmployeeAndCompleteRegistrationForTest(db)

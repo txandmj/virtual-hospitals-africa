@@ -11,6 +11,7 @@ import { SERVER_COUNTRY } from '../../../../../../../../db/models/countries.ts'
 import { getPlaceDetails } from '../../../../../../../../external-clients/google-maps.ts'
 import { assertOr404 } from '../../../../../../../../util/assertOr.ts'
 import { international_phone_number } from '../../../../../../../../util/validators.ts'
+import { addresses } from '../../../../../../../../db/models/addresses.ts'
 
 export const PatientRegistrationContactsSchema = z.object({
   google_maps_place_id: z.string(),
@@ -36,10 +37,10 @@ export const handler = postHandler(
           ctx.state.trx,
           {
             patient_id: ctx.state.patient.id,
-            address: {
+            address: addresses.insertValues({
               ...address,
               google_maps_place_id,
-            },
+            }),
           },
         )
       }),
