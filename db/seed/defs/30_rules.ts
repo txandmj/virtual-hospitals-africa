@@ -123,6 +123,7 @@ async function insertRule(
     | typeof SYSTEM_DIAGNOSIS_RULES_PARSED
   )[number],
 ) {
+  console.log(`Inserting ${rule.description}...`)
   // TODO rule description will be distinct for manage tasks
   const rule_id = rule.description
   const due_to_insert = dueToInsert(rule.due_to)
@@ -234,4 +235,4 @@ export default define([
       .returning('id')
       .executeTakeFirstOrThrow()
   })
-}, { never_dump: true })
+})
