@@ -36,7 +36,7 @@ export const handler = postHandler(
 async function ReferralPlacedConfirmHandoffPage(
   ctx: OpenEncounterWorkflowContext,
 ) {
-  const { trx, health_worker_id, encounter, organization_id, patient_id } = ctx.state
+  const { trx, health_worker_id, encounter, organization_employment, organization_id, patient_id } = ctx.state
 
   const { task_groups, facility } = await promiseProps({
     task_groups: additional_tasks.getTasksGroups(trx, { health_worker_id, encounter }).then((r) => r.task_groups),
@@ -70,6 +70,7 @@ async function ReferralPlacedConfirmHandoffPage(
               <ManagePatientGroup
                 key={index}
                 group={group}
+                organization_employment={organization_employment}
                 organization_id={organization_id}
               />
             ))}

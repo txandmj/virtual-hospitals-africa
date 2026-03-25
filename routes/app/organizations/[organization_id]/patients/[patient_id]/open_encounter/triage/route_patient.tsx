@@ -129,8 +129,6 @@ export async function PatientTriageRoutePatientPage(
     manage_patient_tasks: managePatientTasks(ctx),
   })
 
-  console.log({ manage_patient_tasks })
-
   const [tasks_i_can_do, tasks_for_another] = partition(manage_patient_tasks, (task) => {
     const { permissions } = task
     if (!permissions?.length) return true
