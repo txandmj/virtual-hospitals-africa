@@ -4,6 +4,7 @@ import { Maybe } from '../../../types.ts'
 import { RenderedEvaluationRelativeToHealthWorker, RenderedFindingRelativeToHealthWorker } from '../../../types.ts'
 import { DueTo } from './DueTo.tsx'
 import SectionHeader from '../../library/typography/SectionHeader.tsx'
+import { BookOpenIcon } from '../../library/icons/heroicons/mini.tsx'
 
 type ReferenceDoc = {
   thumbnail_href?: Maybe<string>
@@ -31,11 +32,15 @@ function ReferenceDoc({ reference_doc, use_pdf_viewer }: {
   // )
 
   return (
-    <a href={href} className='flex text-sm font-medium text-gray-600 leading-5 w-fit'>
-      <figure>
+    <a href={href} className='flex text-sm font-medium leading-5 w-fit text-blue-700'>
+      <figure class='hidden xl:block'>
         <img width='400' src={reference_doc.thumbnail_href} />
         <figcaption>{reference_doc.title}</figcaption>
       </figure>
+      <span class='block xl:hidden flex flex-row items-center gap-1'> 
+        <BookOpenIcon class='w-4 h-4'/>
+        {reference_doc.title}
+      </span>
     </a>
   )
 }
@@ -49,7 +54,7 @@ export function ReferenceDocs({ reference_docs, due_to, organization_id, use_pdf
   if (!reference_docs.length) return null
   return (
     <div id='reference-docs' class='flex flex-col gap-2 order-first xl:order-last'>
-      <SectionHeader className='w-full xl:w-60 mb-2'>
+      <SectionHeader className='w-full xl:w-60 xl:mb-2'>
         Reference Documents
       </SectionHeader>
       {due_to && <DueTo due_to={due_to} organization_id={organization_id!} />}
