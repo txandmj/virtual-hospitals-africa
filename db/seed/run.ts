@@ -13,6 +13,7 @@ export const seeds: Record<
     drop: () => Promise<void>
     reload: () => Promise<void>
     recreate: () => Promise<void>
+    clear_dump: () => Promise<void>
   }
 > = {}
 for (const seed_file of Deno.readDirSync('./db/seed/defs')) {
@@ -22,7 +23,7 @@ for (const seed_file of Deno.readDirSync('./db/seed/defs')) {
   seeds[seed_name] = seed.default || seed
 }
 
-type Cmd = 'load' | 'dump' | 'drop' | 'recreate' | 'reload'
+type Cmd = 'load' | 'dump' | 'drop' | 'recreate' | 'reload' | 'clear_dump'
 
 export const seed_targets = sortBy(Object.keys(seeds), (key) => {
   const numeric = parseInt(key.split('_')[0])
@@ -61,7 +62,8 @@ const gerund = {
   drop: 'dropping',
   recreate: 'recreating',
   reload: 'reloading',
-  create: 'createing',
+  create: 'creating',
+  clear_dump: 'clearing dump',
 }
 
 const past_tense = {
@@ -70,7 +72,8 @@ const past_tense = {
   drop: 'dropped',
   recreate: 'recreated',
   reload: 'reloaded',
-  create: 'createed',
+  create: 'created',
+  clear_dump: 'dump cleared',
 }
 
 export async function load(target?: string) {
@@ -91,6 +94,11 @@ export async function recreate(target?: string) {
 
 export async function reload(target?: string) {
   await run('reload', target)
+}
+
+export async function clear_dump(target: string) {
+  assert(target, 'clear_dump requires a target')
+  await run('clear_dump', target)
 }
 
 export async function loadRecreating(targets: string[]) {
