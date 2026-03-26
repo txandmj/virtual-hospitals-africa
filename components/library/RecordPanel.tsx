@@ -61,7 +61,7 @@ export function RecordPanel(
   },
 ) {
   return (
-    <div className='bg-gray-50 border border-gray-200 rounded-lg p-4 w-74'>
+    <div className='record-panel bg-gray-50 border border-gray-200 rounded-lg p-4 w-74'>
       <div className='flex flex-col gap-2'>
         {/* Title with close button */}
         <div className='flex items-start justify-between'>

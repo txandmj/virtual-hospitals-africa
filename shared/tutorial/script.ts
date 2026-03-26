@@ -269,7 +269,7 @@ export const TUTORIAL_SCRIPT: ScriptItem[] = [
     type: 'dialogue',
     speaker: 'guide',
     text: 'Findings can be inspected for more details and we can message the health worker who originally recorded them.',
-    highlight: '#record-chip-allergy-to-peanut > button, .record-chip [data-open]',
+    highlight: '#record-chip-allergy-to-peanut > button, [data-open] .record-panel',
     click_target_on_advance: '.record-chip button[aria-expanded="true"]',
   },
   {

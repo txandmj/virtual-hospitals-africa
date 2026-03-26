@@ -118,24 +118,26 @@ export function YesNoGrid(
 
   return (
     <>
-    <div
-      className='overflow-scroll border border-gray-300 rounded-lg grid grid-cols-[auto_minmax(80px,1fr)_minmax(80px,1fr)_minmax(80px,1fr)] gap-y-2 xl:gap-y-4 items-start'
-      ref={ref}
-    >
-      <Title title={title} placement='top' />
-      <Header existence='Yes' placement='top' />
-      <Header existence='No' placement='top' />
-      <Header existence='Unknown' placement='top' />
-      {children}
-      <Title title={title} placement='bottom' />
-      <Header existence='Yes' placement='bottom' />
-      <Header existence='No' placement='bottom' />
-      <Header existence='Unknown' placement='bottom' />
-    </div>
-      {show_guidance_on_clicking_all_nos.value && <LindiweGuidance
-        text="By the way, if none of the rest of the findings apply, you can click 'No' to fill that in for the rest. Everything you marked 'Yes' will stay put."
-        selector='.yes-no-header[data-placement="bottom"][data-existence="No"]'
-      />}
+      <div
+        className='overflow-scroll border border-gray-300 rounded-lg grid grid-cols-[auto_minmax(80px,1fr)_minmax(80px,1fr)_minmax(80px,1fr)] gap-y-2 xl:gap-y-4 items-start'
+        ref={ref}
+      >
+        <Title title={title} placement='top' />
+        <Header existence='Yes' placement='top' />
+        <Header existence='No' placement='top' />
+        <Header existence='Unknown' placement='top' />
+        {children}
+        <Title title={title} placement='bottom' />
+        <Header existence='Yes' placement='bottom' />
+        <Header existence='No' placement='bottom' />
+        <Header existence='Unknown' placement='bottom' />
+      </div>
+      {show_guidance_on_clicking_all_nos.value && (
+        <LindiweGuidance
+          text="By the way, if none of the rest of the findings apply, you can click 'No' to fill that in for the rest. Everything you marked 'Yes' will stay put."
+          selector='.yes-no-header[data-placement="bottom"][data-existence="No"]'
+        />
+      )}
     </>
   )
 }
