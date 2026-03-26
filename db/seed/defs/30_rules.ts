@@ -115,6 +115,12 @@ function dueToInsert(due_to: QueryableEvidenceNode): DueToInsert[] {
   }
 }
 
+type InsertedJunctionIds = {
+  rule_due_to_finding_ids: string[]
+  rule_due_to_finding_site_ids: string[]
+  rule_due_to_measurement_ids: string[]
+}
+
 async function insertRule(
   trx: TrxOrDb,
   rule: (
@@ -122,7 +128,7 @@ async function insertRule(
     | typeof SYSTEM_PRIORITY_EVALUATIONS_PARSED
     | typeof SYSTEM_DIAGNOSIS_RULES_PARSED
   )[number],
-) {
+): Promise<InsertedJunctionIds> {
   console.log(`Inserting ${rule.description}...`)
   // TODO rule description will be distinct for manage tasks
   const rule_id = rule.description
@@ -137,12 +143,23 @@ async function insertRule(
       age_determinations: rule.ages,
       due_to_s_expression: inverseSExpression(rule.due_to),
     })
+    .onConflict((oc) =>
+      oc.column('id').doUpdateSet({
+        description: (eb) => eb.ref('excluded.description'),
+        age_determinations: (eb) => eb.ref('excluded.age_determinations'),
+        due_to_s_expression: (eb) => eb.ref('excluded.due_to_s_expression'),
+      })
+    )
     .returning('id')
     .executeTakeFirstOrThrow()
 
   const findings = due_to_insert.filter((d): d is Extract<DueToInsert, { type: 'finding' }> => d.type === 'finding')
   const finding_sites = due_to_insert.filter((d): d is Extract<DueToInsert, { type: 'finding_site' }> => d.type === 'finding_site')
   const measurements = due_to_insert.filter((d): d is Extract<DueToInsert, { type: 'measurement' }> => d.type === 'measurement')
+
+  const rule_due_to_finding_ids: string[] = []
+  const rule_due_to_finding_site_ids: string[] = []
+  const rule_due_to_measurement_ids: string[] = []
 
   if (findings.length) {
     const due_to_finding_ids = await pMap(findings, (finding) =>
@@ -157,27 +174,31 @@ async function insertRule(
         .returning('id')
         .executeTakeFirstOrThrow(), { concurrency: 1 })
 
-    await trx.insertInto('rule_due_to_findings')
+    const rows = await trx.insertInto('rule_due_to_findings')
       .values(findings.map((finding, i) => ({
         rule_id,
         due_to_finding_id: due_to_finding_ids[i].id,
         always_applies_if_present: finding.always_applies_if_present,
       })))
+      .returning('id')
       .execute()
+    rule_due_to_finding_ids.push(...rows.map((r) => r.id))
   }
 
   if (finding_sites.length) {
-    await trx.insertInto('rule_due_to_finding_sites')
+    const rows = await trx.insertInto('rule_due_to_finding_sites')
       .values(finding_sites.map((finding_site) => ({
         rule_id,
         value_snomed_concept_id: snomedConceptId(finding_site.value_snomed_concept),
         always_applies_if_present: finding_site.always_applies_if_present,
       })))
+      .returning('id')
       .execute()
+    rule_due_to_finding_site_ids.push(...rows.map((r) => r.id))
   }
 
   if (measurements.length) {
-    await trx.insertInto('rule_due_to_measurements')
+    const rows = await trx.insertInto('rule_due_to_measurements')
       .values(measurements.map((measurement) => ({
         rule_id,
         specific_snomed_concept_id: snomedConceptId(measurement.specific_snomed_concept),
@@ -185,8 +206,12 @@ async function insertRule(
         value: measurement.value,
         always_applies_if_present: measurement.always_applies_if_present,
       })))
+      .returning('id')
       .execute()
+    rule_due_to_measurement_ids.push(...rows.map((r) => r.id))
   }
+
+  return { rule_due_to_finding_ids, rule_due_to_finding_site_ids, rule_due_to_measurement_ids }
 }
 
 export default define([
@@ -199,32 +224,59 @@ export default define([
   'system_diagnosis_rules',
   'system_priority_evaluations',
 ], async (trx) => {
+  const rule_ids: string[] = []
+  const rule_due_to_finding_ids: string[] = []
+  const rule_due_to_finding_site_ids: string[] = []
+  const rule_due_to_measurement_ids: string[] = []
+
   await forEach(TASKS, async (task) => {
-    await insertRule(trx, task)
+    const junction_ids = await insertRule(trx, task)
+    rule_ids.push(task.description)
+    rule_due_to_finding_ids.push(...junction_ids.rule_due_to_finding_ids)
+    rule_due_to_finding_site_ids.push(...junction_ids.rule_due_to_finding_site_ids)
+    rule_due_to_measurement_ids.push(...junction_ids.rule_due_to_measurement_ids)
 
     await trx.insertInto('tasks')
       .values({
         id: task.description,
         to_be_done_s_expression: inverseSExpression(task.to_be_done),
       })
+      .onConflict((oc) =>
+        oc.column('id').doUpdateSet({
+          to_be_done_s_expression: (eb) => eb.ref('excluded.to_be_done_s_expression'),
+        })
+      )
       .returning('id')
       .executeTakeFirstOrThrow()
   }, { concurrency: 1 })
 
   await forEach(SYSTEM_PRIORITY_EVALUATIONS_PARSED, async (system_priority_evaluation) => {
-    await insertRule(trx, system_priority_evaluation)
+    const junction_ids = await insertRule(trx, system_priority_evaluation)
+    rule_ids.push(system_priority_evaluation.description)
+    rule_due_to_finding_ids.push(...junction_ids.rule_due_to_finding_ids)
+    rule_due_to_finding_site_ids.push(...junction_ids.rule_due_to_finding_site_ids)
+    rule_due_to_measurement_ids.push(...junction_ids.rule_due_to_measurement_ids)
 
     await trx.insertInto('system_priority_evaluations')
       .values({
         id: system_priority_evaluation.description,
         priority: system_priority_evaluation.priority,
       })
+      .onConflict((oc) =>
+        oc.column('id').doUpdateSet({
+          priority: (eb) => eb.ref('excluded.priority'),
+        })
+      )
       .returning('id')
       .executeTakeFirstOrThrow()
   })
 
   await forEach(SYSTEM_DIAGNOSIS_RULES_PARSED, async (system_diagnosis_rule) => {
-    await insertRule(trx, system_diagnosis_rule)
+    const junction_ids = await insertRule(trx, system_diagnosis_rule)
+    rule_ids.push(system_diagnosis_rule.description)
+    rule_due_to_finding_ids.push(...junction_ids.rule_due_to_finding_ids)
+    rule_due_to_finding_site_ids.push(...junction_ids.rule_due_to_finding_site_ids)
+    rule_due_to_measurement_ids.push(...junction_ids.rule_due_to_measurement_ids)
 
     await trx.insertInto('system_diagnosis_rules')
       .values({
@@ -232,7 +284,27 @@ export default define([
         snomed_concept_id: snomedConceptId(system_diagnosis_rule.diagnosis.snomed_concept),
         certainty: system_diagnosis_rule.diagnosis.certainty_qualifier,
       })
+      .onConflict((oc) =>
+        oc.column('id').doUpdateSet({
+          snomed_concept_id: (eb) => eb.ref('excluded.snomed_concept_id'),
+          certainty: (eb) => eb.ref('excluded.certainty'),
+        })
+      )
       .returning('id')
       .executeTakeFirstOrThrow()
   })
-})
+
+  // Clean up any rows that were not part of this run
+  await trx.deleteFrom('rule_due_to_findings')
+    .where('id', 'not in', rule_due_to_finding_ids)
+    .execute()
+  await trx.deleteFrom('rule_due_to_finding_sites')
+    .where('id', 'not in', rule_due_to_finding_site_ids)
+    .execute()
+  await trx.deleteFrom('rule_due_to_measurements')
+    .where('id', 'not in', rule_due_to_measurement_ids)
+    .execute()
+  await trx.deleteFrom('rules')
+    .where('id', 'not in', rule_ids)
+    .execute()
+}, { never_dump: true, always_run: true })

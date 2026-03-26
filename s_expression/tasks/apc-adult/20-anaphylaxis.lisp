@@ -53,7 +53,7 @@
   (active_condition (snomed_concept "Anaphylaxis" "disorder"))
   (manage
     (snomed_concept "Product containing epinephrine" "medicinal product")
-    (permission (role nurse) (specialty "Primary care"))
+    (permission (role nurse))
   )
 )
 (task
@@ -62,6 +62,6 @@
   (active_condition (snomed_concept "Anaphylaxis" "disorder"))
   (manage
     (snomed_concept "Product containing precisely sodium chloride 9 milligram/1 milliliter conventional release solution for infusion and/or injection" "clinical drug")
-    (permission (role nurse) (specialty "Primary care"))
+    (permission (role nurse))
   )
 )

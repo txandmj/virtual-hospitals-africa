@@ -1,5 +1,4 @@
 import { YesNoGrid } from '../../../islands/form/inputs/yes_no.tsx'
-import LindiweGuidance from '../../../islands/LindiweGuidance.tsx'
 import { isFinding } from '../../../shared/tasks.ts'
 import { TaskGroup } from '../../../types.ts'
 import cls from '../../../util/cls.ts'
