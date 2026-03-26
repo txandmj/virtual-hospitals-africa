@@ -7,10 +7,14 @@
   )
   adult
   (and
-    (active_condition (snomed_concept "Fever" "finding"))
     (clinical_finding (snomed_concept "Stiff neck" "finding"))
     (or
+      (active_condition (snomed_concept "Fever" "finding"))
+      (clinical_finding (snomed_concept "Finding of vomiting" "finding"))
+    )
+    (or
       (clinical_finding (snomed_concept "Drowsy" "finding"))
+      (clinical_finding (snomed_concept "Acute confusion" "finding"))
       (clinical_finding (snomed_concept "Clouded consciousness" "finding"))
       (clinical_finding (snomed_concept "Purpuric rash" "disorder"))
     )
