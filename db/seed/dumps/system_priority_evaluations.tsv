@@ -1,43 +1,43 @@
 id	priority
 Urgent: back pain with cauda equina or neurological signs	Urgent
-Urgent: toothache with fever and swelling or unable to eat	Urgent
 Urgent: anal pain with lump or difficulty defecating	Urgent
-Urgent: constipation with bowel obstruction signs	Urgent
+Urgent: toothache with fever and swelling or unable to eat	Urgent
 Urgent: urinary retention with abdominal distension	Urgent
+Urgent: constipation with bowel obstruction signs	Urgent
+Urgent: fatigue with cardiac, respiratory or systemic signs	Urgent
 Urgent: haematuria with flank pain	Urgent
 Urgent: abnormal vaginal bleeding with haemodynamic compromise	Urgent
-Urgent: fatigue with cardiac, respiratory or systemic signs	Urgent
 Urgent: flank pain with fever and systemic signs	Urgent
-Urgent: collapse with cardiac, haemorrhagic or neurological signs	Urgent
 Emergency: severe wheeze with respiratory distress	Emergency
-Urgent: severe burn with danger signs	Urgent
-Urgent: calf pain with swelling suggestive of DVT	Urgent
 Emergency: chest pain with cardiac signs	Emergency
 Urgent: foot pain with ischaemic or traumatic signs	Urgent
-Urgent: groin mass with obstruction or vascular signs	Urgent
+Urgent: collapse with cardiac, haemorrhagic or neurological signs	Urgent
+Urgent: severe burn with danger signs	Urgent
+Urgent: calf pain with swelling suggestive of DVT	Urgent
 Urgent: head injury with nasal symptoms	Urgent
-Urgent: dizziness with cardiac or neurological signs	Urgent
-Urgent: probable anaphylaxis	Urgent
+Urgent: groin mass with obstruction or vascular signs	Urgent
 Urgent: leg pain with absent pulse or gangrene	Urgent
+Urgent: dizziness with cardiac or neurological signs	Urgent
 Urgent: nausea or vomiting with haemorrhagic, peritoneal or systemic signs	Urgent
+Urgent: probable anaphylaxis	Urgent
 Urgent: arm pain with traumatic injury	Urgent
 Urgent: facial cellulitis with fever	Urgent
-Urgent: facial swelling with renal signs	Urgent
+Urgent: neck pain with meningism, neurological or traumatic signs	Urgent
 Urgent: abdominal pain with peritoneal, obstructive or metabolic signs	Urgent
+Urgent: facial swelling with renal signs	Urgent
 Urgent: serious eye condition requiring immediate assessment	Urgent
 Emergency: upper respiratory tract obstruction	Emergency
-Urgent: neck pain with meningism, neurological or traumatic signs	Urgent
 Urgent: anaemia with haemodynamic or bleeding signs	Urgent
 Urgent: unable to open mouth or swallow	Urgent
 Urgent: diarrhoea with dehydration or haemodynamic compromise	Urgent
-Urgent: headache with meningism, hypertensive or neurological signs	Urgent
-Urgent: joint pain with septic, traumatic or systemic signs	Urgent
 Urgent: purpuric rash with meningococcal signs	Urgent
+Urgent: joint pain with septic, traumatic or systemic signs	Urgent
+Urgent: headache with meningism, hypertensive or neurological signs	Urgent
 Urgent: cough or breathlessness with danger signs	Urgent
-Urgent: drug eruption with systemic signs	Urgent
 Emergency: hypoglycaemia	Emergency
+Urgent: drug eruption with systemic signs	Urgent
+Urgent: jaundice with haemodynamic or hepatic danger signs	Urgent
 Urgent: stroke or TIA signs	Urgent
 Emergency: shock signs in children	Emergency
-Urgent: jaundice with haemodynamic or hepatic danger signs	Urgent
 Urgent: bite with danger signs	Urgent
 Urgent: fever with danger signs	Urgent

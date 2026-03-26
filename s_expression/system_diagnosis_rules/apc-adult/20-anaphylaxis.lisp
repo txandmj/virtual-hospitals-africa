@@ -73,6 +73,7 @@
             (< (measurement (snomed_concept "Diastolic blood pressure" "observable entity") mmHg) 60)
         )
         (clinical_finding (snomed_concept "Insect bite - wound" "disorder"))
+        (clinical_finding (snomed_concept "Insect sting" "disorder"))
         (clinical_finding (snomed_concept "Itching" "finding"))
         (clinical_finding (snomed_concept "Eruption" "morphologic abnormality"))
         (clinical_finding (snomed_concept "Swelling" "finding") (finding_site (snomed_concept "Face structure" "body structure")))

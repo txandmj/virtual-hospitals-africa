@@ -1,51 +1,51 @@
 id	snomed_concept_id	certainty
-Diagnose probable heart failure	84114007	probable
-Diagnose probable acute coronary syndrome	394659003	probable
 Diagnose probable abdominal aortic aneurysm	233985008	probable
+Diagnose probable acute coronary syndrome	394659003	probable
+Diagnose probable heart failure	84114007	probable
 Diagnose possible kidney stone	95570007	possible
 Diagnose probable stable angina	233819005	probable
 Diagnose probable postpartum hemorrhage	47821001	probable
-Diagnose probable ruptured abdominal aortic aneurysm	14336007	probable
 Diagnose probable ischaemic heart disease	414545008	probable
-Diagnose probable hypertensive emergency	132721000119104	probable
+Diagnose probable ruptured abdominal aortic aneurysm	14336007	probable
 Diagnose possible acute pyelonephritis	36689008	possible
+Diagnose probable hypertensive emergency	132721000119104	probable
 Diagnose probable acute pyelonephritis	36689008	probable
 Diagnose probable acute lower limb ischemia	1230182004	probable
 Diagnose possible aneurysm	432119003	possible
-Diagnose probable critical lower limb ischemia	233962007	probable
-Diagnose probable strangulated inguinal hernia	236024003	probable
-Diagnose probable peritonitis based on nausea	48661000	probable
 Diagnose probable appendicitis based on nausea	85189001	probable
+Diagnose probable critical lower limb ischemia	233962007	probable
+Diagnose probable peritonitis based on nausea	48661000	probable
+Diagnose probable strangulated inguinal hernia	236024003	probable
 Diagnose probable meningitis based on nausea	7180009	probable
 Diagnose possible deep venous thrombosis	128053003	possible
-Diagnose probable premature labor	6383007	probable
 Diagnose probable serious drug reaction	73442001	probable
+Diagnose probable premature labor	6383007	probable
 Diagnose probable premature rupture of membranes	44223004	probable
 Diagnose possible acute lower limb ischemia	1230182004	possible
-Diagnose probable severe pre-eclampsia	46764007	probable
 Diagnose possible abdominal aortic aneurysm	233985008	possible
+Diagnose probable severe pre-eclampsia	46764007	probable
 Diagnose probable peritonitis based on abdominal pain	48661000	probable
-Diagnose probable acute pancreatitis	197456007	probable
 Diagnose probable orbital cellulitis	194005002	probable
+Diagnose probable acute pancreatitis	197456007	probable
 Diagnose probable angle-closure glaucoma	392291006	probable
 Diagnose probable facial cellulitis	200652002	probable
-Diagnose probable fracture of bone	125605004	probable
-Diagnose possible kidney disease	90708001	possible
 Diagnose probable acute cholecystitis	65275009	probable
+Diagnose possible kidney disease	90708001	possible
 Diagnose probable meningitis	7180009	probable
+Diagnose probable fracture of bone	125605004	probable
 Diagnose probable cholera	63650001	probable
-Diagnose possible snake bite poisoning	61288004	possible
 Diagnose possible pulmonary embolism	59282003	possible
+Diagnose possible snake bite poisoning	61288004	possible
 Diagnose probable dehydration	34095006	probable
 Diagnose probable infective arthritis	396234004	probable
-Diagnose probable tension pneumothorax	233645004	probable
 Diagnose possible anaphylaxis	39579001	possible
+Diagnose probable tension pneumothorax	233645004	probable
 Diagnose fever	386661006	definite
 Diagnose probable torsion of testis	81996005	probable
-Diagnose probable appendicitis based on fever	85189001	probable
 Diagnose possible meningococcal disease	23511006	possible
 Diagnose probable paraphimosis	13758004	probable
-Diagnose possible adverse drug reaction	62014003	possible
-Diagnose probable meningitis based on fever	7180009	probable
+Diagnose probable appendicitis based on fever	85189001	probable
 Diagnose possible stroke or TIA	230690007	possible
+Diagnose probable meningitis based on fever	7180009	probable
+Diagnose possible adverse drug reaction	62014003	possible
 Diagnose probable anaphylaxis	39579001	probable
