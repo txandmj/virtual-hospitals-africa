@@ -6,7 +6,7 @@ import { addTestEmployeeWithSession } from '../../test/_helpers/employees.ts'
 import { route } from '../../test/_route.ts'
 import { forEach } from '../../util/inParallel.ts'
 import { createTestOrganization } from 'test/_helpers/organizations.ts'
-import puppeteer from 'npm:puppeteer'
+import puppeteer from 'puppeteer'
 import { pageSlugFromFilePath, setupTriageForAPCPage } from './createSamplePatientsForEachAPCPage.ts'
 
 async function screenshotAPCAdditionalTasks() {
@@ -44,7 +44,7 @@ async function screenshotAPCAdditionalTasks() {
 
       const page = await browser.newPage()
       try {
-        await page.setViewport({ width: 1280, height: 900 })
+        await page.setViewport({ width: 1280, height: 2700 })
         await page.setCookie(
           { name: 'session_id', value: nurse.session_id, domain: hostname },
           { name: 'health_worker_id', value: nurse.health_worker.id, domain: hostname },
@@ -55,11 +55,14 @@ async function screenshotAPCAdditionalTasks() {
 
         const output_dir = `./apc-test-results/${page_slug}`
         await Deno.mkdir(output_dir, { recursive: true })
-        await page.screenshot({ path: `${output_dir}/additional_tasks.png`, fullPage: true })
-
-        console.log(`Screenshot saved: ${output_dir}/additional_tasks.png`)
+        try {
+          await page.screenshot({ path: `${output_dir}/additional_tasks.png`, fullPage: true })
+          console.log(`Screenshot saved: ${output_dir}/additional_tasks.png`)
+        } catch (err) {
+          console.warn(`Screenshot failed for ${page_slug}: ${err}`)
+        }
       } finally {
-        await page.close()
+        await page.close().catch(() => {})
       }
     }, { concurrency: 1 })
   } finally {

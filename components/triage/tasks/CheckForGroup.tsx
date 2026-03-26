@@ -1,4 +1,5 @@
 import { YesNoGrid } from '../../../islands/form/inputs/yes_no.tsx'
+import LindiweGuidance from '../../../islands/LindiweGuidance.tsx'
 import { isFinding } from '../../../shared/tasks.ts'
 import { TaskGroup } from '../../../types.ts'
 import cls from '../../../util/cls.ts'
@@ -25,28 +26,30 @@ export function CheckForGroup({
   if (!groups_with_check_fors.length) return null
 
   return (
-    <YesNoGrid title='Check for'>
-      {groups_with_check_fors.map((group, index) => (
-        <>
-          <DueTo
-            key={index}
-            due_to={group.due_to}
-            organization_id={organization_id}
-            is_follow_up={page_mixed_completion && !group.completed}
-            className={cls('col-span-4 pl-4', {
-              'pt-1': index === 0,
-              'pt-5': index > 0,
-            })}
-          />
-          {group.check_for_tasks.map((task) => (
-            <CheckForTask
-              key={uniqueIdentifier(task)}
+    <>
+      <YesNoGrid title='Check for'>
+        {groups_with_check_fors.map((group, index) => (
+          <>
+            <DueTo
+              key={index}
+              due_to={group.due_to}
               organization_id={organization_id}
-              task={task}
+              is_follow_up={page_mixed_completion && !group.completed}
+              className={cls('col-span-4 pl-4', {
+                'pt-1': index === 0,
+                'pt-5': index > 0,
+              })}
             />
-          ))}
-        </>
-      ))}
-    </YesNoGrid>
+            {group.check_for_tasks.map((task) => (
+              <CheckForTask
+                key={uniqueIdentifier(task)}
+                organization_id={organization_id}
+                task={task}
+              />
+            ))}
+          </>
+        ))}
+      </YesNoGrid>
+    </>
   )
 }

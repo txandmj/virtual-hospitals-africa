@@ -594,7 +594,7 @@ export const TUTORIAL_SCRIPT: ScriptItem[] = [
     type: 'dialogue',
     speaker: 'guide',
     text: 'Because the case is urgent we are recommended to hand over the case',
-    highlight: '#route_patient_next_step [data-option-value="hand_over"]',
+    highlight: '#route_patient_next_step [data-option-value="manage_and_refer"]',
   },
   {
     type: 'dialogue',

@@ -1,8 +1,8 @@
 ;; Page 39 - Wheeze: Severe wheeze
 (system_priority_evaluation
-  "Emergency: severe wheeze with respiratory distress"
+  "Urgent: severe wheeze with respiratory distress"
   adult
-  Emergency
+  Urgent
   (and
     (clinical_finding (snomed_concept "Wheezing" "finding"))
     (or
