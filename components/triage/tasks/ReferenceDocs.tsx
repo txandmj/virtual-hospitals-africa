@@ -35,7 +35,12 @@ function ReferenceDoc({ reference_doc, use_pdf_viewer }: {
     <a href={href} className='flex text-sm font-medium leading-5 w-fit text-blue-700'>
       <figure class='hidden xl:block'>
         <img width='400' src={reference_doc.thumbnail_href} />
-        <figcaption>{reference_doc.title}</figcaption>
+        <figcaption>
+          <span class='flex flex-row items-center gap-1'>
+            <BookOpenIcon class='w-4 h-4' />
+            {reference_doc.title}
+          </span>
+        </figcaption>
       </figure>
       <span class='block xl:hidden flex flex-row items-center gap-1'>
         <BookOpenIcon class='w-4 h-4' />
