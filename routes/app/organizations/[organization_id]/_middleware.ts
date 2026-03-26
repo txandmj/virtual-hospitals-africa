@@ -1,22 +1,7 @@
-import { HealthWorkerOrganization, LoggedInHealthWorkerContext, RenderedEmployee, RenderedOrganization } from '../../../../types.ts'
+import { OrganizationContext, OrganizationState, RenderedEmployee } from '../../../../types.ts'
 import { organizations } from '../../../../db/models/organizations.ts'
 import { assertOr403 } from '../../../../util/assertOr.ts'
 import { timeMiddlewareCallNext } from '../../../../backend/timeMiddleware.ts'
-
-export type OrganizationState = {
-  organization: RenderedOrganization
-  /**
-   * /app/organizations/${organization_id}
-   */
-  organization_pathname: string
-  organization_id: string
-  organization_employment: HealthWorkerOrganization
-  employee: RenderedEmployee
-  employment_id: string
-  is_admin_at_organization: boolean
-}
-
-export type OrganizationContext<T = Record<never, never>> = LoggedInHealthWorkerContext<OrganizationState & T>
 
 export const handler = timeMiddlewareCallNext(async function attachOrganization(
   ctx: OrganizationContext,

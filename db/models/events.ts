@@ -4,12 +4,18 @@ import { EventInsertAny, EVENTS } from '../../events/handlers.ts'
 import { Client } from 'pg'
 import { opts } from '../db.ts'
 import { assert } from 'std/assert/assert.ts'
-import { isUUID } from '../../util/uuid.ts'
+import generateUUID, { isUUID } from '../../util/uuid.ts'
 import { once } from '../../util/once.ts'
 import { timeout } from '../../util/timeout.ts'
 import keys from '../../util/keys.ts'
 import { exists } from '../../util/exists.ts'
 import assertHasProperty from '../../util/assertHasProperty.ts'
+
+// Key used to persist the pub/sub instance across HMR re-evaluations.
+// Without this, each HMR reload creates a new pg client while the old one
+// stays connected (the old module closure keeps the client alive via its
+// 'notification' event listener).
+const _PUBSUB_GLOBAL_KEY = '__vha_allProcessedPubSub__'
 
 /**
  * We need a dedicated query for the listener.
@@ -17,11 +23,20 @@ import assertHasProperty from '../../util/assertHasProperty.ts'
  */
 export const initializeAllProcessedPubSub = once(
   async function initializeAllProcessedPubSub() {
+    // Reuse the existing instance across HMR re-evaluations
+    // deno-lint-ignore no-explicit-any
+    if ((globalThis as any)[_PUBSUB_GLOBAL_KEY]) {
+      console.log('initializeAllProcessedPubSub ok')
+      // deno-lint-ignore no-explicit-any
+      return (globalThis as any)[_PUBSUB_GLOBAL_KEY]
+    }
+
     const by_patient_encounter_id_subscribers = new Map<string, Set<(event_id: string) => void>>()
     const by_event_id_subscribers = new Map<string, Set<(err?: Error) => void>>()
     const any_subscribers = new Set<(event_id: string, err?: Error) => void>()
     const all_settled_for_encounter_subscribers = new Map<string, Set<() => void>>()
 
+    const client_id = generateUUID()
     const client = new Client(opts || {})
     await client.connect()
     await client.query(`LISTEN event_inserted`)
@@ -29,6 +44,7 @@ export const initializeAllProcessedPubSub = once(
     await client.query(`LISTEN event_listener_failure`)
     await client.query(`LISTEN all_events_settled_for_patient_encounter`)
     client.on('notification', function (event) {
+      console.log({ event, client_id })
       switch (event.channel) {
         case 'event_inserted': {
           assert(event.payload)
@@ -87,7 +103,7 @@ export const initializeAllProcessedPubSub = once(
     })
 
     // TODO stop accepting new subscriptions after shutdown
-    return {
+    const instance = {
       by_patient_encounter_id: {
         subscribe(patient_encounter_id: string, callback: (event_id: string) => void) {
           // console.log('subscribing', event_id)
@@ -154,7 +170,9 @@ export const initializeAllProcessedPubSub = once(
       },
       // am I a pythonista? 🐍
       __client__: client,
-    }
+    } // deno-lint-ignore no-explicit-any
+    ;(globalThis as any)[_PUBSUB_GLOBAL_KEY] = instance
+    return instance
   },
 )
 
@@ -164,6 +182,8 @@ export const events = {
     assert(!opts.graceful, 'TODO support a graceful mode')
     if (!initializeAllProcessedPubSub.called) return
     const pub_sub = await initializeAllProcessedPubSub()
+    // deno-lint-ignore no-explicit-any
+    delete (globalThis as any)[_PUBSUB_GLOBAL_KEY]
     await pub_sub.__client__.end()
   },
   insert(

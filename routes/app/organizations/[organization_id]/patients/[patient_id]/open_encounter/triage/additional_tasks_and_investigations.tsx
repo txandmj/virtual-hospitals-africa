@@ -1,5 +1,5 @@
 import { getCookies } from 'std/http/cookie.ts'
-import { completeAndProceedToNextStep, completedProcedure, OpenEncounterWorkflowContext, OpenEncounterWorkflowPage } from '../_middleware.tsx'
+import { completeAndProceedToNextStep, completedProcedure, OpenEncounterWorkflowPage } from '../_middleware.tsx'
 import { z } from 'zod'
 import { postHandler } from '../../../../../../../../backend/postHandler.ts'
 import AdditionalTasks from '../../../../../../../../components/triage/AdditionalTasks.tsx'
@@ -18,6 +18,7 @@ import zip from '../../../../../../../../util/zip.ts'
 import { exists } from '../../../../../../../../util/exists.ts'
 import { logJSONToFileIfOnServer } from '../../../../../../../../util/logJSONToFileIfOnServer.ts'
 import { check_for, CheckForSchema } from '../../../../../../../../db/models/check_for.ts'
+import { OpenEncounterWorkflowContext } from '../../../../../../../../types.ts'
 
 export const TriageAdditionalTasksAndInvestigationsSchema = z.object({
   evaluation_ids: z.string().uuid().array().optional().default([]),
@@ -179,8 +180,7 @@ export const handler = postHandler(
 export async function TriageAdditionalTasksAndInvestigationsPage(
   ctx: OpenEncounterWorkflowContext,
 ) {
-  const { trx, encounter, health_worker_id, organization_id, patient_encounter_id } = ctx.state
-  await events.allProcessedForEncounter(trx, { patient_encounter_id })
+  const { trx, encounter, health_worker_id, organization_id } = ctx.state
   const { evaluation_ids, task_groups } = await additional_tasks.getTasksGroups(trx, { health_worker_id, encounter })
 
   logJSONToFileIfOnServer(task_groups)

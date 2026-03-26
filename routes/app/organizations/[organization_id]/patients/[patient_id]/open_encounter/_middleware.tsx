@@ -1,16 +1,12 @@
 import { ComponentChildren, JSX } from 'preact'
 import { assert } from 'std/assert/assert.ts'
 import {
-  AgeDetermination,
-  LoggedInHealthWorkerContext,
-  PreviouslyCompletedProcedures,
-  RenderedEvaluationRelativeToHealthWorker,
-  RenderedPatient,
-  RenderedPatientHistory,
+  OpenEncounterContext,
+  OpenEncounterState,
+  OpenEncounterWorkflowContext,
+  OrganizationContext,
   RenderedPatientOpenEncounter,
-  RenderedSidebarWorkflow,
-  SnomedConcept,
-  WorkflowStatus,
+  WorkflowState,
 } from '../../../../../../../types.ts'
 import { patient_encounters } from '../../../../../../../db/models/patient_encounters.ts'
 import { groupRecordsByWorkflows } from '../../../../../../../db/models/this_visit_findings.ts'
@@ -35,12 +31,12 @@ import {
   WORKFLOW_NAV_LINKS,
   WORKFLOW_SNOMED_CONCEPTS,
   WORKFLOW_STEPS,
+  workflowStepPath,
   workflowStepSnomedConcept,
 } from '../../../../../../../shared/workflow.ts'
 import { otherEmployeePresentWithPatient, patient_workflows, PresentWithAnotherPatientError } from '../../../../../../../db/models/patient_workflows.ts'
 import last from '../../../../../../../util/last.ts'
 import compact from '../../../../../../../util/compact.ts'
-import { OrganizationContext, OrganizationState } from '../../../_middleware.ts'
 import words from '../../../../../../../util/words.ts'
 import { assertNotEquals } from 'std/assert/assert_not_equals.ts'
 import { success } from '../../../../../../../util/alerts.ts'
@@ -62,49 +58,6 @@ import { patient_record_providers } from '../../../../../../../db/models/patient
 import { buildPriorityRecord } from '../../../../../../../db/models/priority.ts'
 import { patient_evaluation_scores } from '../../../../../../../db/models/patient_evaluation_scores.ts'
 import { logJSONToFileIfOnServer } from '../../../../../../../util/logJSONToFileIfOnServer.ts'
-
-type EncounterEmployeePresence = {
-  health_worker_id: string
-  employee_id: string
-  patient_encounter_employee_id: string
-}
-
-type OpenEncounterState = OrganizationState & {
-  patient: RenderedPatient
-  patient_age_determination: AgeDetermination | null
-  patient_id: string
-  encounter: RenderedPatientOpenEncounter
-  patient_encounter_id: string
-  encounter_employee_presence: EncounterEmployeePresence | null
-  encounter_expected_to_not_exist_after_post?: true
-  open_encounter_pathname: string
-}
-
-type WorkflowState = {
-  workflow: Workflow
-  step: string
-  workflow_snomed_concept: SnomedConcept
-  workflow_step_snomed_concept: SnomedConcept | null
-  workflow_status: WorkflowStatus
-  previously_completed_step: boolean
-  previously_completed_procedures: PreviouslyCompletedProcedures
-  encounter_employee_presence: EncounterEmployeePresence
-  patient_encounter_employee_id: string
-  this_visit_findings: RenderedSidebarWorkflow[]
-  this_visit_diagnoses: RenderedEvaluationRelativeToHealthWorker[]
-  priority_evaluation: null | RenderedEvaluationRelativeToHealthWorker
-  patient_history: RenderedPatientHistory
-}
-
-type OpenEncounterWorkflowState = OpenEncounterState & WorkflowState
-
-export type OpenEncounterContext<T = Record<never, never>> = LoggedInHealthWorkerContext<
-  OpenEncounterState & T
->
-
-export type OpenEncounterWorkflowContext<T = Record<never, never>> = LoggedInHealthWorkerContext<
-  OpenEncounterWorkflowState & T
->
 
 export function completeLastStep(
   { state: { trx, workflow, step, workflow_status } }: OpenEncounterWorkflowContext,
@@ -323,11 +276,28 @@ export const workflowHandler = timeMiddlewareCallNext(async function workflowHan
   Object.assign(ctx.state, workflow_props)
 })
 
+const REQUIRE_EVENTS_ALL_PROCESSED_FOR_PATHS: string[] = [
+  workflowStepPath('triage', 'additional_tasks_and_investigations'),
+  workflowStepPath('triage', 'assign_priority'),
+]
+
 async function findPatientOpenEncounter(
   ctx: OrganizationContext,
 ): Promise<RenderedPatientOpenEncounter> {
-  const patient_id = getRequiredUUIDParam(ctx, 'patient_id')
   const { trx, present_encounter_id, organization_employment } = ctx.state
+  const patient_id = getRequiredUUIDParam(ctx, 'patient_id')
+  if (REQUIRE_EVENTS_ALL_PROCESSED_FOR_PATHS.some((path) => ctx.url.pathname.endsWith(path))) {
+    const open_patient_encounters = await patient_encounters.distinctIds(trx, {
+      patient_id,
+      is_open: true,
+    }).execute()
+    assert(open_patient_encounters.length <= 2)
+    assertOr404(
+      open_patient_encounters.length,
+      'No open encounter for this patient at this organization',
+    )
+    await events.allProcessedForEncounter(trx, { patient_encounter_id: open_patient_encounters[0].id })
+  }
   const patient_encounter = await patient_encounters.getFirstOpen(trx, {
     patient_id,
   })

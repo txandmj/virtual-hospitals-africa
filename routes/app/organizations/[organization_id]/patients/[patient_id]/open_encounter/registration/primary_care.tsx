@@ -1,4 +1,5 @@
-import { completeAndProceedToNextStep, OpenEncounterWorkflowContext, OpenEncounterWorkflowPage } from '../_middleware.tsx'
+import { completeAndProceedToNextStep, OpenEncounterWorkflowPage } from '../_middleware.tsx'
+import type { OpenEncounterWorkflowContext } from '../../../../../../../../types.ts'
 import { z } from 'zod'
 import { NearestHealthCareSection } from '../../../../../../../../islands/NearestHealthCare.tsx'
 import { HealthInsuranceSection } from '../../../../../../../../islands/HealthInsurance.tsx'

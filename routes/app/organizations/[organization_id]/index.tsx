@@ -1,5 +1,5 @@
 import { HealthWorkerHomePage } from '../../_middleware.tsx'
-import { OrganizationContext } from './_middleware.ts'
+import { OrganizationContext } from '../../../../types.ts'
 
 export default HealthWorkerHomePage<OrganizationContext>(
   function OrganizationPage(

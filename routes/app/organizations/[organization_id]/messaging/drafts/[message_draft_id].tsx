@@ -8,7 +8,7 @@ import MessageDraft from '../../../../../../components/messaging/Draft.tsx'
 import { HealthWorkerHomePage } from '../../../../_middleware.tsx'
 import { MessageTargetType } from '../../../../../../db.d.ts'
 import { parseRequest } from '../../../../../../backend/parseForm.ts'
-import { OrganizationContext } from '../../_middleware.ts'
+import { OrganizationContext } from '../../../../../../types.ts'
 
 const MessageTargetSchema = z.record(z.string(), z.literal(true)).transform(
   (value) => Object.keys(value),

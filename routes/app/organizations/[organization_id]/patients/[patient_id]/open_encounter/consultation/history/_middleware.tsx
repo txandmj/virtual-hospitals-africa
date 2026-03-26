@@ -7,7 +7,7 @@ export const handler = function historyHandler() {
 // import { TabProps, Tabs } from '../../../../../../../../../components/library/Tabs.tsx'
 // import { Progress } from '../../../../../../../../../components/library/icons/progress.tsx'
 // import redirect from '../../../../../../../../../util/redirect.ts'
-// import { completeAndProceedToNextStep, OpenEncounterWorkflowContext, OpenEncounterWorkflowPage } from '../../_middleware.tsx'
+// import { completeAndProceedToNextStep, OpenEncounterWorkflowPage } from '../../_middleware.tsx'
 
 // type HistoryState = {
 //   history_assessments: RenderedPatientExamination[]

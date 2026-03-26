@@ -383,7 +383,6 @@ function asWorkflowStatus(
     }
   }
 
-  console.log({ zz: 'lklweklwek', status, workflow, seen_patient_encounter_employee_ids })
   if (
     status.patient_presence.current_workflow === workflow &&
     arrayIsNonEmpty(seen_patient_encounter_employee_ids)

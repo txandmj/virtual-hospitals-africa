@@ -3,7 +3,7 @@ export const handler = function examinationsHandler() {
 }
 // import { JSX } from 'preact'
 // import { examinations } from '../../../../../../../../../db/models/examinations.ts'
-// import { completeAndProceedToNextStep, OpenEncounterWorkflowContext, OpenEncounterWorkflowPage } from '../../_middleware.tsx'
+// import { completeAndProceedToNextStep, OpenEncounterWorkflowPage } from '../../_middleware.tsx'
 // import { RenderedPatientExamination } from '../../../../../../../../../types.ts'
 // import { TabProps, Tabs } from '../../../../../../../../../components/library/Tabs.tsx'
 // import { Progress } from '../../../../../../../../../components/library/icons/progress.tsx'

@@ -764,8 +764,8 @@ describeParallel('triage/additional_tasks_and_investigations', () => {
     },
   )
 
-  itParallel.only(
-    'does give a possible diagnosis for anaphylaxis for an insect bite',
+  itParallel(
+    'does give an Urgent priority + possible diagnosis for anaphylaxis given an insect bite with low blood pressure',
     async () => {
       const insect_bite_s_expr = '(clinical_finding (snomed_concept "Insect bite - wound" "disorder"))'
       const { $, patient_id: _patient_id, patient_encounter_id: _patient_encounter_id } = await setupTriageNewPatient({

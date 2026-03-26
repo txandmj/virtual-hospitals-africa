@@ -1,5 +1,6 @@
 import { z } from 'zod'
-import { completeAndProceedToNextStep, OpenEncounterWorkflowContext, OpenEncounterWorkflowPage } from '../_middleware.tsx'
+import { completeAndProceedToNextStep, OpenEncounterWorkflowPage } from '../_middleware.tsx'
+import type { OpenEncounterWorkflowContext } from '../../../../../../../../types.ts'
 // import { patient_symptoms } from '../../../../../../../../db/models/patient_symptoms.ts'
 import SymptomSection from '../../../../../../../../islands/symptoms/Section.tsx'
 // import { getRequiredUUIDParam } from '../../../../../../../../util/getParam.ts'

@@ -1,7 +1,7 @@
 import { assertOr404 } from '../../../../../util/assertOr.ts'
 import InventoryHistoryTable from '../../../../../components/inventory/InventoryHistory.tsx'
 import { inventory } from '../../../../../db/models/inventory.ts'
-import { OrganizationContext } from '../_middleware.ts'
+import { OrganizationContext } from '../../../../../types.ts'
 import { HealthWorkerHomePage } from '../../../_middleware.tsx'
 
 export default HealthWorkerHomePage(

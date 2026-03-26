@@ -2,7 +2,7 @@ import { sql } from 'kysely'
 import { IdSelectable, TrxOrDbOrQueryCreator } from '../../types.ts'
 import { base, identity } from './_base.ts'
 import { SnomedCategory } from '../../db.d.ts'
-import { debugLog, idSelection } from '../helpers.ts'
+import { idSelection } from '../helpers.ts'
 
 type SearchTerms = {
   snomed_concept_id?: IdSelectable
@@ -85,8 +85,6 @@ function baseQuery(trx: TrxOrDbOrQueryCreator, terms: SearchTerms) {
       .where(sql<boolean>`${terms.search} <% term`)
       .orderBy(best_similarity, 'desc')
   }
-
-  debugLog(query)
 
   return query
 }

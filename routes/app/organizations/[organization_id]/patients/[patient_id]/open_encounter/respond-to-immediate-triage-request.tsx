@@ -1,4 +1,4 @@
-import { OrganizationContext } from '../../../_middleware.ts'
+import { OrganizationContext } from '../../../../../../../types.ts'
 import { getRequiredUUIDParam } from '../../../../../../../util/getParam.ts'
 import { patient_encounters } from '../../../../../../../db/models/patient_encounters.ts'
 import { assertOr404 } from '../../../../../../../util/assertOr.ts'

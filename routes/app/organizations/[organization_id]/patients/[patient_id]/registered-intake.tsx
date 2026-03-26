@@ -1,4 +1,4 @@
-import { OrganizationContext } from '../../_middleware.ts'
+import { OrganizationContext } from '../../../../../../types.ts'
 import { postHandler } from '../../../../../../backend/postHandler.ts'
 import redirect from '../../../../../../util/redirect.ts'
 import { replaceParams } from '../../../../../../util/replaceParams.ts'

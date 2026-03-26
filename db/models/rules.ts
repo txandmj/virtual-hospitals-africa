@@ -15,7 +15,6 @@ import { arrayIsEmpty } from '../../util/arraySize.ts'
 import { assert } from 'std/assert/assert.ts'
 
 export const rules = base({
-  verbose: true,
   top_level_table: 'rules',
   baseQuery(trx: TrxOrDbOrQueryCreator, {
     // patient_id,
@@ -195,7 +194,6 @@ export const rules = base({
   ): Promise<string | ApplicableRule[]> {
     if (!patient_age_determination) return 'Skipped: patient age determination is unknown'
 
-    // TODO, maybe handle negative findings? There could be tasks that call for them
     const positive_record_ids = findings
       .filter((f) => f.existence === 'Yes')
       .map((f) => f.id)
@@ -220,6 +218,11 @@ export const rules = base({
     }))
 
     const [certain, uncertain] = partition(parsed, (t) => t.certainly_applies)
+
+    console.log({
+      certain: certain.map((r) => r.findings[0].rule_id),
+      uncertain: uncertain.map((r) => r.findings[0].rule_id),
+    })
 
     const certain_results = certain.map(({ findings, matching_finding_ids, due_to }) => ({
       id: findings[0].rule_id,

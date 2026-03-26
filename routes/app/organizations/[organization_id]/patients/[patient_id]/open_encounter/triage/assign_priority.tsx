@@ -1,4 +1,4 @@
-import { assertAllPriorStepsCompleted, completeAndProceedToNextStep, OpenEncounterWorkflowContext, OpenEncounterWorkflowPage } from '../_middleware.tsx'
+import { assertAllPriorStepsCompleted, completeAndProceedToNextStep, OpenEncounterWorkflowPage } from '../_middleware.tsx'
 import { z } from 'zod'
 import { postHandler } from '../../../../../../../../backend/postHandler.ts'
 import {
@@ -11,7 +11,7 @@ import {
   vitalMeasurementFromSnomedConceptId,
 } from '../../../../../../../../shared/vitals.ts'
 import { patient_vitals } from '../../../../../../../../db/models/patient_vitals.ts'
-import { RenderedFindingRelativeToHealthWorker, TriageAssignPriorityTableRow } from '../../../../../../../../types.ts'
+import { OpenEncounterWorkflowContext, RenderedFindingRelativeToHealthWorker, TriageAssignPriorityTableRow } from '../../../../../../../../types.ts'
 import { TriageAssignPriorityTable } from '../../../../../../../../components/triage/AssignPriorityTable.tsx'
 import { patientAgeDetermination } from '../../../../../../../../shared/patient_age_determination.ts'
 import { assert } from 'std/assert/assert.ts'
@@ -28,7 +28,6 @@ import { patient_evaluation_scores } from '../../../../../../../../db/models/pat
 import { intersection } from '../../../../../../../../util/intersection.ts'
 import { patient_procedures } from '../../../../../../../../db/models/patient_procedures.ts'
 import { WORKFLOW_STEP_SNOMED_CONCEPTS } from '../../../../../../../../shared/workflow.ts'
-import { events } from '../../../../../../../../db/models/events.ts'
 import { assertEquals } from 'std/assert/assert_equals.ts'
 import { ORDERED_PRIORITIES } from '../../../../../../../../shared/priorities.ts'
 import sumBy from '../../../../../../../../util/sumBy.ts'
@@ -243,9 +242,7 @@ export async function TriageAssignPriorityPage(
     attempting_to_complete_workflow: false,
   })
 
-  const { trx, encounter, organization_id, patient_encounter_id, health_worker_id } = ctx.state
-
-  await events.allProcessedForEncounter(trx, { patient_encounter_id })
+  const { trx, encounter, organization_id, health_worker_id } = ctx.state
 
   const priority = exists(encounter.priority).name
 

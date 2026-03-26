@@ -6,10 +6,10 @@ import { assertOr404 } from '../../../../../util/assertOr.ts'
 import AddPatientForm from '../../../../../islands/waiting_room/AddPatientForm.tsx'
 import { HealthWorkerHomePage } from '../../../_middleware.tsx'
 import { promiseProps } from '../../../../../util/promiseProps.ts'
-import { OrganizationContext } from '../_middleware.ts'
 import { postHandler } from '../../../../../backend/postHandler.ts'
 import generateUUID from '../../../../../util/uuid.ts'
 import { employees_presence } from '../../../../../db/models/employees_presence.ts'
+import { OrganizationContext } from '../../../../../types.ts'
 
 const AddPatientFormSchema = z.object({
   patient_id: z.string().uuid(),

@@ -1,7 +1,7 @@
 import { assertEquals } from 'std/assert/assert_equals.ts'
 import { getAddressSuggestions } from '../../../../external-clients/google-maps.ts'
 import { json } from '../../../../util/responses.ts'
-import { OrganizationContext } from './_middleware.ts'
+import { OrganizationContext } from '../../../../types.ts'
 import { SERVER_COUNTRY } from '../../../../db/models/countries.ts'
 import { assert } from 'std/assert/assert.ts'
 
