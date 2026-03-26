@@ -1,10 +1,5 @@
-import {
-  assertAllPriorStepsCompleted,
-  completeAndProceedToNextStep,
-  completedProcedure,
-  OpenEncounterWorkflowContext,
-  OpenEncounterWorkflowPage,
-} from '../_middleware.tsx'
+import { assertAllPriorStepsCompleted, completeAndProceedToNextStep, completedProcedure, OpenEncounterWorkflowPage } from '../_middleware.tsx'
+import type { OpenEncounterWorkflowContext } from '../../../../../../../../types.ts'
 import { z } from 'zod'
 import { patient_findings } from '../../../../../../../../db/models/patient_findings.ts'
 import { postHandler } from '../../../../../../../../backend/postHandler.ts'
@@ -135,7 +130,7 @@ export const handler = postHandler(
       }
 
       if (prior_matching_finding?.patient_encounter_id === patient_encounter_id) {
-        altered_records.push({ record_id: prior_matching_finding.id, condition_key })
+        altered_records.push({ record_id: prior_matching_finding!.id, condition_key })
       }
 
       findings_to_insert.push(

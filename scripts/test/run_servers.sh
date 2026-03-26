@@ -72,7 +72,7 @@ print_server_log_info() {
 # shellcheck disable=SC2329
 cleanup() {
   if [ -n "$http_server_pid" ]; then
-    kill" $http_server_pid" || true
+    kill "$http_server_pid" || true
   fi
   if [ -n "$https_proxy_server_pid" ]; then
     kill "$https_proxy_server_pid" || true

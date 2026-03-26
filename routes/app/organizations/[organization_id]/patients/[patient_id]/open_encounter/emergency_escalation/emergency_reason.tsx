@@ -1,10 +1,5 @@
-import {
-  assertAllPriorStepsCompleted,
-  completeAndProceedToNextStep,
-  completedProcedure,
-  OpenEncounterWorkflowContext,
-  OpenEncounterWorkflowPage,
-} from '../_middleware.tsx'
+import { assertAllPriorStepsCompleted, completeAndProceedToNextStep, completedProcedure, OpenEncounterWorkflowPage } from '../_middleware.tsx'
+import type { OpenEncounterWorkflowContext } from '../../../../../../../../types.ts'
 import { z } from 'zod'
 import { postHandler } from '../../../../../../../../backend/postHandler.ts'
 import WarningSignsPage from '../../../../../../../../islands/WarningSigns/Page.tsx'

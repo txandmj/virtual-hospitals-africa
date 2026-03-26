@@ -1,4 +1,5 @@
 import { completeAndProceedToNextStep, OpenEncounterWorkflowPage } from '../_middleware.tsx'
+import type { OpenEncounterWorkflowContext } from '../../../../../../../../types.ts'
 import { z } from 'zod'
 import { patient_registration } from '../../../../../../../../db/models/patient_registration.ts'
 import { postHandler } from '../../../../../../../../backend/postHandler.ts'

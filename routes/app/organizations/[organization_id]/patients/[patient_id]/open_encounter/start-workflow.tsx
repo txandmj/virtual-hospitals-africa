@@ -2,7 +2,7 @@ import { z } from 'zod'
 import { assertOr400, assertOr403 } from '../../../../../../../util/assertOr.ts'
 import { postHandler } from '../../../../../../../backend/postHandler.ts'
 import redirect from '../../../../../../../util/redirect.ts'
-import { OpenEncounterContext } from './_middleware.tsx'
+import { OpenEncounterContext } from '../../../../../../../types.ts'
 import { canPerform, Workflow, WORKFLOW_STEPS } from '../../../../../../../shared/workflow.ts'
 import { patient_workflows } from '../../../../../../../db/models/patient_workflows.ts'
 import { WORKFLOW_DEPARTMENTS } from '../../../../../../../shared/departments.ts'
@@ -80,7 +80,7 @@ export async function startWorkflow<T>(
     const { employment_id } = organization_employment
 
     const existing_patient_encounter_employee_id = encounter.all_employees_seen.find(
-      (employee) => employee.employee_id === employment_id,
+      (employee: { employee_id: string; patient_encounter_employee_id: string }) => employee.employee_id === employment_id,
     )?.patient_encounter_employee_id || null
 
     return patient_workflows.start(

@@ -1,4 +1,5 @@
 import { OpenEncounterWorkflowPage } from '../../_middleware.tsx'
+import type { OpenEncounterWorkflowContext } from '../../../../../../../../../types.ts'
 import { z } from 'zod'
 import { postHandler } from '../../../../../../../../../backend/postHandler.ts'
 import { snomed_concept_id } from '../../../../../../../../../util/validators.ts'

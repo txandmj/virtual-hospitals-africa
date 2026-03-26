@@ -2,9 +2,9 @@ import {
   completeLastStep,
   // completeStep,
   // nextRouteAfterCompletingWorkflow,
-  OpenEncounterWorkflowContext,
   OpenEncounterWorkflowPage,
 } from '../_middleware.tsx'
+import type { OpenEncounterWorkflowContext } from '../../../../../../../../types.ts'
 import { z } from 'zod'
 import { postHandler } from '../../../../../../../../backend/postHandler.ts'
 import redirect from '../../../../../../../../util/redirect.ts'

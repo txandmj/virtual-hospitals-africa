@@ -1,4 +1,5 @@
 import { completeAndProceedToNextStep, OpenEncounterWorkflowPage } from '../_middleware.tsx'
+import type { OpenEncounterWorkflowContext } from '../../../../../../../../types.ts'
 import { z } from 'zod'
 import { patients } from '../../../../../../../../db/models/patients.ts'
 import { sex, string_or_number_as_string, varchar255 } from '../../../../../../../../util/validators.ts'

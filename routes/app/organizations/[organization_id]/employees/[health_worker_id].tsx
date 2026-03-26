@@ -1,6 +1,6 @@
 import HealthWorkerDetailedCard from '../../../../../components/health_worker/DetailedCard.tsx'
 import { assertOr404 } from '../../../../../util/assertOr.ts'
-import { OrganizationContext } from '../_middleware.ts'
+import { OrganizationContext } from '../../../../../types.ts'
 import { getRequiredUUIDParam } from '../../../../../util/getParam.ts'
 import { HealthWorkerHomePage } from '../../../_middleware.tsx'
 import { employees } from '../../../../../db/models/employees.ts'

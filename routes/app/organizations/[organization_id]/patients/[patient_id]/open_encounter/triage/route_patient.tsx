@@ -6,7 +6,7 @@ import { assert } from 'std/assert/assert.ts'
 import { patient_presence } from '../../../../../../../../db/models/patient_presence.ts'
 import redirect from '../../../../../../../../util/redirect.ts'
 import { completedPersonal } from '../../../../../../../../shared/patient_registration.ts'
-import { UpdateShape } from '../../../../../../../../types.ts'
+import { OpenEncounterWorkflowContext, UpdateShape } from '../../../../../../../../types.ts'
 import { DB } from '../../../../../../../../db.d.ts'
 import { success } from '../../../../../../../../util/alerts.ts'
 import { completeLastStep, OpenEncounterWorkflowPage } from '../_middleware.tsx'
@@ -134,7 +134,7 @@ export async function PatientTriageRoutePatientPage(
     if (!permissions?.length) return true
     return permissions.some((p) =>
       p.role === (organization_employment.role as 'doctor' | 'nurse' | 'specialist') &&
-        !p.specialty || (organization_employment.active_licences.some((licence) => licence.specialty === p.specialty))
+        !p.specialty || (organization_employment.active_licences.some((licence: { specialty: string | null }) => licence.specialty === p.specialty))
     )
   })
 

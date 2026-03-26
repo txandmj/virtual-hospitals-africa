@@ -1,4 +1,5 @@
 import { assertAllPriorStepsCompleted, completeAndProceedToNextStep, OpenEncounterWorkflowPage } from '../_middleware.tsx'
+import type { OpenEncounterWorkflowContext } from '../../../../../../../../types.ts'
 
 import { patient_encounters } from '../../../../../../../../db/models/patient_encounters.ts'
 import redirect from '../../../../../../../../util/redirect.ts'

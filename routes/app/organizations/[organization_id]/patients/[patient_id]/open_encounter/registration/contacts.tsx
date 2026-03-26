@@ -1,4 +1,5 @@
 import { completeAndProceedToNextStep, OpenEncounterWorkflowPage } from '../_middleware.tsx'
+import type { OpenEncounterWorkflowContext } from '../../../../../../../../types.ts'
 import { z } from 'zod'
 import { patient_emergency_contacts } from '../../../../../../../../db/models/patient_emergency_contacts.ts'
 import { patient_address } from '../../../../../../../../db/models/patient_address.ts'

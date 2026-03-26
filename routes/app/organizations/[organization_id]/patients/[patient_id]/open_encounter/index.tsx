@@ -1,6 +1,6 @@
 import { firstIncompleteStepStatus, WORKFLOW_STEPS } from '../../../../../../../shared/workflow.ts'
 import redirect from '../../../../../../../util/redirect.ts'
-import { OpenEncounterContext, OpenEncounterWorkflowContext } from './_middleware.tsx'
+import { OpenEncounterContext, OpenEncounterWorkflowContext } from '../../../../../../../types.ts'
 import { preferredName } from '../../../../../../../util/asNames.ts'
 
 export function redirectToFirstIncompleteStep<T>(ctx: OpenEncounterContext<T> | OpenEncounterWorkflowContext<T>, opts?: { warning_message: string }) {

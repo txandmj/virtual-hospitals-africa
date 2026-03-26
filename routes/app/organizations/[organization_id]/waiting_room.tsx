@@ -1,6 +1,7 @@
 import { waiting_room } from '../../../../db/models/waiting_room.ts'
 import WaitingRoomView from '../../../../components/waiting_room/View.tsx'
 import { HealthWorkerHomePage } from '../../_middleware.tsx'
+import type { OrganizationContext } from '../../../../types.ts'
 
 export default HealthWorkerHomePage(
   'Open Encounters',

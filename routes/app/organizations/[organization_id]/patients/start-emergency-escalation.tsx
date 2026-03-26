@@ -1,7 +1,7 @@
 import z from 'zod'
 import { assert } from 'std/assert/assert.ts'
 import { postHandler } from '../../../../../backend/postHandler.ts'
-import { OrganizationContext } from '../_middleware.ts'
+import { OrganizationContext } from '../../../../../types.ts'
 import redirect from '../../../../../util/redirect.ts'
 import { waiting_room } from '../../../../../db/models/waiting_room.ts'
 import { patient_new } from '../../../../../db/models/patient_new.ts'
