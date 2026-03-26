@@ -593,41 +593,47 @@ export const TUTORIAL_SCRIPT: ScriptItem[] = [
   {
     type: 'dialogue',
     speaker: 'guide',
-    text: 'Because the case is urgent we are recommended to hand over the case',
+    text: 'Based on the anaphylaxis diagnosis, we are recommended to manage and refer the case',
     highlight: '#route_patient_next_step [data-option-value="manage_and_refer"]',
   },
   {
     type: 'dialogue',
     speaker: 'guide',
-    text: "Our senior primary care nurse Bongani Sibeko is on call today and is currently handling a routine case. Let's route the case to him.",
+    text:
+      'The system identified tasks for us to do, namely raise their legs, provide face oxygen, and to administer epinephrine, sodium chloride 0.9%, hydrocortisone, and promethazine.',
+    highlight: '#route_patient_next_step [data-option-value="manage_and_refer"]',
+  },
+  {
+    type: 'dialogue',
+    speaker: 'guide',
+    position: 'bottom-right',
+    text: 'Our senior primary care nurse Bongani Sibeko is on call today and is currently handling a routine case.',
+    highlight: '#provider-tutorial-emp-bongani',
+  },
+  {
+    type: 'dialogue',
+    speaker: 'guide',
+    position: 'bottom-right',
+    text:
+      "He'll see everything we recorded and can decide to message us, make orders, join us, and/or re-refer the case to the nearest hospital or specialist for in person or remote care.",
+    highlight: '#provider-tutorial-emp-bongani',
+  },
+  {
+    type: 'dialogue',
+    speaker: 'guide',
+    position: 'bottom-right',
+    text: "Let's refer the case to him while we manage the patient.",
     highlight: '#provider-tutorial-emp-bongani',
   },
   {
     type: 'dialogue',
     speaker: 'nurse',
-    text:
-      'Hm, insect sting, low blood pressure, dizzy, difficulty breathing, with a sudden onset itchy rash - this looks like anaphylaxis. Let me get Dr. Zungu at the nearby hospital to confirm the diagnosis.',
-  },
-  {
-    type: 'dialogue',
-    speaker: 'doctor',
-    text:
-      "Confirmed - this is textbook anaphylaxis. I'm prescribing adrenaline immediately along with sodium chloride 0.9% IV until blood pressure stabilises.",
-  },
-  {
-    type: 'dialogue',
-    speaker: 'nurse',
-    text: "Thank you, Dr. Zungu. I'll send the prescription through to Thabo in the pharmacy now.",
-  },
-  {
-    type: 'dialogue',
-    speaker: 'pharmacist',
-    text: 'Got it, Bongani. Adrenaline and sodium chloride 0.9% - filling it now.',
+    text: "There's an anaphylactic patient in triage room 1. I'm on my way to help",
   },
   {
     type: 'modal',
-    message: 'Please bring the patient to the stabilization room for treatment.',
-    buttonText: "I'm on my way",
+    message: 'Bongani Sibeko is on his way to support in triage room 1.',
+    buttonText: 'OK',
   },
 
   // =========================================================================

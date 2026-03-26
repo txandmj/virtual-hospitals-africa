@@ -5255,14 +5255,14 @@ export const TUTORIAL_MANAGE_PATIENT_TASKS: Array<
   }
 > = [
   {
-    'atom': 'procedure' as const,
+    'atom': 'procedure',
     'root_snomed_concept': {
-      'atom': 'snomed_concept' as const,
+      'atom': 'snomed_concept',
       'name': 'Procedure',
       'category': 'procedure',
     },
     'specific_snomed_concept': {
-      'atom': 'snomed_concept' as const,
+      'atom': 'snomed_concept',
       'name': 'Patient management procedure',
       'category': 'procedure',
     },
@@ -5276,23 +5276,141 @@ export const TUTORIAL_MANAGE_PATIENT_TASKS: Array<
     },
     's_expression': '(manage (snomed_concept "Oxygen therapy" "procedure"))',
     'existing_record': null,
-    'description': 'Administer oxygen for anaphylaxis patient',
+    'description': 'Administer 100% face mask oxygen for anaphylaxis patient',
   },
   {
-    'atom': 'procedure' as const,
+    'atom': 'procedure',
     'root_snomed_concept': {
-      'atom': 'snomed_concept' as const,
+      'atom': 'snomed_concept',
       'name': 'Procedure',
       'category': 'procedure',
     },
     'specific_snomed_concept': {
-      'atom': 'snomed_concept' as const,
+      'atom': 'snomed_concept',
       'name': 'Patient management procedure',
       'category': 'procedure',
     },
     'qualifiers': [],
     'attributes': [],
-    'value': { 'atom': 'snomed_concept' as const, 'name': 'Elevation of lower limb', 'category': 'procedure' },
+    'value': {
+      'atom': 'snomed_concept',
+      'name': 'Product containing epinephrine',
+      'category': 'medicinal product',
+    },
+    'permissions': [{ 'role': 'nurse' }],
+    'displays': {
+      'finding': 'Patient management procedure Procedure',
+      'value': 'Product containing epinephrine',
+      'full': 'Patient management procedure Procedure: Product containing epinephrine',
+    },
+    's_expression': '(manage (snomed_concept "Product containing epinephrine" "medicinal product") (permission (role nurse)))',
+    'existing_record': null,
+    'description': 'Administer epinephrine 0.5mL (1:1000 solution) IM into mid outer thigh for anaphylaxis patient',
+  },
+  {
+    'atom': 'procedure',
+    'root_snomed_concept': {
+      'atom': 'snomed_concept',
+      'name': 'Procedure',
+      'category': 'procedure',
+    },
+    'specific_snomed_concept': {
+      'atom': 'snomed_concept',
+      'name': 'Patient management procedure',
+      'category': 'procedure',
+    },
+    'qualifiers': [],
+    'attributes': [],
+    'value': {
+      'atom': 'snomed_concept',
+      'name': 'Product containing only hydrocortisone',
+      'category': 'medicinal product',
+    },
+    'permissions': [{ 'role': 'nurse' }],
+    'displays': {
+      'finding': 'Patient management procedure Procedure',
+      'value': 'Product containing only hydrocortisone',
+      'full': 'Patient management procedure Procedure: Product containing only hydrocortisone',
+    },
+    's_expression': '(manage (snomed_concept "Product containing only hydrocortisone" "medicinal product") (permission (role nurse)))',
+    'existing_record': null,
+    'description': 'Administer hydrocortisone 200mg IM/slow IV for anaphylaxis patient',
+  },
+  {
+    'atom': 'procedure',
+    'root_snomed_concept': {
+      'atom': 'snomed_concept',
+      'name': 'Procedure',
+      'category': 'procedure',
+    },
+    'specific_snomed_concept': {
+      'atom': 'snomed_concept',
+      'name': 'Patient management procedure',
+      'category': 'procedure',
+    },
+    'qualifiers': [],
+    'attributes': [],
+    'value': {
+      'atom': 'snomed_concept',
+      'name': 'Product containing only promethazine',
+      'category': 'medicinal product',
+    },
+    'permissions': [{ 'role': 'nurse' }],
+    'displays': {
+      'finding': 'Patient management procedure Procedure',
+      'value': 'Product containing only promethazine',
+      'full': 'Patient management procedure Procedure: Product containing only promethazine',
+    },
+    's_expression': '(manage (snomed_concept "Product containing only promethazine" "medicinal product") (permission (role nurse)))',
+    'existing_record': null,
+    'description': 'Administer promethazine 50mg IM/slow IV for anaphylaxis patient',
+  },
+  {
+    'atom': 'procedure',
+    'root_snomed_concept': {
+      'atom': 'snomed_concept',
+      'name': 'Procedure',
+      'category': 'procedure',
+    },
+    'specific_snomed_concept': {
+      'atom': 'snomed_concept',
+      'name': 'Patient management procedure',
+      'category': 'procedure',
+    },
+    'qualifiers': [],
+    'attributes': [],
+    'value': {
+      'atom': 'snomed_concept',
+      'name': 'Product containing precisely sodium chloride 9 milligram/1 milliliter conventional release solution for infusion and/or injection',
+      'category': 'clinical drug',
+    },
+    'permissions': [{ 'role': 'nurse' }],
+    'displays': {
+      'finding': 'Patient management procedure Procedure',
+      'value': 'Product containing precisely sodium chloride 9 milligram/1 milliliter conventional release solution for infusion and/or injection',
+      'full':
+        'Patient management procedure Procedure: Product containing precisely sodium chloride 9 milligram/1 milliliter conventional release solution for infusion and/or injection',
+    },
+    's_expression':
+      '(manage (snomed_concept "Product containing precisely sodium chloride 9 milligram/1 milliliter conventional release solution for infusion and/or injection" "clinical drug") (permission (role nurse)))',
+    'existing_record': null,
+    'description': 'Administer sodium chloride 0.9% 1-2L IV rapidly for anaphylaxis patient',
+  },
+  {
+    'atom': 'procedure',
+    'root_snomed_concept': {
+      'atom': 'snomed_concept',
+      'name': 'Procedure',
+      'category': 'procedure',
+    },
+    'specific_snomed_concept': {
+      'atom': 'snomed_concept',
+      'name': 'Patient management procedure',
+      'category': 'procedure',
+    },
+    'qualifiers': [],
+    'attributes': [],
+    'value': { 'atom': 'snomed_concept', 'name': 'Elevation of lower limb', 'category': 'procedure' },
     'displays': {
       'finding': 'Patient management procedure Procedure',
       'value': 'Elevation of lower limb',
