@@ -44,7 +44,6 @@ export const initializeAllProcessedPubSub = once(
     await client.query(`LISTEN event_listener_failure`)
     await client.query(`LISTEN all_events_settled_for_patient_encounter`)
     client.on('notification', function (event) {
-      console.log({ event, client_id })
       switch (event.channel) {
         case 'event_inserted': {
           assert(event.payload)

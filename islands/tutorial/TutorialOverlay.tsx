@@ -230,7 +230,6 @@ function WaitClickRenderer({
     assert(el, `No element found ${item.target}`)
 
     const handler = () => {
-      console.log('weklalkwlkawlek')
       // Small delay to let the UI update
       setTimeout(onNext, 150)
     }
