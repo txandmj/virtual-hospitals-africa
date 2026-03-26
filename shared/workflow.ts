@@ -163,6 +163,12 @@ export function workflowStepKey(workflow: Workflow, step: string) {
   return `${workflow}:${step}`
 }
 
+export function workflowStepPath(workflow: Workflow, step: string) {
+  const workflow_steps: string[] = WORKFLOW_STEPS[workflow]
+  assert(workflow_steps.includes(step))
+  return `/${workflow}/${step}`
+}
+
 export function workflowStepSnomedConcept(
   workflow: Workflow,
   step: string,

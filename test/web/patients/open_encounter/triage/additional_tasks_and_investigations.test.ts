@@ -29,6 +29,7 @@ import { deepMerge } from '../../../../../util/deepMerge.ts'
 import keys from '../../../../../util/keys.ts'
 
 import sortBy from '../../../../../util/sortBy.ts'
+import { delay } from '../../../../../util/delay.ts'
 
 describeParallel('triage/additional_tasks_and_investigations', () => {
   before(waitUntilTestServerUp)
@@ -768,7 +769,7 @@ describeParallel('triage/additional_tasks_and_investigations', () => {
     'does give a possible diagnosis for anaphylaxis for an insect bite',
     async () => {
       const insect_bite_s_expr = '(clinical_finding (snomed_concept "Insect bite - wound" "disorder"))'
-      const { $, patient_id: _patient_id, patient_encounter_id: _patient_encounter_id } = await setupTriageNewPatient({
+      const { $, patient_id: _patient_id, patient_encounter_id: _patient_encounter_id, getStep } = await setupTriageNewPatient({
         patient_demographics: randomDemographics('ZA', 'female', 'adult'),
         warning_signs: asWarningSignsAdult([], { pregnant: false }, insect_bite_s_expr),
         brief_history: {
@@ -807,6 +808,14 @@ describeParallel('triage/additional_tasks_and_investigations', () => {
 
       assertEquals(
         $('#patient-drawer-priority').text(),
+        'Urgent',
+      )
+
+      await delay(2500)
+      const $subsequent = await getStep('additional_tasks_and_investigations')
+
+      assertEquals(
+        $subsequent('#patient-drawer-priority').text(),
         'Urgent',
       )
 

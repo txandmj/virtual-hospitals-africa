@@ -3066,3 +3066,61 @@ export type RuleRunnerInput = {
     existence: 'Yes' | 'No' | 'Unknown'
   }[]
 }
+
+export type EncounterEmployeePresence = {
+  health_worker_id: string
+  employee_id: string
+  patient_encounter_employee_id: string
+}
+
+export type OrganizationState = {
+  organization: RenderedOrganization
+  /**
+   * /app/organizations/${organization_id}
+   */
+  organization_pathname: string
+  organization_id: string
+  organization_employment: HealthWorkerOrganization
+  employee: RenderedEmployee
+  employment_id: string
+  is_admin_at_organization: boolean
+}
+
+export type OrganizationContext<T = Record<never, never>> = LoggedInHealthWorkerContext<OrganizationState & T>
+
+export type OpenEncounterState = OrganizationState & {
+  patient: RenderedPatient
+  patient_age_determination: AgeDetermination | null
+  patient_id: string
+  encounter: RenderedPatientOpenEncounter
+  patient_encounter_id: string
+  encounter_employee_presence: EncounterEmployeePresence | null
+  encounter_expected_to_not_exist_after_post?: true
+  open_encounter_pathname: string
+}
+
+export type WorkflowState = {
+  workflow: Workflow
+  step: string
+  workflow_snomed_concept: SnomedConcept
+  workflow_step_snomed_concept: SnomedConcept | null
+  workflow_status: WorkflowStatus
+  previously_completed_step: boolean
+  previously_completed_procedures: PreviouslyCompletedProcedures
+  encounter_employee_presence: EncounterEmployeePresence
+  patient_encounter_employee_id: string
+  this_visit_findings: RenderedSidebarWorkflow[]
+  this_visit_diagnoses: RenderedEvaluationRelativeToHealthWorker[]
+  priority_evaluation: null | RenderedEvaluationRelativeToHealthWorker
+  patient_history: RenderedPatientHistory
+}
+
+export type OpenEncounterWorkflowState = OpenEncounterState & WorkflowState
+
+export type OpenEncounterContext<T = Record<never, never>> = LoggedInHealthWorkerContext<
+  OpenEncounterState & T
+>
+
+export type OpenEncounterWorkflowContext<T = Record<never, never>> = LoggedInHealthWorkerContext<
+  OpenEncounterWorkflowState & T
+>

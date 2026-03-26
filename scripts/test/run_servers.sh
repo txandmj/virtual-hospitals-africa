@@ -69,12 +69,13 @@ print_server_log_info() {
   echo "Server output available at $test_http_server_output"
 }
 
+# shellcheck disable=SC2329
 cleanup() {
   if [ -n "$http_server_pid" ]; then
-    kill $http_server_pid || true
+    kill" $http_server_pid" || true
   fi
   if [ -n "$https_proxy_server_pid" ]; then
-    kill $https_proxy_server_pid || true
+    kill "$https_proxy_server_pid" || true
   fi
   if [[ "${CI:-}" == "true" ]]; then
     # Logs are saved to ./logs/ and uploaded as artifacts

@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { completeAndProceedToNextStep, OpenEncounterWorkflowContext, OpenEncounterWorkflowPage } from '../_middleware.tsx'
+import { completeAndProceedToNextStep, OpenEncounterWorkflowPage } from '../_middleware.tsx'
 import { patient_chief_complaints } from '../../../../../../../../db/models/patient_chief_complaints.ts'
 import { getRequiredUUIDParam } from '../../../../../../../../util/getParam.ts'
 import { postHandler } from '../../../../../../../../backend/postHandler.ts'

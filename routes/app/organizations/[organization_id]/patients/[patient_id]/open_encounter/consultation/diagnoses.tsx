@@ -1,5 +1,5 @@
 export const handler = () => new Response('TODO')
-// import { completeAndProceedToNextStep, OpenEncounterWorkflowContext, OpenEncounterWorkflowPage } from '../_middleware.tsx'
+// import { completeAndProceedToNextStep, OpenEncounterWorkflowPage } from '../_middleware.tsx'
 // import { DiagnosesCollaboration, Diagnosis } from '../../../../../../../../types.ts'
 // import FormSection from '../../../../../../../../components/library/FormSection.tsx'
 // import DiagnosesForm from '../../../../../../../../islands/diagnoses/Form.tsx'

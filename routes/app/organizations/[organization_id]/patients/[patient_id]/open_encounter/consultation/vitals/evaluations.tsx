@@ -1,4 +1,4 @@
-import { completeAndProceedToNextStep, OpenEncounterWorkflowContext, OpenEncounterWorkflowPage } from '../../_middleware.tsx'
+import { completeAndProceedToNextStep, OpenEncounterWorkflowPage } from '../../_middleware.tsx'
 import { z } from 'zod'
 import { postHandler } from '../../../../../../../../../backend/postHandler.ts'
 import { snomed_concept_id } from '../../../../../../../../../util/validators.ts'

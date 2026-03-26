@@ -1,5 +1,5 @@
 import z from 'zod'
-import { completeAndProceedToNextStep, OpenEncounterWorkflowContext, OpenEncounterWorkflowPage } from '../_middleware.tsx'
+import { completeAndProceedToNextStep, OpenEncounterWorkflowPage } from '../_middleware.tsx'
 import { patients } from '../../../../../../../../db/models/patients.ts'
 import { postHandler } from '../../../../../../../../backend/postHandler.ts'
 import { promiseProps } from '../../../../../../../../util/promiseProps.ts'
