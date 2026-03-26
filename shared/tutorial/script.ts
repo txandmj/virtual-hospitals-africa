@@ -324,7 +324,7 @@ export const TUTORIAL_SCRIPT: ScriptItem[] = [
   {
     type: 'dialogue',
     speaker: 'guide',
-    position: 'top-right',
+    position: 'bottom-left',
     text: 'Temperature is 36.8 degrees - within the normal range.',
     highlight: TUTORIAL_TARGETS.VITAL_TEMPERATURE,
     input: { field: "[name='measurements.temperature.value']", value: TUTORIAL_VITAL_VALUES['measurements.temperature.value'] },
@@ -332,7 +332,7 @@ export const TUTORIAL_SCRIPT: ScriptItem[] = [
   {
     type: 'dialogue',
     speaker: 'guide',
-    position: 'top-right',
+    position: 'bottom-left',
     text: 'Respiratory rate is 12 - also normal.',
     highlight: TUTORIAL_TARGETS.VITAL_RESPIRATORY_RATE,
     input: { field: "[name='measurements.respiratory_rate.value']", value: TUTORIAL_VITAL_VALUES['measurements.respiratory_rate.value'] },
@@ -340,7 +340,7 @@ export const TUTORIAL_SCRIPT: ScriptItem[] = [
   {
     type: 'dialogue',
     speaker: 'guide',
-    position: 'top-right',
+    position: 'bottom-left',
     text: 'Heart rate is at 62 bpm - a bit low, but in the normal range.',
     highlight: TUTORIAL_TARGETS.VITAL_HEART_RATE,
     input: { field: "[name='measurements.heart_rate.value']", value: TUTORIAL_VITAL_VALUES['measurements.heart_rate.value'] },
@@ -348,7 +348,7 @@ export const TUTORIAL_SCRIPT: ScriptItem[] = [
   {
     type: 'dialogue',
     speaker: 'guide',
-    position: 'top-right',
+    position: 'top-left',
     text: "Blood pressure is low at 85/55 mmHg. That's 1 point on the Triage Early Warning Scale.",
     highlight: TUTORIAL_TARGETS.VITAL_BLOOD_PRESSURE,
     input: [
