@@ -1,21 +1,3 @@
-;; Page 67 - Skin Symptoms: Meningococcal disease likely with purpuric rash and meningitis signs
-(system_diagnosis_rule
-  "Diagnose possible meningococcal disease"
-  (diagnosis
-    (snomed_concept "Meningococcal infectious disease" "disorder")
-    possible
-  )
-  adult
-  (and
-    (clinical_finding (snomed_concept "Purpuric rash" "disorder"))
-    (or
-      (clinical_finding (snomed_concept "Stiff neck" "finding"))
-      (clinical_finding (snomed_concept "Drowsy" "finding"))
-      (clinical_finding (snomed_concept "Clouded consciousness" "finding"))
-      (active_condition (snomed_concept "Fever" "finding"))
-    )
-  )
-)
 ;; Page 67 - Skin Symptoms: Adverse drug reaction likely with drug-induced eruption and systemic signs
 (system_diagnosis_rule
   "Diagnose possible adverse drug reaction"
