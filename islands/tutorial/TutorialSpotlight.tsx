@@ -6,6 +6,7 @@
 import { useComputed, useSignal } from '@preact/signals'
 import { useEffect, useRef } from 'preact/hooks'
 import compact from '../../util/compact.ts'
+import { assert } from 'std/assert/assert.ts'
 
 type Props = {
   target?: string | string[] // Optional - if not provided, just shows dark overlay
@@ -38,7 +39,13 @@ export function TutorialSpotlight({ target, clickable = false, portal = false }:
     function combinedBounds(elements: Element[][]): DOMRect[] {
       return compact(elements.map((els) => {
         if (els.length === 0) return null
-        const rects = els.map((el) => el.getBoundingClientRect())
+
+        const rects = els
+          .map((el) => el.getBoundingClientRect())
+          .filter((rect) => rect.height)
+
+        assert(rects.length, `No rects for ${target}`)
+
         const left = Math.min(...rects.map((r) => r.left))
         const top = Math.min(...rects.map((r) => r.top))
         const right = Math.max(...rects.map((r) => r.right))

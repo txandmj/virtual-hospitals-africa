@@ -1,3 +1,14 @@
+;; Page 38 - Cough/Breathing: Urgent for probable tension pneumothorax
+(system_priority_evaluation
+  "Urgent: probable tension pneumothorax"
+  adult
+  Urgent
+  (diagnosis
+    (snomed_concept "Tension pneumothorax" "disorder")
+    probable
+  )
+)
+
 ;; Page 38 - Cough/Breathing: Urgent for other signs
 (system_priority_evaluation
   "Urgent: cough or breathlessness with danger signs"
@@ -12,7 +23,7 @@
     (or
       (clinical_finding (snomed_concept "Clouded consciousness" "finding"))
       (clinical_finding (snomed_concept "Feeling agitated" "finding"))
-      (clinical_finding (snomed_concept "Tension pneumothorax" "disorder"))
+      (active_condition (snomed_concept "Tension pneumothorax" "disorder"))
       (clinical_finding (snomed_concept "Hemoptysis" "finding"))
       (< (measurement (snomed_concept "Systolic blood pressure" "observable entity") mmHg) 90)
       (< (measurement (snomed_concept "Diastolic blood pressure" "observable entity") mmHg) 60)

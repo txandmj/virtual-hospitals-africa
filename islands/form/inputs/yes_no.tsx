@@ -1,7 +1,9 @@
 import { ComponentChild, ComponentChildren } from 'preact'
 import { Existence, Maybe } from '../../../types.ts'
-import { useRef } from 'preact/hooks'
+import { useEffect, useRef } from 'preact/hooks'
 import cls from '../../../util/cls.ts'
+import LindiweGuidance from '../../LindiweGuidance.tsx'
+import { useSignal } from '@preact/signals'
 
 export function YesNoQuestion({
   name,
@@ -59,6 +61,17 @@ export function YesNoGrid(
   { title, children }: { title: string; children: ComponentChildren },
 ) {
   const ref = useRef<HTMLInputElement>(null)
+  const show_guidance_on_clicking_all_nos = useSignal(false)
+
+  useEffect(() => {
+    function listener(event: Event) {
+      if ((event.target as HTMLInputElement)?.closest('[data-existence="No"]')) {
+        show_guidance_on_clicking_all_nos.value = true
+      }
+    }
+    document.addEventListener('change', listener)
+    return () => document.removeEventListener('change', listener)
+  }, [])
 
   function Header({ existence, placement }: { existence: Existence; placement: 'top' | 'bottom' }) {
     function checkAllWithoutValues() {
@@ -104,19 +117,27 @@ export function YesNoGrid(
   }
 
   return (
-    <div
-      className='overflow-scroll border border-gray-300 rounded-lg grid grid-cols-[auto_minmax(80px,1fr)_minmax(80px,1fr)_minmax(80px,1fr)] gap-y-2 xl:gap-y-4 items-start'
-      ref={ref}
-    >
-      <Title title={title} placement='top' />
-      <Header existence='Yes' placement='top' />
-      <Header existence='No' placement='top' />
-      <Header existence='Unknown' placement='top' />
-      {children}
-      <Title title={title} placement='bottom' />
-      <Header existence='Yes' placement='bottom' />
-      <Header existence='No' placement='bottom' />
-      <Header existence='Unknown' placement='bottom' />
-    </div>
+    <>
+      <div
+        className='overflow-scroll border border-gray-300 rounded-lg grid grid-cols-[auto_minmax(80px,1fr)_minmax(80px,1fr)_minmax(80px,1fr)] gap-y-2 xl:gap-y-4 items-start'
+        ref={ref}
+      >
+        <Title title={title} placement='top' />
+        <Header existence='Yes' placement='top' />
+        <Header existence='No' placement='top' />
+        <Header existence='Unknown' placement='top' />
+        {children}
+        <Title title={title} placement='bottom' />
+        <Header existence='Yes' placement='bottom' />
+        <Header existence='No' placement='bottom' />
+        <Header existence='Unknown' placement='bottom' />
+      </div>
+      {show_guidance_on_clicking_all_nos.value && (
+        <LindiweGuidance
+          text="By the way, if none of the rest of the findings apply, you can click 'No' to fill that in for the rest. Everything you marked 'Yes' will stay put."
+          selector='.yes-no-header[data-placement="bottom"][data-existence="No"]'
+        />
+      )}
+    </>
   )
 }

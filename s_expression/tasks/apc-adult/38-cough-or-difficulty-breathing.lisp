@@ -25,3 +25,4 @@
     (clinical_finding (snomed_concept "Swollen calf" "finding"))
   )
 )
+

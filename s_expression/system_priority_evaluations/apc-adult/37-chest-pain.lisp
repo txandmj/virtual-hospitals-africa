@@ -1,8 +1,8 @@
 ;; Page 37 - Chest Pain: Emergency for cardiac signs
 (system_priority_evaluation
-  "Emergency: chest pain with cardiac signs"
+  "Urgent: chest pain with cardiac signs"
   adult
-  Emergency
+  Urgent
   (and
     (clinical_finding (snomed_concept "Chest pain" "finding"))
     (or
@@ -15,7 +15,7 @@
       (clinical_finding (snomed_concept "Sweating" "finding"))
       (clinical_finding (snomed_concept "Nausea" "finding"))
       (clinical_finding (snomed_concept "Finding of vomiting" "finding"))
-      (clinical_finding (snomed_concept "Ischemic heart disease" "disorder"))
+      (active_condition (snomed_concept "Ischemic heart disease" "disorder"))
       (clinical_finding (snomed_concept "Difficulty breathing" "finding"))
       (clinical_finding (snomed_concept "Pulse irregular" "finding"))
       (>= (measurement (snomed_concept "Respiratory rate" "observable entity") bpm) 30)

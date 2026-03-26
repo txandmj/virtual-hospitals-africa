@@ -4,7 +4,7 @@ import { EventInsertAny, EVENTS } from '../../events/handlers.ts'
 import { Client } from 'pg'
 import { opts } from '../db.ts'
 import { assert } from 'std/assert/assert.ts'
-import generateUUID, { isUUID } from '../../util/uuid.ts'
+import { isUUID } from '../../util/uuid.ts'
 import { once } from '../../util/once.ts'
 import { timeout } from '../../util/timeout.ts'
 import keys from '../../util/keys.ts'
@@ -36,7 +36,6 @@ export const initializeAllProcessedPubSub = once(
     const any_subscribers = new Set<(event_id: string, err?: Error) => void>()
     const all_settled_for_encounter_subscribers = new Map<string, Set<() => void>>()
 
-    const client_id = generateUUID()
     const client = new Client(opts || {})
     await client.connect()
     await client.query(`LISTEN event_inserted`)

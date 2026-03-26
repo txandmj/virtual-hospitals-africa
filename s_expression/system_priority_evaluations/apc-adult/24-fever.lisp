@@ -1,3 +1,14 @@
+;; Page 24 - Fever: Urgent for probable meningitis
+(system_priority_evaluation
+  "Urgent: probable meningitis"
+  adult
+  Urgent
+  (diagnosis
+    (snomed_concept "Meningitis" "disorder")
+    probable
+  )
+)
+
 ;; Page 24 - Fever: Urgent for other danger signs
 (system_priority_evaluation
   "Urgent: fever with danger signs"
