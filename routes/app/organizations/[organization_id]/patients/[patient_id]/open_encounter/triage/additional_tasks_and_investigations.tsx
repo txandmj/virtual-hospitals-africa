@@ -16,7 +16,6 @@ import { markEnteredInError } from '../../../../../../../../db/models/patient_re
 import compactMap from '../../../../../../../../util/compactMap.ts'
 import zip from '../../../../../../../../util/zip.ts'
 import { exists } from '../../../../../../../../util/exists.ts'
-import { logJSONToFileIfOnServer } from '../../../../../../../../util/logJSONToFileIfOnServer.ts'
 import { check_for, CheckForSchema } from '../../../../../../../../db/models/check_for.ts'
 import { OpenEncounterWorkflowContext } from '../../../../../../../../types.ts'
 
@@ -183,7 +182,6 @@ export async function TriageAdditionalTasksAndInvestigationsPage(
   const { trx, encounter, health_worker_id, organization_id } = ctx.state
   const { evaluation_ids, task_groups } = await additional_tasks.getTasksGroups(trx, { health_worker_id, encounter })
 
-  logJSONToFileIfOnServer(task_groups)
   const use_pdf_viewer = getCookies(ctx.req.headers)['twa'] === '1'
 
   return (

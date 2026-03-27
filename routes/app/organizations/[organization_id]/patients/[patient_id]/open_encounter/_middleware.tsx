@@ -57,7 +57,6 @@ import { patient_findings } from '../../../../../../../db/models/patient_finding
 import { patient_record_providers } from '../../../../../../../db/models/patient_record_providers.ts'
 import { buildPriorityRecord } from '../../../../../../../db/models/priority.ts'
 import { patient_evaluation_scores } from '../../../../../../../db/models/patient_evaluation_scores.ts'
-import { logJSONToFileIfOnServer } from '../../../../../../../util/logJSONToFileIfOnServer.ts'
 
 export function completeLastStep(
   { state: { trx, workflow, step, workflow_status } }: OpenEncounterWorkflowContext,
@@ -237,8 +236,6 @@ export const workflowHandler = timeMiddlewareCallNext(async function workflowHan
       },
     ),
   })
-
-  logJSONToFileIfOnServer(fetched)
 
   const previously_completed_step = arrayIsNonEmpty(workflow_status.steps_completed) && workflow_status.steps_completed.includes(
     step,

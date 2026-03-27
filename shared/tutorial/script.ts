@@ -645,8 +645,7 @@ export const TUTORIAL_SCRIPT: ScriptItem[] = [
   {
     type: 'dialogue',
     speaker: 'guide',
-    text:
-      'Well done! With your help, Duduzile was able to get diagnosed and treated quickly, potentially saving her life.',
+    text: 'Well done! With your help, Duduzile was able to get diagnosed and treated quickly, potentially saving her life.',
   },
   {
     type: 'dialogue',

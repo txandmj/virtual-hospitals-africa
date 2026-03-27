@@ -1,6 +1,5 @@
 import { RenderedEvaluationRelativeToHealthWorker, RenderedFindingRelativeToHealthWorker, RenderedPatientEncounter } from '../../types.ts'
 import findMatching from '../../util/findMatching.ts'
-import { logJSONToFileIfOnServer } from '../../util/logJSONToFileIfOnServer.ts'
 
 type PriorityObject = NonNullable<RenderedPatientEncounter['priority']>
 
@@ -11,12 +10,6 @@ export function buildPriorityRecord(
   total_scores: Array<Omit<RenderedEvaluationRelativeToHealthWorker, 'provider' | 'score'> & { score: number }>,
 ): RenderedEvaluationRelativeToHealthWorker {
   const all_records = [...patient_findings, ...diagnoses, ...total_scores]
-
-  logJSONToFileIfOnServer({
-    priority,
-    all_records,
-    'priority.records': priority.records,
-  })
 
   const due_to_relations = priority.records
     .flatMap(({ associated_finding_ids }) =>

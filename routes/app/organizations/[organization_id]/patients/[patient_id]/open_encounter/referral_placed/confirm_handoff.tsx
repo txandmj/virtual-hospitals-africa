@@ -16,7 +16,6 @@ import { Person } from '../../../../../../../../components/library/Person.tsx'
 import Badge from '../../../../../../../../components/library/Badge.tsx'
 import { promiseProps } from '../../../../../../../../util/promiseProps.ts'
 import { patient_workflows } from '../../../../../../../../db/models/patient_workflows.ts'
-import { logJSONToFileIfOnServer } from '../../../../../../../../util/logJSONToFileIfOnServer.ts'
 
 const ReferralPlacedConfirmHandoffSchema = z.object({})
 
@@ -61,10 +60,6 @@ export const handler = postHandler(
       })
       .where('id', '=', primary_care_nurse.employee_id)
       .execute()
-
-    logJSONToFileIfOnServer({
-      primary_care_nurse,
-    })
 
     return redirect(
       success(
