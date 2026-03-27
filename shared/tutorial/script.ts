@@ -635,7 +635,6 @@ export const TUTORIAL_SCRIPT: ScriptItem[] = [
     message: 'Bongani Sibeko is on his way to support in triage room 1.',
     buttonText: 'OK',
   },
-
   // =========================================================================
   // SECTION 9: COMPLETION
   // =========================================================================

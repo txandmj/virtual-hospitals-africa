@@ -6,6 +6,7 @@ import compact from '../../util/compact.ts'
 import { ArrowTrendingUpIcon, AtSymbolIcon, ClockIcon } from './icons/heroicons/outline.tsx'
 import { ActionsRadioGroupSelect } from './ActionsRadioGroupSelect.tsx'
 import { objectPronoun, posessivePronoun, pronoun } from '../../shared/sex_and_gender.ts'
+import { preferredName } from '../../util/asNames.ts'
 
 export function NextStepSelect(
   { patient, default_next_step, priority, to_be_notified, tasks_i_can_do, tasks_for_another, onSelect }: {
@@ -81,7 +82,7 @@ export function NextStepSelect(
           iconForeground: 'text-yellow-700',
           iconBackground: 'bg-yellow-50',
           description: compact([
-            `${capitalize(staff)} will be notified immediately about ${posessivePronoun(patient)} case and location.`,
+            `${capitalize(staff)} will be notified immediately about ${preferredName(patient, 'the patient')}'s case and location.`,
             `I will move on to triage another patient once they have confirmed they are taking over.`,
             default_next_step === 'refer' && (
               <span key='recommended' className='italic'>Recommended based on {objectPronoun(patient)} having a {priority.name.toLowerCase()} case.</span>
