@@ -15,6 +15,23 @@ COPY ./ ./
 # Build the application
 RUN deno task build
 
+FROM denoland/deno:2.7.5
+WORKDIR /app
+
+# Copy build output (static assets + compiled server)
+COPY --from=build /app/_fresh ./_fresh
+
+# Copy db files needed at runtime (models, db.ts, helpers.ts)
+COPY --from=build /app/db ./db
+
+# Copy deno module cache to avoid re-downloading at startup
+COPY --from=build /deno-dir /deno-dir
+
+# Copy deno config (needed for task resolution) and startup script
+COPY --from=build /app/deno.json ./deno.json
+COPY --from=build /app/deno.lock ./deno.lock
+COPY --from=build /app/scripts/web.sh ./scripts/web.sh
+
 EXPOSE 8000
 
 # https://deno.com/blog/aws-lambda-coldstart-benchmarks#optimizing-deno-for-a-serverless-environment
