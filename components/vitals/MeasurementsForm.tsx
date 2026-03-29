@@ -9,16 +9,18 @@ export function VitalsMeasurementsForm({
   triage_assessments,
   most_recent_patient_vitals,
   organization_id,
+  id,
 }: {
   vital_measurements_for_this_encounter: VitalMeasurementFormInputDefition[]
   triage_assessments: VitalAssessmentFormInputDefition[]
   most_recent_patient_vitals: RenderedFindingRelativeToHealthWorker[]
   organization_id: string
+  id?: string
 }) {
   assert(vital_measurements_for_this_encounter.length)
 
   return (
-    <div className='grid grid-cols-1 gap-8 xl:grid-cols-2'>
+    <div className='grid grid-cols-1 gap-8 xl:grid-cols-2' id={id}>
       {!!triage_assessments.length && (
         <div className='flex flex-col gap-4'>
           <h2 className='text-lg font-semibold text-gray-900'>

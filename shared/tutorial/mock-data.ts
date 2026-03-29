@@ -505,7 +505,7 @@ function makeBriefHistoryFinding(
   return {
     type: 'finding',
     id: `tutorial-brief-history-${conditionKey}`,
-    created_at: new Date(),
+    created_at: new Date('2025-09-28T08:00:00.000Z'),
     patient_encounter_id: 'tutorial-encounter-001',
     root_snomed_concept_id: '404684003',
     root_snomed_concept_name: 'Clinical finding',
@@ -542,23 +542,22 @@ function makeBriefHistoryFinding(
 }
 
 /**
- * Duduzile's medical history:
+ * Duduzile's medical history (recorded 6 months ago):
  * - Has allergy to peanut (already in history - very relevant for anaphylaxis)
- * - No diabetes
- * - Not pregnant
+ * - All common conditions recorded as No
  */
 export const TUTORIAL_BRIEF_HISTORY_COMMON_CONDITIONS: MostRecentBriefHistoryFindings = {
   pregnancy: makeBriefHistoryFinding('pregnancy', 'No'),
   diabetes: makeBriefHistoryFinding('diabetes', 'No'),
   asthma: makeBriefHistoryFinding('asthma', 'No'),
-  tuberculosis: undefined,
-  hiv: undefined,
-  copd: undefined,
-  heart_disease: undefined,
-  mental_disorder: undefined,
-  epilepsy: undefined,
-  arthritis: undefined,
-  cancer: undefined,
+  tuberculosis: makeBriefHistoryFinding('tuberculosis', 'No'),
+  hiv: makeBriefHistoryFinding('hiv', 'No'),
+  copd: makeBriefHistoryFinding('copd', 'No'),
+  heart_disease: makeBriefHistoryFinding('heart_disease', 'No'),
+  mental_disorder: makeBriefHistoryFinding('mental_disorder', 'No'),
+  epilepsy: makeBriefHistoryFinding('epilepsy', 'No'),
+  arthritis: makeBriefHistoryFinding('arthritis', 'No'),
+  cancer: makeBriefHistoryFinding('cancer', 'No'),
 }
 
 export const TUTORIAL_BRIEF_HISTORY_ALLERGIES: RenderedFindingRelativeToHealthWorker[] = [
@@ -610,7 +609,7 @@ export const TUTORIAL_BRIEF_HISTORY_ALLERGIES: RenderedFindingRelativeToHealthWo
 const TUTORIAL_HEIGHT: RenderedFindingRelativeToHealthWorker = {
   type: 'finding',
   id: 'tutorial-height-001',
-  created_at: new Date(),
+  created_at: new Date('2025-09-24T08:00:00.000Z'),
   patient_encounter_id: 'tutorial-encounter-001',
   root_snomed_concept_id: VITAL_MEASUREMENTS_SNOMED_CONCEPTS.height.id,
   root_snomed_concept_name: 'Body height measure',
@@ -650,7 +649,7 @@ const TUTORIAL_HEIGHT: RenderedFindingRelativeToHealthWorker = {
 const TUTORIAL_WEIGHT: RenderedFindingRelativeToHealthWorker = {
   type: 'finding',
   id: 'tutorial-weight-001',
-  created_at: new Date(),
+  created_at: new Date('2025-09-24T08:00:00.000Z'),
   patient_encounter_id: 'tutorial-encounter-001',
   root_snomed_concept_id: VITAL_MEASUREMENTS_SNOMED_CONCEPTS.weight.id,
   root_snomed_concept_name: 'Body weight',

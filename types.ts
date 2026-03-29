@@ -2340,6 +2340,7 @@ export type VitalMeasurementFormInputDefition = {
   snomed_concept_id: string
   required: boolean
   units: string
+  value?: string
 }
 
 export type VitalAssessmentFormInputDefition = {
@@ -2350,6 +2351,7 @@ export type VitalAssessmentFormInputDefition = {
     s_expression: string
     label: string
   }[]
+  value?: string
 }
 
 export type Evaluation = {

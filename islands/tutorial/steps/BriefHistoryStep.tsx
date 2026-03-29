@@ -13,7 +13,7 @@ type Props = {
 
 /**
  * Brief history step - wraps real BriefHistorySection with mock data.
- * Duduzile has: asthma (Yes), diabetes (No), pregnancy (No)
+ * All conditions pre-filled as No, recorded 6 months ago.
  */
 export function BriefHistoryStep({ sex }: Props) {
   return (

@@ -15,7 +15,7 @@ export function AllergiesMultiSelect({
   const placeholder = existing_allergies.length ? 'No new allergies selected' : 'No allergies selected'
 
   return (
-    <div>
+    <div id='allergies-multi-select'>
       <Label label='Allergies'>
         <AsyncSearch
           multi

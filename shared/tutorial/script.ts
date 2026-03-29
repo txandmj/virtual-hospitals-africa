@@ -183,72 +183,27 @@ export const TUTORIAL_SCRIPT: ScriptItem[] = [
   {
     type: 'wait_click',
     target: 'button#triage-submit',
-    text: 'And "Next" to continue to measure vitals',
+    text: 'And "Next" to continue.',
     position: 'top-left',
   },
   {
     type: 'step_transition',
-    to_step: 'measure_vitals',
+    to_step: 'brief_history',
   },
   // =========================================================================
   // SECTION 3: BRIEF HISTORY (STEP TRANSITION)
   // =========================================================================
-  // {
-  //   type: 'dialogue',
-  //   speaker: 'guide',
-  //   text: 'Next is the Brief History. Here we quickly check for conditions that affect treatment.',
-  // },
-  // {
-  //   type: 'dialogue',
-  //   speaker: 'guide',
-  //   text: "I've already filled this in for Duduzile. Let me show you the key points.",
-  // },
-  // {
-  //   type: 'dialogue',
-  //   speaker: 'guide',
-  //   text: 'Pregnancy is always asked - it affects vital sign interpretation and medication choices.',
-  //   highlight: TUTORIAL_TARGETS.BRIEF_HISTORY_PREGNANCY,
-  // },
-  // {
-  //   type: 'dialogue',
-  //   speaker: 'guide',
-  //   text: 'Same with Diabetes - it can affect treatment decisions.',
-  //   highlight: TUTORIAL_TARGETS.BRIEF_HISTORY_DIABETES,
-  // },
-  // {
-  //   type: 'dialogue',
-  //   speaker: 'guide',
-  //   text: 'Notice Duduzile has asthma. This is very relevant given her cough - respiratory conditions need extra attention.',
-  //   highlight: TUTORIAL_TARGETS.BRIEF_HISTORY_ASTHMA,
-  // },
-  // {
-  //   type: 'dialogue',
-  //   speaker: 'guide',
-  //   text: "The history is now visible in the Patient Drawer, building a complete picture of Duduzile's health.",
-  //   highlight: TUTORIAL_TARGETS.PATIENT_DRAWER_THIS_VISIT,
-  // },
-
-  // =========================================================================
-  // SECTION 4: HEIGHT & WEIGHT MENTION (STEP TRANSITION)
-  // =========================================================================
-  // {
-  //   type: 'step_transition',
-  //   to_step: 'vitals',
-  // },
-  // {
-  //   type: 'dialogue',
-  //   speaker: 'guide',
-  //   text: "Height and weight were measured when Duduzile arrived. You can see them in the Patient Drawer - she's 165cm and 62kg.",
-  //   highlight: TUTORIAL_TARGETS.PATIENT_DRAWER_THIS_VISIT,
-  // },
-
-  // =========================================================================
-  // SECTION 5: MEASURE VITALS
-  // =========================================================================
   {
     type: 'dialogue',
     speaker: 'guide',
-    text: `Well done! Now it's time to measure vitals. But first, let's have a look at the patient drawer on the right.`,
+    position: 'bottom-right',
+    text: 'Well done! Next is Brief History where we confirm chronic conditions that affect treatment.',
+    highlight: '#brief-history, #allergies-multi-select',
+  },
+  {
+    type: 'dialogue',
+    speaker: 'guide',
+    text: `Before proceeding, let's have a look at the patient drawer on the right.`,
     dangerousHTML: true,
     highlight: TUTORIAL_TARGETS.PATIENT_DRAWER,
   },
@@ -261,8 +216,11 @@ export const TUTORIAL_SCRIPT: ScriptItem[] = [
   {
     type: 'dialogue',
     speaker: 'guide',
-    text: "'History' shows records from past visits. Duduzile was here less than a year ago when her history, height, and weight were recorded which are factored into her treatment plan.",
-    highlight: [TUTORIAL_TARGETS.PATIENT_DRAWER_HISTORY, '#sidebar-list-item-brief-history, #sidebar-list-item-height-weight'],
+    text: "'History' shows records from past visits.",
+    highlight: [
+      TUTORIAL_TARGETS.PATIENT_DRAWER_HISTORY,
+      // '#sidebar-list-item-brief-history, #sidebar-list-item-height-weight'
+    ],
     click_target_on_advance: '#record-chip-allergy-to-peanut > button',
   },
   {
@@ -275,8 +233,40 @@ export const TUTORIAL_SCRIPT: ScriptItem[] = [
   {
     type: 'dialogue',
     speaker: 'guide',
+    text: "Let's continue",
+  },
+  {
+    type: 'step_transition',
+    to_step: 'height_and_weight',
+  },
+  // =========================================================================
+  // SECTION 4: HEIGHT & WEIGHT MENTION (STEP TRANSITION)
+  // =========================================================================
+  {
+    type: 'dialogue',
+    speaker: 'guide',
+    text: "After confirming their history conditions we assess the patient's height and weight.",
+    // highlight: TUTORIAL_TARGETS.PATIENT_DRAWER_THIS_VISIT,
+    highlight: '#height-and-weight',
+  },
+  {
+    type: 'step_transition',
+    to_step: 'measure_vitals',
+  },
+  // =========================================================================
+  // SECTION 5: MEASURE VITALS
+  // =========================================================================
+  {
+    type: 'dialogue',
+    speaker: 'guide',
+    text: `After that, it is time to measure vitals.`,
+    highlight: TUTORIAL_TARGETS.VITALS_FORM,
+  },
+  {
+    type: 'dialogue',
+    speaker: 'guide',
     text:
-      "Now it's time to take Duduzile's vitals. For adult patients this consists of assessing her consciousness, mobility, and trauma presence as well as measuring her blood pressure, temperature, heart rate, and respiratory rate.",
+      'For adult patients this consists of assessing her consciousness, mobility, and trauma presence as well as measuring her blood pressure, temperature, heart rate, and respiratory rate.',
     highlight: TUTORIAL_TARGETS.VITALS_FORM,
   },
   {

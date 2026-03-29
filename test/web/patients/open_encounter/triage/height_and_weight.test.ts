@@ -6,9 +6,8 @@ import { assertEquals } from 'std/assert/assert_equals.ts'
 import { getFormValues } from '../../../../_helpers/form.ts'
 import { asWarningSignsAdult, dateOfBirth, heightOf, setupTriageNewPatient, setupTriageReturningPatient, weightOf } from './_setup.ts'
 import { patient_encounters } from '../../../../../db/models/patient_encounters.ts'
-import { assert } from 'std/assert/assert.ts'
-import { VITAL_MEASUREMENTS_SNOMED_CONCEPTS } from '../../../../../shared/vitals.ts'
 import { events } from '../../../../../db/models/events.ts'
+import { VITAL_MEASUREMENTS_SNOMED_CONCEPTS } from '../../../../../shared/vitals.ts'
 
 describeParallel('triage/height_and_weight', () => {
   before(waitUntilTestServerUp)
@@ -40,7 +39,7 @@ describeParallel('triage/height_and_weight', () => {
     )
 
     itParallel(
-      'completes the step on encounter start when adult patient has measurements within the last year',
+      'prefills height/weight values when adult patient has measurements within the last year',
       async () => {
         const { nurse, clinic, shcp, patient_id, patient_encounter_id } = await setupTriageNewPatient({
           patient_demographics: { date_of_birth: dateOfBirth('adult') },
@@ -61,19 +60,31 @@ describeParallel('triage/height_and_weight', () => {
 
         await patient_encounters.close(db, { patient_encounter_id })
 
-        const second = await setupTriageReturningPatient({ nurse, clinic, shcp, patient_id })
+        const { $ } = await setupTriageReturningPatient({
+          nurse,
+          clinic,
+          shcp,
+          patient_id,
+          warning_signs: asWarningSignsAdult([], { pregnant: false }),
+          brief_history: {
+            common_conditions: {
+              diabetes: { existence: 'No' },
+              pregnancy: { existence: 'No' },
+            },
+          },
+        })
 
-        const encounter = await patient_encounters.getById(db, second.patient_encounter_id)
-        const steps_completed: string[] = encounter.workflows.triage!.steps_completed
-        assert(
-          steps_completed.includes('height_and_weight'),
-          `Expected height_and_weight to be pre-completed, got: ${JSON.stringify(steps_completed)}`,
-        )
+        assertEquals(getFormValues($), {
+          measurements: {
+            height: { value: String(heightOf('adult')), units: 'cm' },
+            weight: { value: String(weightOf('adult')), units: 'kg' },
+          },
+        })
       },
     )
 
     itParallel(
-      'does not complete the step when adult patient has measurements over a year old',
+      'does not pre-fill the step when adult patient has measurements over a year old',
       async () => {
         const { nurse, clinic, shcp, patient_id, patient_encounter_id } = await setupTriageNewPatient({
           patient_demographics: { date_of_birth: dateOfBirth('adult') },
@@ -108,15 +119,26 @@ describeParallel('triage/height_and_weight', () => {
 
         await patient_encounters.close(db, { patient_encounter_id })
 
-        const second = await setupTriageReturningPatient({ nurse, clinic, shcp, patient_id })
+        const { $ } = await setupTriageReturningPatient({
+          nurse,
+          clinic,
+          shcp,
+          patient_id,
+          warning_signs: asWarningSignsAdult([], { pregnant: false }),
+          brief_history: {
+            common_conditions: {
+              diabetes: { existence: 'No' },
+              pregnancy: { existence: 'No' },
+            },
+          },
+        })
 
-        const encounter = await patient_encounters.getById(db, second.patient_encounter_id)
-        const steps_completed: string[] = encounter.workflows.triage!.steps_completed
-        assert(steps_completed)
-        assert(
-          !steps_completed.includes('height_and_weight'),
-          `Expected height_and_weight to NOT be pre-completed, got: ${JSON.stringify(steps_completed)}`,
-        )
+        assertEquals(getFormValues($), {
+          measurements: {
+            height: { value: null, units: 'cm' },
+            weight: { value: null, units: 'kg' },
+          },
+        })
       },
     )
   })

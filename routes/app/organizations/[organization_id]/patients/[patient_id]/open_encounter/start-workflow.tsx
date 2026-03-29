@@ -45,7 +45,6 @@ export async function startWorkflow<T>(
 
   await Promise.all([
     doStartWorkflow(),
-    maybePreCompleteTriageHeightAndWeight(),
     maybeMovePatientIntoWorkflow(),
   ])
 
@@ -92,28 +91,6 @@ export async function startWorkflow<T>(
         patient_workflow_id: workflow_status!.patient_workflow_id,
       },
     )
-  }
-
-  // Pre-complete height_and_weight for adult patients with recent measurements
-  function maybePreCompleteTriageHeightAndWeight() {
-    if (workflow !== 'triage') return
-    if (needsHeightAndWeight()) return
-    return patient_workflows.completedStep(trx, {
-      workflow: 'triage',
-      step: 'height_and_weight',
-      patient_workflow_id: workflow_status!.patient_workflow_id,
-    })
-
-    function needsHeightAndWeight(): boolean {
-      if (patient_age_determination !== 'adult') return true
-      const { most_recent_height, most_recent_weight } = patient
-      if (!most_recent_height || !most_recent_weight) return true
-      const one_year_ago = new Date()
-      one_year_ago.setFullYear(one_year_ago.getFullYear() - 1)
-      const height_taken_within_one_year = new Date(most_recent_height.taken_at) >= one_year_ago
-      const weight_taken_within_one_year = new Date(most_recent_height.taken_at) >= one_year_ago
-      return !(height_taken_within_one_year && weight_taken_within_one_year)
-    }
   }
 
   function maybeMovePatientIntoWorkflow() {

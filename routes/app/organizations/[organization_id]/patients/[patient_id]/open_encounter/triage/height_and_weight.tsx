@@ -3,7 +3,7 @@ import type { OpenEncounterWorkflowContext } from '../../../../../../../../types
 import { z } from 'zod'
 import { postHandler } from '../../../../../../../../backend/postHandler.ts'
 import { positive_decimal } from '../../../../../../../../util/validators.ts'
-import { VitalsMeasurementsForm } from '../../../../../../../../components/vitals/MeasurementsForm.tsx'
+import { HeightAndWeight } from '../../../../../../../../components/HeightAndWeight.tsx'
 import { VITAL_MEASUREMENTS_SNOMED_CONCEPTS } from '../../../../../../../../shared/vitals.ts'
 import { parseWithSchema } from '../../../../../../../../shared/s_expression.ts'
 import { patient_findings } from '../../../../../../../../db/models/patient_findings.ts'
@@ -85,22 +85,7 @@ export async function TriageHeightAndWeightPage(
     )
 
   return (
-    <VitalsMeasurementsForm
-      vital_measurements_for_this_encounter={[
-        {
-          vital: 'height',
-          snomed_concept_id: VITAL_MEASUREMENTS_SNOMED_CONCEPTS.height.id,
-          required: true,
-          units: 'cm',
-        },
-        {
-          vital: 'weight',
-          snomed_concept_id: VITAL_MEASUREMENTS_SNOMED_CONCEPTS.weight.id,
-          required: true,
-          units: 'kg',
-        },
-      ]}
-      triage_assessments={[]}
+    <HeightAndWeight
       most_recent_patient_vitals={most_recent_patient_vitals}
       organization_id={ctx.state.organization.id}
     />

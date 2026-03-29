@@ -51,8 +51,8 @@ export function BriefHistorySection(
   },
 ) {
   return (
-    <>
-      <YesNoGrid title='Condition'>
+    <div class='flex flex-col gap-3'>
+      <YesNoGrid title='Chronic condition' id='brief-history'>
         {COMMON_CONDITIONS.map((condition) => (
           <CommonConditionRow
             key={condition.key}
@@ -67,6 +67,6 @@ export function BriefHistorySection(
         existing_allergies={existing_allergies}
         organization_id={organization_id}
       />
-    </>
+    </div>
   )
 }

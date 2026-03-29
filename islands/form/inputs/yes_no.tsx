@@ -58,7 +58,7 @@ export function YesNoQuestion({
 }
 
 export function YesNoGrid(
-  { title, children }: { title: string; children: ComponentChildren },
+  { title, children, id }: { title: string; children: ComponentChildren; id?: string },
 ) {
   const ref = useRef<HTMLInputElement>(null)
   const show_guidance_on_clicking_all_nos = useSignal(false)
@@ -119,6 +119,7 @@ export function YesNoGrid(
   return (
     <>
       <div
+        id={id}
         className='overflow-scroll border border-gray-300 rounded-lg grid grid-cols-[auto_minmax(80px,1fr)_minmax(80px,1fr)_minmax(80px,1fr)] gap-y-2 xl:gap-y-4 items-start'
         ref={ref}
       >

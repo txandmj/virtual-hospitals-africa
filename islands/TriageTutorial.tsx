@@ -25,6 +25,7 @@ import {
   AssignPriorityStep,
   BriefHistoryStep,
   CompletionStep,
+  HeightAndWeightStep,
   RoutePatientStep,
   VitalsStep,
   WaitingRoomStep,
@@ -177,6 +178,9 @@ const StepRenderer = memo(function StepRenderer({
 
     case 'warning_signs':
       return <WarningSignsStep />
+
+    case 'height_and_weight':
+      return <HeightAndWeightStep />
 
     case 'brief_history':
       return <BriefHistoryStep sex={patient.sex} />
