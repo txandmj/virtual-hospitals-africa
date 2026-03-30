@@ -78,7 +78,7 @@ const COMMON_CONDITION_BY_SNOMED_NAME = new Map<string, CommonConditionKey>(
   COMMON_CONDITIONS.map((c) => [c.name, c.key]),
 )
 
-export async function* tasksToX(task_file_path: string): AsyncGenerator<{
+export async function* tasksFromFilepath(task_file_path: string): AsyncGenerator<{
   task_node: Lang['task']
   task_file_path: string
   evidence_s_expressions: string[]
@@ -175,7 +175,7 @@ export async function* setupTriageForAPCPage(
   shcp: TestEmployee,
 ) {
   const page_slug = pageSlugFromFilePath(task_file_path)
-  for await (const { task_node, skip, common_condition_keys, evidence_s_expressions, vital_overrides } of tasksToX(task_file_path)) {
+  for await (const { task_node, skip, common_condition_keys, evidence_s_expressions, vital_overrides } of tasksFromFilepath(task_file_path)) {
     if (skip) {
       console.log(`Skipping creating patient for ${task_node.description}`)
       return null

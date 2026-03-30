@@ -7,7 +7,7 @@ import { route } from '../../test/_route.ts'
 import { forEach } from '../../util/inParallel.ts'
 import { createTestOrganization } from 'test/_helpers/organizations.ts'
 import puppeteer from 'puppeteer'
-import { pageSlugFromFilePath, tasksToX } from './createSamplePatientsForEachAPCPage.ts'
+import { pageSlugFromFilePath, tasksFromFilepath } from './createSamplePatientsForEachAPCPage.ts'
 import { hyphenate } from '../../util/hyphenate.ts'
 import { assert } from 'std/assert/assert.ts'
 import { WarningSignPriority } from '../../db.d.ts'
@@ -31,12 +31,12 @@ import { VitalMeasurement } from '../../shared/vitals.ts'
 import { delay } from '../../util/delay.ts'
 import { exists as fileExists } from '@std/fs/exists'
 
-async function* foo() {
+async function* allCheckForTasks() {
   const s_expression_directory = await walkDirectory()
   const task_file_paths = exists(s_expression_directory.get('tasks'))
     .filter((path) => path.includes('apc-adult'))
   for await (const task_file_path of task_file_paths) {
-    yield* tasksToX(task_file_path)
+    yield* tasksFromFilepath(task_file_path)
   }
 }
 
@@ -139,7 +139,7 @@ async function screenshotAPCAdditionalTasks() {
 
   const { hostname } = new URL(route)
 
-  await forEach(foo(), async ({ task_node, task_file_path, skip, common_condition_keys, evidence_s_expressions, vital_overrides }) => {
+  await forEach(allCheckForTasks(), async ({ task_node, task_file_path, skip, common_condition_keys, evidence_s_expressions, vital_overrides }) => {
     if (skip) return
     const page_slug = pageSlugFromFilePath(task_file_path)
     const output_dir = `./apc-test-results/${page_slug}`
