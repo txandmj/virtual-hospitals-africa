@@ -30,7 +30,7 @@ export async function startWorkflow<T>(
     patient_presence: 'move_into_specificed_workflow' | 'leave_in_current_workflow'
   },
 ) {
-  const { trx, organization_employment, encounter, patient, patient_age_determination, open_encounter_pathname } = ctx.state
+  const { trx, organization_employment, encounter, open_encounter_pathname } = ctx.state
 
   const department_handling_workflow = canPerform(organization_employment, workflow)
 
