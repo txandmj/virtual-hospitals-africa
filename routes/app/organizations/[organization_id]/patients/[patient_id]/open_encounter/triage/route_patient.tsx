@@ -97,8 +97,9 @@ async function managePatientTasks(
   const some_non_manage_task_incomplete = task_groups.some((task_group) =>
     !task_group.completed && task_group.tasks.some((task) => task.atom === 'finding' || task.atom === 'measurement')
   )
+  const is_emergency = encounter.priority?.name === 'Emergency'
 
-  assertOrRedirect(!some_non_manage_task_incomplete, `${open_encounter_pathname}/triage/additional_tasks_and_investigations`)
+  assertOrRedirect(is_emergency || !some_non_manage_task_incomplete, `${open_encounter_pathname}/triage/additional_tasks_and_investigations`)
 
   const manage_patient_tasks = task_groups.flatMap((task_group) => task_group.tasks.filter(isManage))
   return manage_patient_tasks
@@ -116,6 +117,7 @@ export async function PatientTriageRoutePatientPage(
     encounter,
   } = ctx.state
   const { reason, notes, priority } = encounter
+  console.log(encounter)
   if (!priority) {
     return redirectToFirstIncompleteStep(ctx, { warning_message: 'Please complete triage before routing the patient' })
   }

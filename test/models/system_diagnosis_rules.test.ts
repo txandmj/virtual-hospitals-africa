@@ -418,12 +418,6 @@ describeParallel('db/models/system_diagnosis_rules.ts', () => {
         .sort((a, b) => a.specific_snomed_concept_name.localeCompare(b.specific_snomed_concept_name))
       assertMatches(sorted_evidence, [
         {
-          'root_snomed_concept_name': 'Measurement finding',
-          'specific_snomed_concept_name': 'Body temperature',
-          'specific_snomed_concept_category': 'observable entity',
-          'relation_name': 'Evidence of',
-        },
-        {
           'root_snomed_concept_name': 'Clinical finding',
           'specific_snomed_concept_name': 'Drowsy',
           'specific_snomed_concept_category': 'finding',

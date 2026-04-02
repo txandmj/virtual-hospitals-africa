@@ -19,6 +19,7 @@ import { exists } from '../../../../../../../../util/exists.ts'
 import { BriefHistorySection } from '../../../../../../../../components/triage/BriefHistorySection.tsx'
 import { patient_record_providers } from '../../../../../../../../db/models/patient_record_providers.ts'
 import { assertOr400 } from '../../../../../../../../util/assertOr.ts'
+import { redirectToRoutePatientIfEmergency } from './_middleware.tsx'
 
 const ConditionSchemaOptional = z.object(
   {
@@ -194,6 +195,7 @@ export const handler = postHandler(
 export async function TriageBriefHistoryPage(
   ctx: OpenEncounterWorkflowContext,
 ) {
+  redirectToRoutePatientIfEmergency(ctx)
   assertAllPriorStepsCompleted(ctx, {
     attempting_to_complete_workflow: false,
   })

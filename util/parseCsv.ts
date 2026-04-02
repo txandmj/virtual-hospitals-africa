@@ -1,3 +1,4 @@
+import { assert } from 'std/assert/assert.ts'
 import { CommonCSVReaderOptions, readCSV } from 'csv'
 import z from 'zod'
 import snakeCase from './snakeCase.ts'
@@ -167,6 +168,25 @@ export function parseCsvSync(
 
     return row
   })
+}
+
+/**
+ * Serialize an array of records to a TSV string, inferring headers from the first row.
+ */
+export function printTsv<Row extends Record<string, unknown>>(rows: Row[]): void {
+  if (rows.length === 0) return
+  const headers = Object.keys(rows[0]) as (keyof Row)[]
+  const lines = [
+    headers.join('\t'),
+    ...rows.map((row) => {
+      assert(Object.keys(row).length === headers.length, `Row has ${Object.keys(row).length} keys but header has ${headers.length}`)
+      for (const h of headers) {
+        assert(h in row, `Key "${String(h)}" missing from row`)
+      }
+      return headers.map((h) => row[h]).join('\t')
+    }),
+  ]
+  console.log(lines.join('\n'))
 }
 
 /**

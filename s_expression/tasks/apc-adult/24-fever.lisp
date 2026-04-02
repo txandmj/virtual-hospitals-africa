@@ -4,10 +4,10 @@
   adult
   (active_condition (snomed_concept "Fever" "finding"))
   (check_for
-    (clinical_finding (snomed_concept "Seizure" "finding"))
-    (clinical_finding (snomed_concept "Decreased level of consciousness" "finding"))
     (clinical_finding (snomed_concept "Stiff neck" "finding"))
     (clinical_finding (snomed_concept "Drowsy" "finding"))
+    (clinical_finding (snomed_concept "Acute confusion" "finding"))
+    (clinical_finding (snomed_concept "Decreased level of consciousness" "finding"))
     (clinical_finding (snomed_concept "Clouded consciousness" "finding"))
     (clinical_finding (snomed_concept "Petechiae of skin" "disorder"))
     (clinical_finding (snomed_concept "Purpuric rash" "disorder"))
@@ -18,5 +18,7 @@
     (clinical_finding (snomed_concept "Jaundice" "finding"))
     (clinical_finding (snomed_concept "Easy bruising" "finding"))
     (clinical_finding (snomed_concept "Finding of tendency to bleed" "finding"))
+    (clinical_finding (snomed_concept "Finding of vomiting" "finding"))
+    (clinical_finding (snomed_concept "Nausea" "finding"))
   )
 )

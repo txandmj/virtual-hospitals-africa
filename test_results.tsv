@@ -1,0 +1,53 @@
+page_number	page_name	task_definition	warning_signs_ms	brief_history_ms	height_and_weight_ms	measure_vitals_ms
+63	63-back-pain	Check for urgent back pain conditions	428	358	180	427
+57	57-abnormal-vaginal-bleeding	Check for urgent vaginal bleeding conditions	259	118	319	285
+28	28-collapse-falls	Check for urgent collapse conditions	176	124	117	276
+26	26-weakness-or-tiredness	Check for urgent weakness/tiredness conditions	115	103	105	196
+21	21-burns	Check for urgent burn conditions	140	101	118	238
+21	21-burns	Measure Bloody Oxygen Saturation due to burns	141	101	103	260
+19	19-seizures	Check for urgent seizure conditions	102	110	129	201
+48	48-constipation-and-anal-symptoms	Check for urgent constipation conditions	105	161	142	201
+48	48-constipation-and-anal-symptoms	Check for urgent anal conditions	139	114	137	200
+37	37-chest-pain	Check for urgent chest pain conditions	165	99	109	223
+41	41-acute-covid-19	Check for urgent acute Covid-19 conditions	104	96	110	283
+80	80-scalp-symptoms	Check for urgent scalp conditions	108	102	118	201
+36	36-gum-teeth-symptoms	Check for urgent dental conditions	107	104	121	276
+79	79-changes-in-skin-colour	Check for urgent skin colour change conditions	110	128	108	254
+59	59-urinary-symptoms	Check for urgent urinary symptom conditions	103	96	117	249
+137	137-ischaemic-heart-disease	Check for urgent ischaemic heart disease conditions	118	133	138	198
+42	42-ongoing-covid-19-symptoms	Check for urgent ongoing Covid-19 symptoms	113	124	154	223
+39	39-wheeze-or-tight-chest	Check for urgent wheeze or tight chest conditions	114	106	152	253
+82	82-nail-symptoms	Check for urgent nail symptom conditions	108	101	119	279
+164	164-postnatal-care	Check for urgent postnatal conditions	103	104	114	213
+139	139-peripheral-vascular-disease	Check for urgent peripheral vascular disease conditions	128	106	113	208
+86	86-low-mood-stress-and-anxiety	Check for urgent low mood, stress and anxiety conditions	111	122	131	220
+66	66-foot-symptoms	Check for urgent foot symptom conditions	114	103	115	252
+73	73-drug-rash	Check for urgent drug rash conditions	125	111	105	263
+45	45-nausea-or-vomiting	Check for urgent nausea or vomiting conditions	246	95	119	205
+29	29-dizziness	Check for urgent dizziness conditions	180	98	108	187
+25	25-lump-swelling-in-neck-axilla-or-groin	Check for urgent groin lump conditions	120	97	112	243
+40	40-covid-19-diagnosis	Check for presence of Covid-19	107	110	151	221
+65	65-leg-symptoms	Check for urgent leg symptom conditions	108	101	155	212
+159	159-antenatal-care	Check for urgent antenatal conditions	109	103	150	230
+44	44-abdominal-pain	Check for urgent abdominal pain conditions	205	103	108	237
+51	51-abnormal-vaginal-discharge	Check for urgent female genitalia conditions	112	98	113	206
+33	33-ear-symptoms	Check for urgent ear symptom conditions	128	165	115	235
+34	34-nose-symptoms	Check for urgent nose conditions	106	105	142	275
+83	83-self-harm-or-suicide	Check for urgent self-harm or suicide conditions	108	102	134	217
+31	31-eye-vision-symptoms	Check for urgent eye or vision conditions	101	98	111	275
+78	78-crusts-or-flaky-skin	Check for urgent skin conditions with crusts or flaky skin	118	105	106	269
+64	64-neck-pain-arm-hand	Check for urgent arm or hand symptom conditions	112	98	113	209
+64	64-neck-pain-arm-hand	Check for urgent neck pain conditions	113	106	119	264
+30	30-headache	Check for urgent headache conditions	123	98	116	224
+32	32-face-symptoms	Check for urgent face symptom conditions	106	98	112	254
+35	35-mouth-or-throat-symptoms	Check for urgent mouth or throat conditions	113	107	142	197
+46	46-diarrhoea	Check for urgent diarrhoea conditions	128	103	113	221
+38	38-cough-or-difficulty-breathing	Check for urgent cough/breathing conditions	207	114	107	199
+22	22-bites-and-stings	Check for urgent bite/sting conditions	133	94	147	200
+22	22-bites-and-stings	Check for snake bite	126	108	110	230
+62	62-joint-symptoms	Check for urgent joint conditions	111	118	109	202
+67	67-skin-symptoms	Check for urgent skin symptom conditions	100	100	114	242
+75	75-skin-ulcer-or-non-healing-wound	Check for urgent skin ulcer and wound conditions	112	102	134	261
+74	74-skin-lumps	Check for urgent skin lump conditions	111	99	109	304
+74	74-skin-lumps	Measure lesion size	100	106	132	240
+50	50-genital-symptoms-man	Check for urgent genital symptoms in a man	109	107	108	205

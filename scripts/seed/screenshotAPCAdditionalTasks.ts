@@ -187,7 +187,7 @@ async function screenshotAPCAdditionalTasks() {
         page = await browser.newPage()
         await delay(800)
 
-        await page.setViewport({ width: 1280, height: 2700 })
+        await page.setViewport({ width: 1000, height: 2700 })
         await delay(300)
 
         await Deno.mkdir(output_dir, { recursive: true })

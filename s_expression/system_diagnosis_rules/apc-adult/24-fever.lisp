@@ -11,6 +11,7 @@
     (or
       (active_condition (snomed_concept "Fever" "finding"))
       (clinical_finding (snomed_concept "Finding of vomiting" "finding"))
+      (clinical_finding (snomed_concept "Nausea" "finding"))
     )
     (or
       (clinical_finding (snomed_concept "Drowsy" "finding"))
