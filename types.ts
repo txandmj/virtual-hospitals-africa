@@ -1826,11 +1826,13 @@ export type RenderedPatientOpenEncounter = RenderedPatientEncounter & {
   status: RenderedPatientEncounterStatusOpen
 }
 
+type EmptyArrayOf<T> = Array<T> & { length: 0 }
+
 export type WorkflowStatusNotStarted = {
   patient_workflow_id: string
   workflow: Workflow
   status: 'not started'
-  steps_completed: []
+  steps_completed: EmptyArrayOf<string>
   seen_patient_encounter_employee_ids: []
   completed_at?: never
 }

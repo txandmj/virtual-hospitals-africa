@@ -1076,5 +1076,8 @@ describeParallel('triage/warning_signs', () => {
 
     // Pregnancy
     // testRoundTrip(KEYED_WARNING_SIGNS['Pregnancy and abdominal pain'], true, { only: true })
+
+    // Exercises s_expression
+    testRoundTrip(KEYED_WARNING_SIGNS['Burn Inhalation'], false, { only: true })
   })
 })

@@ -27,6 +27,7 @@ import compact from '../../../../../../../../util/compact.ts'
 import { events } from '../../../../../../../../db/models/events.ts'
 import { insertable_finding_base, measurement_comparator } from '../../../../../../../../shared/s_expression_schemas.ts'
 import { exists } from '../../../../../../../../util/exists.ts'
+import { redirectToRoutePatientIfEmergency } from './_middleware.tsx'
 
 export const TriageMeasureVitalsSchema = z.object({
   measurements: z.partialRecord(
@@ -271,6 +272,11 @@ export const handler = postHandler(
 export async function TriageMeasureVitalsPage(
   ctx: OpenEncounterWorkflowContext,
 ) {
+  if (
+    !ctx.state.encounter.workflows.triage!.steps_completed.includes('measure_vitals')
+  ) {
+    redirectToRoutePatientIfEmergency(ctx)
+  }
   const { measurements, assessments } = await sharedVitalsDeterminations(ctx)
 
   const most_recent_patient_measurements = await patient_vitals

@@ -12,6 +12,7 @@ import entries from '../../../../../../../../util/entries.ts'
 import compact from '../../../../../../../../util/compact.ts'
 import { measurement_comparator } from '../../../../../../../../shared/s_expression_schemas.ts'
 import { exists } from '../../../../../../../../util/exists.ts'
+import { redirectToRoutePatientIfEmergency } from './_middleware.tsx'
 
 export const TriageHeightAndWeightSchema = z.object({
   measurements: z.record(
@@ -67,6 +68,7 @@ export const handler = postHandler(
 export async function TriageHeightAndWeightPage(
   ctx: OpenEncounterWorkflowContext,
 ) {
+  redirectToRoutePatientIfEmergency(ctx)
   assertAllPriorStepsCompleted(ctx, {
     attempting_to_complete_workflow: false,
   })

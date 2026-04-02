@@ -7,6 +7,13 @@ import { addTestEmployee, TestHealthWorkerOpts } from '../../mocks/testEmployee.
 export { addTestEmployee }
 export type { TestHealthWorkerOpts }
 
+type RequestTiming = { method: string; path: string; duration_ms: number }
+const request_timings_map = new Map<string, RequestTiming[]>()
+
+export function getRequestTimings(session_id: string): RequestTiming[] {
+  return request_timings_map.get(session_id) ?? []
+}
+
 export type TestEmployeeWithSession = Awaited<ReturnType<typeof addTestEmployeeWithSession>>
 
 export async function addTestEmployeeWithSession(
@@ -91,8 +98,17 @@ export async function addTestEmployeeWithSession(
   }
 
   const fetchCheerio = async (url: string | URL, init?: RequestInit) => {
+    const start = performance.now()
     const response = await fetchOk(url, init)
     const html = await response.text()
+    const duration_ms = Math.round(performance.now() - start)
+
+    const method = (init?.method ?? 'GET').toUpperCase()
+    const path = typeof url === 'string' ? url : url.toString()
+    const timings = requestTimingsMap.get(session_id) ?? []
+    timings.push({ method, path, duration_ms })
+    requestTimingsMap.set(session_id, timings)
+
     const $ = cheerio.load(html, {
       baseURI: response.url,
     })
