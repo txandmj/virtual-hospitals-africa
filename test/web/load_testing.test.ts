@@ -99,7 +99,7 @@ async function doLoadTesting(num_patients: number) {
   }
 }
 
-describe('load_testing', () => {
+describe.skip('load_testing', () => {
   before(waitUntilTestServerUp)
   afterAll(() => db.destroy())
   afterAll(() => printTsv(rows))

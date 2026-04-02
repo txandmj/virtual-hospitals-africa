@@ -1,6 +1,10 @@
 #! /usr/bin/env bash
 set -euo pipefail
 
+if [ $# -eq 0 ]; then
+  exec deno task run:trusted ./scripts/scriptSelector.ts
+fi
+
 script="$1"
 shift
 
