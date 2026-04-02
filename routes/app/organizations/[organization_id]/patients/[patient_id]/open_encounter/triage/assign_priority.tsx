@@ -34,7 +34,6 @@ import sumBy from '../../../../../../../../util/sumBy.ts'
 import { diagnoses } from '../../../../../../../../db/models/diagnoses.ts'
 import { additional_tasks } from '../../../../../../../../db/models/additional_tasks.ts'
 import { assertOrRedirect } from '../../../../../../../../util/assertOr.ts'
-import { logJSONToFileIfOnServer } from '../../../../../../../../util/logJSONToFileIfOnServer.ts'
 
 export const TriageAssignPrioritySchema = z.object({})
 
