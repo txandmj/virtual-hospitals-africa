@@ -295,6 +295,17 @@ function isExcluding(node: AnyNode): node is Lang['excluding'] {
   return node.atom === 'excluding'
 }
 
+function asExistence(value_snomed_concept: Maybe<Lang['snomed_concept']>): Existence {
+  switch (value_snomed_concept?.name) {
+    case 'No':
+      return 'No'
+    case 'Unknown':
+      return 'Unknown'
+    default:
+      return 'Yes'
+  }
+}
+
 export const finding_base: z.ZodType<Lang['finding']> = z.lazy(() =>
   z.object({
     atom: z.literal('finding'),
@@ -358,7 +369,7 @@ export const finding_base: z.ZodType<Lang['finding']> = z.lazy(() =>
         excluding,
         exact: false,
         history: false,
-        existence: 'Yes' as const,
+        existence: asExistence(value_snomed_concept),
       }
     },
   )
@@ -423,7 +434,7 @@ export const clinical_finding: z.ZodType<NonNullableProperty<Lang['finding'], 'r
         excluding,
         exact: false,
         history: false,
-        existence: 'Yes' as const,
+        existence: asExistence(value_snomed_concept),
       }
     },
   )

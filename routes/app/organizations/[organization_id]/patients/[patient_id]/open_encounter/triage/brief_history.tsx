@@ -1,6 +1,6 @@
+import { z } from 'zod'
 import { assertAllPriorStepsCompleted, completeAndProceedToNextStep, completedProcedure, OpenEncounterWorkflowPage } from '../_middleware.tsx'
 import type { OpenEncounterWorkflowContext } from '../../../../../../../../types.ts'
-import { z } from 'zod'
 import { patient_findings } from '../../../../../../../../db/models/patient_findings.ts'
 import { postHandler } from '../../../../../../../../backend/postHandler.ts'
 import { snomed_category, snomed_concept_id, yes_no_unknown } from '../../../../../../../../util/validators.ts'
@@ -13,13 +13,15 @@ import { COMMON_CONDITIONS, CommonConditionKey, commonConditionSnomedConcept } f
 import { SELF_REPORTED_QUALIFIER, STATUS_ATTRIBUTE } from '../../../../../../../../shared/snomed_concepts.ts'
 import { markEnteredInError } from '../../../../../../../../db/models/patient_records_base.ts'
 import { promiseProps } from '../../../../../../../../util/promiseProps.ts'
-
 import { exists } from '../../../../../../../../util/exists.ts'
-
 import { BriefHistorySection } from '../../../../../../../../components/triage/BriefHistorySection.tsx'
 import { patient_record_providers } from '../../../../../../../../db/models/patient_record_providers.ts'
 import { assertOr400 } from '../../../../../../../../util/assertOr.ts'
 import { redirectToRoutePatientIfEmergency } from './_middleware.tsx'
+import { events } from '../../../../../../../../db/models/events.ts'
+import { parseWithSchema } from '../../../../../../../../shared/s_expression.ts'
+import { insertable_finding_base, InsertableFindingBase } from '../../../../../../../../shared/s_expression_schemas.ts'
+import zip from '../../../../../../../../util/zip.ts'
 
 const ConditionSchemaOptional = z.object(
   {
@@ -89,14 +91,17 @@ function existingAllergies({ state }: OpenEncounterWorkflowContext) {
 function selfReportedStatusSExpression(
   condition_snomed_concept: { s_expression: string },
   existence: Existence,
-): string {
-  return `
+): InsertableFindingBase {
+  return parseWithSchema(
+    `
     (finding 
       ${STATUS_ATTRIBUTE.s_expression}
       ${condition_snomed_concept.s_expression}
       ${patient_findings.QUALIFIERS_BY_EXISTENCE[existence].s_expression}
       (qualifier ${SELF_REPORTED_QUALIFIER.s_expression}))
-  `.trim()
+  `,
+    insertable_finding_base,
+  )
 }
 
 export const handler = postHandler(
@@ -108,13 +113,16 @@ export const handler = postHandler(
       patient_encounter_id,
       patient_encounter_employee_id,
       employment_id,
+      workflow,
       workflow_step_snomed_concept,
+      step,
+      patient_age_determination,
     } = ctx.state
 
     const completed_procedure = completedProcedure(ctx)
     const most_recent_findings = await mostRecentRecords(ctx)
 
-    const findings_to_insert: string[] = []
+    const findings_to_insert: InsertableFindingBase[] = []
     const altered_records: { record_id: string; condition_key: CommonConditionKey }[] = []
 
     for (const [condition_key, condition] of entries(form_values.common_conditions)) {
@@ -140,24 +148,47 @@ export const handler = postHandler(
     }
 
     for (const allergy of form_values.allergies || []) {
-      findings_to_insert.push(`(clinical_finding (snomed_concept "${allergy.name}" "${allergy.category}"))`)
+      findings_to_insert.push(
+        parseWithSchema(
+          `(clinical_finding (snomed_concept "${allergy.name}" "${allergy.category}"))`,
+          insertable_finding_base,
+        ),
+      )
     }
 
-    const { response } = await promiseProps({
+    const { response, insert_result } = await promiseProps({
       response: completeAndProceedToNextStep(ctx),
-      _insert: insertFindings(),
+      insert_result: insertFindings(),
       _mark_altered: markAlteredRecords(),
     })
+
+    if (insert_result) {
+      await events.insert(trx, {
+        type: 'ProcedureCompleted',
+        data: {
+          workflow,
+          step,
+          patient_id,
+          patient_encounter_id,
+          patient_age_determination,
+          procedure_id: insert_result.procedure_id,
+          records: zip(insert_result.finding_ids, findings_to_insert).map(([id, finding]) => ({
+            id,
+            existence: finding.existence,
+          })).toArray(),
+        },
+      })
+    }
 
     return response
 
     function insertFindings() {
       if (!findings_to_insert.length) {
-        assert(
+        assertOr400(
           completed_procedure,
           'Your first time submitting brief history there must be findings to insert',
         )
-        return
+        return Promise.resolve()
       }
 
       return patient_findings.insertMany(trx, {

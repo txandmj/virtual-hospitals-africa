@@ -130,3 +130,12 @@ export function createEventProcessor(): EventProcessor {
     },
   }
 }
+
+if (import.meta.main) {
+  createEventProcessor().start()
+
+  globalThis.addEventListener('unhandledrejection', (e) => {
+    console.error('Caught unhandled rejection:', e.reason)
+    e.preventDefault()
+  })
+}

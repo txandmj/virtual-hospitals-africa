@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# shellcheck disable=SC1091
 source .env
+START_TIME=$(date +%Y-%m-%d_%H-%M-%S)
 HTTP_SERVER_PORT="${HTTP_SERVER_PORT-8001}"
 HTTPS_PROXY_SERVER_PORT="${HTTPS_PROXY_SERVER_PORT-8000}"
+EVENTS_PROCESSOR_PID=
 PROXY_PID=
-LISP_WATCHER_PID=
+SERVER_PID=
 
 ensure_no_process_on_port() {
   local port=$1
@@ -16,37 +19,33 @@ ensure_no_process_on_port() {
 }
 
 clean_up() {
+  [ ! -z "$EVENTS_PROCESSOR_PID" ] && kill "$EVENTS_PROCESSOR_PID" || true
   [ ! -z "$PROXY_PID" ] && kill "$PROXY_PID" || true
-  [ ! -z "$LISP_WATCHER_PID" ] && kill "$LISP_WATCHER_PID" || true
+  [ ! -z "$SERVER_PID" ] && kill "$SERVER_PID" || true
+  ./scripts/general-bash/kill_process_on_port.sh "$HTTP_SERVER_PORT" || true
+  ./scripts/general-bash/kill_process_on_port.sh "$HTTPS_PROXY_SERVER_PORT" || true
 }
 
 ensure_no_process_on_port "$HTTP_SERVER_PORT"
 ensure_no_process_on_port "$HTTPS_PROXY_SERVER_PORT"
 
-# Compile s-expressions on startup
-if [ -d "s_expression" ]; then
-  echo "Compiling s-expressions..."
-  deno task script ./s_expression/compile.ts
-fi
+logs_dir="./logs/$START_TIME"
+mkdir -p "$logs_dir"
 
-# Watch for changes to .lisp files and recompile
-if [ -d "s_expression" ] && command -v fswatch >/dev/null 2>&1; then
-  echo "Starting s-expression file watcher..."
-  fswatch -o s_expression/*.lisp | while read -r; do
-    echo "Detected .lisp file change, recompiling..."
-    deno task script ./s_expression/compile.ts
-  done &
-  LISP_WATCHER_PID="$!"
-elif [ -d "s_expression" ]; then
-  echo "Warning: fswatch not found. Install with: brew install fswatch"
-  echo "S-expressions will compile on startup only."
-fi
+events_processor_output="$logs_dir/events.log"
+http_server_output="$logs_dir/server.log"
+https_proxy_server_output="$logs_dir/proxy.log"
+echo "Logs for this run available at $logs_dir"
 
-mkdir -p logs
+deno task events:processor | tee "$events_processor_output" &
+EVENTS_PROCESSOR_PID="$!"
 
-HTTP_SERVER_PORT=$HTTP_SERVER_PORT HTTPS_PROXY_SERVER_PORT=$HTTPS_PROXY_SERVER_PORT deno task proxy &
+HTTP_SERVER_PORT=$HTTP_SERVER_PORT HTTPS_PROXY_SERVER_PORT=$HTTPS_PROXY_SERVER_PORT deno task proxy | tee "$https_proxy_server_output" &
 PROXY_PID="$!"
 
 trap 'clean_up' EXIT
 
-PORT=$HTTP_SERVER_PORT HTTPS_PROXY_SERVER_PORT=$HTTPS_PROXY_SERVER_PORT deno task vite
+PORT=$HTTP_SERVER_PORT HTTPS_PROXY_SERVER_PORT=$HTTPS_PROXY_SERVER_PORT deno task vite | tee "$http_server_output" &
+SERVER_PID="$!"
+
+wait $EVENTS_PROCESSOR_PID $PROXY_PID $SERVER_PID

@@ -22,24 +22,24 @@ elif [ -f .env.docker ]; then
   cmp --silent .env .env.docker || fail $'.env differs from .env.docker\nrun deno task switch:docker before running tests'
 fi
 
+events_processor_pid=""
 https_proxy_server_pid=""
 http_server_pid=""
 
-mkdir -p ./logs
-
 # On CI, write logs to a known directory for artifact upload
 # Otherwise, use temp files
+mkdir -p ./logs
 if [[ "${CI:-}" == "true" ]]; then
-  test_http_server_output="./logs/server.log"
-  test_https_proxy_server_output="./logs/proxy.log"
-  : >"$test_http_server_output"
-  : >"$test_https_proxy_server_output"
+  logs_dir="./logs"
 else
-  test_http_server_output="/tmp/vha_server.log"
-  test_https_proxy_server_output="/tmp/vha_proxy.log"
-  : >"$test_http_server_output"
-  : >"$test_https_proxy_server_output"
+  logs_dir="/tmp"
 fi
+test_events_processor_output="$logs_dir/events.log"
+test_http_server_output="$logs_dir/server.log"
+test_https_proxy_server_output="$logs_dir/proxy.log"
+: >"$test_events_processor_output"
+: >"$test_http_server_output"
+: >"$test_https_proxy_server_output"
 
 task=vite
 
@@ -77,12 +77,23 @@ cleanup() {
   if [ -n "$https_proxy_server_pid" ]; then
     kill "$https_proxy_server_pid" || true
   fi
+  if [ -n "$events_processor_pid" ]; then
+    kill "$events_processor_pid" || true
+  fi
   if [[ "${CI:-}" == "true" ]]; then
     # Logs are saved to ./logs/ and uploaded as artifacts
-    echo "Server and proxy logs saved to ./logs/ (will be uploaded as artifacts)"
+    echo "Events processor, server, and proxy logs saved to ./logs/ (will be uploaded as artifacts)"
   else
     print_server_log_info
   fi
+}
+
+start_events_processor() {
+  IS_TEST=true \
+  PORT=$HTTP_SERVER_PORT \
+  HTTPS_PROXY_SERVER_PORT=$HTTPS_PROXY_SERVER_PORT \
+  exec deno task events:processor \
+  >> "$test_events_processor_output" 2>&1
 }
 
 start_http_server() {
@@ -107,6 +118,9 @@ ensure_test_servers_not_already_running
 
 trap cleanup EXIT INT TERM HUP
 
+start_events_processor &
+events_processor_pid="$!"
+
 start_https_proxy_server &
 https_proxy_server_pid="$!"
 
@@ -115,6 +129,6 @@ print_server_log_info
 start_http_server &
 http_server_pid="$!"
 
-# Wait for either process to exit - if one dies, we want to fail fast
-wait -n $http_server_pid $https_proxy_server_pid
+# Wait for any process to exit - if one dies, we want to fail fast
+wait -n $events_processor_pid $https_proxy_server_pid $http_server_pid 
 exit 1
