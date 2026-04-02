@@ -16,7 +16,7 @@
     "**/node_modules/**": true,
     "**/.vscode/**": true
   },
-  "typescript.preferences.autoImportFileExcludePatterns": [
+  "js/ts.preferences.autoImportFileExcludePatterns": [
     "node:*",
     "@types/node"
   ]

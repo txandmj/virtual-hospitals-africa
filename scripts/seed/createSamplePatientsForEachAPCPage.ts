@@ -33,6 +33,16 @@ import { createTestOrganization } from 'test/_helpers/organizations.ts'
 
 type Evidence = ReturnType<typeof allEvidenceToLookFor> extends Generator<infer T> ? T : never
 
+type APCTaskDef = {
+  page_slug: string
+  task_node: Lang['task']
+  task_file_path: string
+  evidence_s_expressions: string[]
+  vital_overrides: Partial<Record<VitalMeasurement, number>>
+  common_condition_keys: Set<CommonConditionKey>
+  skip: boolean
+}
+
 function isVitalsBasedEvidence(evidence: Evidence | QueryableEvidenceNode): boolean {
   const finding: { atom: string; snomed_concept?: { name: string } } = (
       evidence.atom === '>' ||
@@ -78,14 +88,7 @@ const COMMON_CONDITION_BY_SNOMED_NAME = new Map<string, CommonConditionKey>(
   COMMON_CONDITIONS.map((c) => [c.name, c.key]),
 )
 
-export async function* tasksFromFilepath(task_file_path: string): AsyncGenerator<{
-  task_node: Lang['task']
-  task_file_path: string
-  evidence_s_expressions: string[]
-  vital_overrides: Partial<Record<VitalMeasurement, number>>
-  common_condition_keys: Set<CommonConditionKey>
-  skip: boolean
-}> {
+export async function* tasksFromFilepath(task_file_path: string): AsyncGenerator<APCTaskDef> {
   const expressions = await parseLispFile(task_file_path)
   const tasks = expressions.map((expression) => parseWithSchema(expression, task))
 
@@ -158,6 +161,7 @@ export async function* tasksFromFilepath(task_file_path: string): AsyncGenerator
       vital_overrides,
       common_condition_keys,
       skip,
+      page_slug: pageSlugFromFilePath(task_file_path),
       evidence_s_expressions: [...all_evidence],
     }
   }
@@ -168,106 +172,109 @@ export function pageSlugFromFilePath(file_path: string): string {
   return filename.replace('.lisp', '')
 }
 
-export async function* setupTriageForAPCPage(
-  task_file_path: string,
+export async function setupTriageForAPCTaskNode(
+  { task_node, page_slug, skip, common_condition_keys, evidence_s_expressions, vital_overrides }: APCTaskDef,
   clinic: { id: string },
   nurse: TestEmployeeWithSession,
   shcp: TestEmployee,
 ) {
-  const page_slug = pageSlugFromFilePath(task_file_path)
-  for await (const { task_node, skip, common_condition_keys, evidence_s_expressions, vital_overrides } of tasksFromFilepath(task_file_path)) {
-    if (skip) {
-      console.log(`Skipping creating patient for ${task_node.description}`)
-      return null
-    }
-    if (!evidence_s_expressions.length) {
-      console.log(`Skipping creating patient for ${task_node.description}; no evidence to put in`)
-      return null
-    }
-    console.log(`Creating patient for page: ${page_slug} ${task_node.description}`)
-
-    const encounter = await insertPatientSeekingTreatmentWithEmployeeAndCompleteRegistrationForTest(
-      db,
-      clinic.id,
-      {
-        employment_id: nurse.health_worker.employee_id,
-        is_tutorial: true,
-        patient_demographics: {
-          first_names: 'TESTING',
-          surname: page_slug,
-          name: `TESTING ${page_slug}`,
-          preferred_name: 'TESTING',
-          date_of_birth: '1990-01-01',
-        },
-      },
-    )
-
-    const brief_history = {
-      common_conditions: fromEntries(COMMON_CONDITIONS.map((condition) => [condition.key, {
-        existence: common_condition_keys.has(condition.key) ? 'Yes' as const : 'No' as const,
-      }])),
-    }
-
-    type AdditionalFinding = { s_expression: string; existence: 'Yes'; priority_level?: WarningSignPriority }
-    const additional_findings: Record<string, AdditionalFinding> = {}
-    for (const s_expression of evidence_s_expressions) {
-      const node = parseWithSchema(s_expression, any_query_single)
-      const additional_finding: AdditionalFinding = {
-        s_expression,
-        existence: 'Yes' as const,
-        priority_level: undefined,
-      }
-      const snomed_concept = 'snomed_concept' in node ? node.snomed_concept : (
-        assert('specific_snomed_concept' in node && node.specific_snomed_concept), node.specific_snomed_concept
-      )
-      const as_searched_for_warning_sign = await snomed_warning_signs.findOne(db, {
-        snomed_concept_id: snomedConceptBase(db, snomed_concept),
-        age_determination: 'adult',
-      })
-      additional_finding.priority_level = as_searched_for_warning_sign.priority ?? undefined
-      additional_findings[generateUUID()] = additional_finding
-    }
-
-    const warning_signs = {
-      warning_signs: {
-        ...asWarningSignsAdult([], { pregnant: brief_history.common_conditions.pregnancy.existence === 'Yes' }).warning_signs,
-        ...additional_findings,
-      },
-    }
-
-    const measure_vitals = {
-      measurements: asVitalMeasurementFormValues({ ...DEFAULT_MEASUREMENTS.adult, ...vital_overrides }),
-      assessments: asVitalAssessmentFormValues(DEFAULT_ASSESSMENTS.adult),
-    }
-
-    const result = await setupTriage({
-      clinic,
-      nurse,
-      shcp,
-      encounter,
-      steps: {
-        brief_history,
-        warning_signs,
-        height_and_weight: {
-          measurements: {
-            height: { value: 160, units: 'cm' },
-            weight: { value: 70, units: 'kg' },
-          },
-        },
-        measure_vitals,
-      },
-    })
-
-    console.log(`Created patient for page: ${page_slug}`)
-    yield { ...result, task_node }
+  if (skip) {
+    console.log(`Skipping creating patient for ${task_node.description}`)
+    return null
   }
+  if (!evidence_s_expressions.length) {
+    console.log(`Skipping creating patient for ${task_node.description}; no evidence to put in`)
+    return null
+  }
+  console.log(`Creating patient for page: ${page_slug} ${task_node.description}`)
+
+  const encounter = await insertPatientSeekingTreatmentWithEmployeeAndCompleteRegistrationForTest(
+    db,
+    clinic.id,
+    {
+      employment_id: nurse.health_worker.employee_id,
+      is_tutorial: true,
+      patient_demographics: {
+        first_names: 'TESTING',
+        surname: page_slug,
+        name: `TESTING ${page_slug}`,
+        preferred_name: 'TESTING',
+        date_of_birth: '1990-01-01',
+      },
+    },
+  )
+
+  const brief_history = {
+    common_conditions: fromEntries(COMMON_CONDITIONS.map((condition) => [condition.key, {
+      existence: common_condition_keys.has(condition.key) ? 'Yes' as const : 'No' as const,
+    }])),
+  }
+
+  type AdditionalFinding = { s_expression: string; existence: 'Yes'; priority_level?: WarningSignPriority }
+  const additional_findings: Record<string, AdditionalFinding> = {}
+  for (const s_expression of evidence_s_expressions) {
+    const node = parseWithSchema(s_expression, any_query_single)
+    const additional_finding: AdditionalFinding = {
+      s_expression,
+      existence: 'Yes' as const,
+      priority_level: undefined,
+    }
+    const snomed_concept = 'snomed_concept' in node ? node.snomed_concept : (
+      assert('specific_snomed_concept' in node && node.specific_snomed_concept), node.specific_snomed_concept
+    )
+    const as_searched_for_warning_sign = await snomed_warning_signs.findOne(db, {
+      snomed_concept_id: snomedConceptBase(db, snomed_concept),
+      age_determination: 'adult',
+    })
+    additional_finding.priority_level = as_searched_for_warning_sign.priority ?? undefined
+    additional_findings[generateUUID()] = additional_finding
+  }
+
+  const warning_signs = {
+    warning_signs: {
+      ...asWarningSignsAdult([], { pregnant: brief_history.common_conditions.pregnancy.existence === 'Yes' }).warning_signs,
+      ...additional_findings,
+    },
+  }
+
+  const measure_vitals = {
+    measurements: asVitalMeasurementFormValues({ ...DEFAULT_MEASUREMENTS.adult, ...vital_overrides }),
+    assessments: asVitalAssessmentFormValues(DEFAULT_ASSESSMENTS.adult),
+  }
+
+  const result = await setupTriage({
+    clinic,
+    nurse,
+    shcp,
+    encounter,
+    steps: {
+      brief_history,
+      warning_signs,
+      height_and_weight: {
+        measurements: {
+          height: { value: 160, units: 'cm' },
+          weight: { value: 70, units: 'kg' },
+        },
+      },
+      measure_vitals,
+    },
+  })
+
+  console.log(`Created patient for page: ${page_slug}`)
+  return { ...result, task_node, encounter }
 }
 
-async function createSamplePatientsForEachAPCPage() {
+export async function* apcTaskNodes() {
   const s_expression_directory = await walkDirectory()
   const task_file_paths = exists(s_expression_directory.get('tasks'))
     .filter((path) => path.includes('apc-adult'))
 
+  for (const task_file_path of task_file_paths) {
+    yield* tasksFromFilepath(task_file_path)
+  }
+}
+
+async function createSamplePatientsForEachAPCPage() {
   const clinic = await createTestOrganization(db)
 
   const [nurse, shcp] = await Promise.all([
@@ -283,8 +290,8 @@ async function createSamplePatientsForEachAPCPage() {
     }),
   ])
 
-  await forEach(task_file_paths, async (task_file_path) => {
-    await setupTriageForAPCPage(task_file_path, clinic, nurse, shcp)
+  await forEach(apcTaskNodes(), async (task_def) => {
+    await setupTriageForAPCTaskNode(task_def, clinic, nurse, shcp)
   }, { concurrency: 1 })
 
   console.log('Done! Created sample patients for all APC pages.')

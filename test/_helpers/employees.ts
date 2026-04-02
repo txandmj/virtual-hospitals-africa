@@ -105,9 +105,9 @@ export async function addTestEmployeeWithSession(
 
     const method = (init?.method ?? 'GET').toUpperCase()
     const path = typeof url === 'string' ? url : url.toString()
-    const timings = requestTimingsMap.get(session_id) ?? []
+    const timings = request_timings_map.get(session_id) ?? []
     timings.push({ method, path, duration_ms })
-    requestTimingsMap.set(session_id, timings)
+    request_timings_map.set(session_id, timings)
 
     const $ = cheerio.load(html, {
       baseURI: response.url,
