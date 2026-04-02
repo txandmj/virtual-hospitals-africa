@@ -7,7 +7,7 @@ import { route } from '../../test/_route.ts'
 import { forEach } from '../../util/inParallel.ts'
 import { createTestOrganization } from 'test/_helpers/organizations.ts'
 import puppeteer from 'puppeteer'
-import { pageSlugFromFilePath, tasksFromFilepath } from './createSamplePatientsForEachAPCPage.ts'
+import { pageSlugFromFilePath, taskAsTestCase, tasksFromFilepath } from './createSamplePatientsForEachAPCPage.ts'
 import { hyphenate } from '../../util/hyphenate.ts'
 import { assert } from 'std/assert/assert.ts'
 import { WarningSignPriority } from '../../db.d.ts'
@@ -30,6 +30,7 @@ import generateUUID from '../../util/uuid.ts'
 import { VitalMeasurement } from '../../shared/vitals.ts'
 import { delay } from '../../util/delay.ts'
 import { exists as fileExists } from '@std/fs/exists'
+import { MEDICAL_GUIDANCE_TASKS } from '../../shared/tasks.ts'
 
 async function* allCheckForTasks() {
   const s_expression_directory = await walkDirectory()
@@ -38,6 +39,17 @@ async function* allCheckForTasks() {
   for await (const task_file_path of task_file_paths) {
     yield* tasksFromFilepath(task_file_path)
   }
+}
+
+function* allMedicalGuidanceTasks() {
+  for (const task of MEDICAL_GUIDANCE_TASKS) {
+    yield taskAsTestCase(task, `${task.page_number}-${hyphenate(task.description)}`)
+  }
+}
+
+async function* allTasks() {
+  yield* allCheckForTasks()
+  yield* allMedicalGuidanceTasks()
 }
 
 async function setupTestCaseForTask(
@@ -139,10 +151,11 @@ async function screenshotAPCAdditionalTasks() {
 
   const { hostname } = new URL(route)
 
-  await forEach(allCheckForTasks(), async ({ task_node, task_file_path, skip, common_condition_keys, evidence_s_expressions, vital_overrides }) => {
+  await forEach(allTasks(), async ({ task_node, task_file_path, skip, common_condition_keys, evidence_s_expressions, vital_overrides }) => {
     if (skip) return
     const page_slug = pageSlugFromFilePath(task_file_path)
-    const output_dir = `./apc-test-results/${page_slug}`
+    const page_number = exists(page_slug.match(/(\d+)/))[1]
+    const output_dir = `./apc-test-results/${page_number}`
     const file_name = hyphenate(task_node.description)
     const image_filepath = `${output_dir}/${file_name}.png`
 

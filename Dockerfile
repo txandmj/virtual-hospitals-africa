@@ -27,10 +27,17 @@ COPY --from=build /app/db ./db
 # Copy deno module cache to avoid re-downloading at startup
 COPY --from=build /deno-dir /deno-dir
 
-# Copy deno config (needed for task resolution) and startup script
+# Copy deno config (needed for task resolution) and startup scripts
 COPY --from=build /app/deno.json ./deno.json
 COPY --from=build /app/deno.lock ./deno.lock
 COPY --from=build /app/scripts/web.sh ./scripts/web.sh
+
+# Copy source files needed by the events processor at runtime
+COPY --from=build /app/events ./events
+COPY --from=build /app/util ./util
+COPY --from=build /app/shared ./shared
+COPY --from=build /app/external-clients ./external-clients
+COPY --from=build /app/types.ts ./types.ts
 
 EXPOSE 8000
 

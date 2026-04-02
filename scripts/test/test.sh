@@ -154,6 +154,7 @@ if $use_test_servers; then
   else
     : >"/tmp/vha_server.log"
     : >"/tmp/vha_proxy.log"
+    : >"/tmp/vha_events.log"
   fi
 fi
 

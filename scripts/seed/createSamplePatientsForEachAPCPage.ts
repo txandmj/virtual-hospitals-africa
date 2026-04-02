@@ -88,82 +88,88 @@ const COMMON_CONDITION_BY_SNOMED_NAME = new Map<string, CommonConditionKey>(
   COMMON_CONDITIONS.map((c) => [c.name, c.key]),
 )
 
-export async function* tasksFromFilepath(task_file_path: string): AsyncGenerator<APCTaskDef> {
-  const expressions = await parseLispFile(task_file_path)
-  const tasks = expressions.map((expression) => parseWithSchema(expression, task))
+export function taskAsTestCase(task_node: Lang['task'], task_file_path: string) {
+  const all_evidence = new Set<string>()
+  const vital_overrides: Partial<Record<VitalMeasurement, number>> = {}
+  const common_condition_keys = new Set<CommonConditionKey>()
+  let skip = false
 
-  for (const task_node of tasks) {
-    const all_evidence = new Set<string>()
-    const vital_overrides: Partial<Record<VitalMeasurement, number>> = {}
-    const common_condition_keys = new Set<CommonConditionKey>()
-    let skip = false
-
-    for (const evidence of allEvidenceToLookFor(task_node.due_to)) {
-      if (!isVitalsBasedEvidence(evidence)) {
-        if (evidence.atom === 'active_condition') {
-          const key = COMMON_CONDITION_BY_SNOMED_NAME.get(evidence.snomed_concept.name)
-          if (key != null) {
-            common_condition_keys.add(key)
-            continue
-          } else {
-            // all_evidence.add(inverseSExpression({
-            //   atom: 'diagnosis',
-            //   snomed_concept: evidence.snomed_concept,
-            //   certainty_qualifier: 'probable',
-            // }))
-            skip = true
-            continue
+  for (const evidence of allEvidenceToLookFor(task_node.due_to)) {
+    if (!isVitalsBasedEvidence(evidence)) {
+      if (evidence.atom === 'active_condition') {
+        const key = COMMON_CONDITION_BY_SNOMED_NAME.get(evidence.snomed_concept.name)
+        if (key != null) {
+          common_condition_keys.add(key)
+          if (key === 'diabetes') {
+            vital_overrides['blood_glucose'] = vital_overrides['blood_glucose'] || 7
           }
-        }
-        if (evidence.atom === 'finding') {
-          if (!evidence.specific_snomed_concept) {
-            assertEquals(evidence.attributes.length, 1)
-            assertEquals(evidence.attributes[0].specific_snomed_concept.name, 'Finding site')
-            all_evidence.add(inverseSExpression({
-              ...evidence,
-              specific_snomed_concept: {
-                atom: 'snomed_concept',
-                name: 'Pain',
-                category: 'finding',
-              },
-            }))
-            continue
-          }
-        }
-        // TODO: exercise these rules
-        if (evidence.atom === 'diagnosis') {
+          continue
+        } else {
+          // all_evidence.add(inverseSExpression({
+          //   atom: 'diagnosis',
+          //   snomed_concept: evidence.snomed_concept,
+          //   certainty_qualifier: 'probable',
+          // }))
           skip = true
           continue
         }
-        all_evidence.add(inverseSExpression(evidence))
+      }
+      if (evidence.atom === 'finding') {
+        if (!evidence.specific_snomed_concept) {
+          assertEquals(evidence.attributes.length, 1)
+          assertEquals(evidence.attributes[0].specific_snomed_concept.name, 'Finding site')
+          all_evidence.add(inverseSExpression({
+            ...evidence,
+            specific_snomed_concept: {
+              atom: 'snomed_concept',
+              name: 'Pain',
+              category: 'finding',
+            },
+          }))
+          continue
+        }
+      }
+      // TODO: exercise these rules
+      if (evidence.atom === 'diagnosis') {
+        skip = true
         continue
       }
+      all_evidence.add(inverseSExpression(evidence))
+      continue
+    }
 
-      const is_comparator = evidence.atom === '>' || evidence.atom === '<' || evidence.atom === '>=' || evidence.atom === '<=' || evidence.atom === '='
-      if (is_comparator) {
-        const comparison = evidence as MeasurementComparison
-        const snomed_name = comparison.measurement.snomed_concept?.name
-        if (snomed_name) {
-          const vital = vitalFromSnomedConceptName(snomed_name)
-          if (vital) {
-            const threshold = comparison.value.toNumber()
-            vital_overrides[vital] = vitalValueFromComparison(comparison.atom, threshold)
-          }
+    const is_comparator = evidence.atom === '>' || evidence.atom === '<' || evidence.atom === '>=' || evidence.atom === '<=' || evidence.atom === '='
+    if (is_comparator) {
+      const comparison = evidence as MeasurementComparison
+      const snomed_name = comparison.measurement.snomed_concept?.name
+      if (snomed_name) {
+        const vital = vitalFromSnomedConceptName(snomed_name)
+        if (vital) {
+          const threshold = comparison.value.toNumber()
+          vital_overrides[vital] = vitalValueFromComparison(comparison.atom, threshold)
         }
-      } else if (evidence.atom === 'active_condition' && (evidence as { snomed_concept?: { name: string } }).snomed_concept?.name === 'Fever') {
-        // Fever threshold is 38.5°C, so use 39.0
-        vital_overrides['temperature'] = 39.0
       }
+    } else if (evidence.atom === 'active_condition' && (evidence as { snomed_concept?: { name: string } }).snomed_concept?.name === 'Fever') {
+      // Fever threshold is 38.5°C, so use 39.0
+      vital_overrides['temperature'] = 39.0
     }
-    yield {
-      task_node,
-      task_file_path,
-      vital_overrides,
-      common_condition_keys,
-      skip,
-      page_slug: pageSlugFromFilePath(task_file_path),
-      evidence_s_expressions: [...all_evidence],
-    }
+  }
+  return {
+    task_node,
+    task_file_path,
+    vital_overrides,
+    common_condition_keys,
+    skip,
+    page_slug: pageSlugFromFilePath(task_file_path),
+    evidence_s_expressions: [...all_evidence],
+  }
+}
+
+export async function* tasksFromFilepath(task_file_path: string): AsyncGenerator<APCTaskDef> {
+  const expressions = await parseLispFile(task_file_path)
+  const tasks = expressions.map((expression) => parseWithSchema(expression, task))
+  for (const task_node of tasks) {
+    yield taskAsTestCase(task_node, task_file_path)
   }
 }
 

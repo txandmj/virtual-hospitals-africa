@@ -2,45 +2,84 @@ import { assert } from 'std/assert/assert.ts'
 import { PROCEDURE, REFERENCE_DOCUMENTATION } from './snomed_concepts.ts'
 import { parseWithSchema } from './s_expression.ts'
 import entries from '../util/entries.ts'
-import { ADULT_PAC_SYMPTOMS_TABLE_OF_CONTENTS_TO_SNOMED } from './adult_pac_table_of_contents_to_snomed.ts'
-import { ADULT_PAC_SYMPTOMS_TABLE_OF_CONTENTS } from './pack-adult.ts'
+import {
+  ADULT_PAC_CHRONIC_CONDITIONS_TABLE_OF_CONTENTS_TO_SNOMED,
+  ADULT_PAC_SYMPTOMS_TABLE_OF_CONTENTS_TO_SNOMED,
+} from './adult_pac_table_of_contents_to_snomed.ts'
+import { ADULT_PAC_CHRONIC_CONDITIONS_TABLE_OF_CONTENTS, ADULT_PAC_SYMPTOMS_TABLE_OF_CONTENTS } from './pack-adult.ts'
 import { task } from './s_expression_schemas.ts'
 import { TASKS_LISP } from '../s_expression/tasks.ts'
 import findMatching from '../util/findMatching.ts'
 import { RenderedTaskToBeDone } from '../types.ts'
 import memoize from '../util/memoize.ts'
+import compactMap from '../util/compactMap.ts'
 
 function asTask(task_s_expression: string) {
   return parseWithSchema(task_s_expression, task)
 }
 
-export const MEDICAL_GUIDANCE_TASKS = entries(ADULT_PAC_SYMPTOMS_TABLE_OF_CONTENTS_TO_SNOMED).flatMap(([table_of_contents_name, snomed_mapping]) => {
+const TABLE_OF_CONTENTS_SYMPTOMS = compactMap(entries(ADULT_PAC_SYMPTOMS_TABLE_OF_CONTENTS_TO_SNOMED), ([table_of_contents_name, table_of_contents_entry]) => {
   const page_number = ADULT_PAC_SYMPTOMS_TABLE_OF_CONTENTS[table_of_contents_name as unknown as keyof typeof ADULT_PAC_SYMPTOMS_TABLE_OF_CONTENTS]
   assert(page_number, `No page for ${table_of_contents_name}`)
+  // TODO Have some way of noting that the patient is here for a procedure
+  if (['procedure', 'regime/therapy'].includes(table_of_contents_entry.category)) return
+  return {
+    ...table_of_contents_entry,
+    table_of_contents_name,
+    page_number,
+    link_href: `/medical-resources/primary-care/adult.pdf#page=${page_number}`,
+    thumbnail_href: `/medical-resources/za/primary-care/adult/thumbnails/400/${page_number}.png`,
+  }
+})
 
-  return snomed_mapping.map((concept) =>
-    `(task
-    "Display medical guidance for ${table_of_contents_name === 'Lump, neck/axilla/groin' ? concept.name : table_of_contents_name}"
-    adult
-      ${concept.s_expression}
+const TABLE_OF_CONTENTS_CHRONIC_CONDITIONS = compactMap(
+  entries(ADULT_PAC_CHRONIC_CONDITIONS_TABLE_OF_CONTENTS_TO_SNOMED),
+  ([table_of_contents_name, table_of_contents_entry]) => {
+    const page_number =
+      ADULT_PAC_CHRONIC_CONDITIONS_TABLE_OF_CONTENTS[table_of_contents_name as unknown as keyof typeof ADULT_PAC_CHRONIC_CONDITIONS_TABLE_OF_CONTENTS]
+    assert(page_number, `No page for ${table_of_contents_name}`)
+    // TODO Have some way of noting that the patient is here for a procedure
+    if (['procedure', 'regime/therapy'].includes(table_of_contents_entry.category)) return
+    return {
+      ...table_of_contents_entry,
+      table_of_contents_name,
+      page_number,
+      link_href: `/medical-resources/primary-care/adult.pdf#page=${page_number}`,
+      thumbnail_href: `/medical-resources/za/primary-care/adult/thumbnails/400/${page_number}.png`,
+    }
+  },
+)
+
+const TABLE_OF_CONTENTS_COMBINED = [
+  ...TABLE_OF_CONTENTS_SYMPTOMS,
+  ...TABLE_OF_CONTENTS_CHRONIC_CONDITIONS,
+]
+
+export const MEDICAL_GUIDANCE_TASKS = TABLE_OF_CONTENTS_COMBINED.map((table_of_contents_entry) => {
+  const task = asTask(`
+    (task
+      "Display medical guidance for ${table_of_contents_entry.table_of_contents_name}"
+      adult
+      ${table_of_contents_entry.s_expression}
       (procedure 
         ${PROCEDURE.s_expression}
         ${REFERENCE_DOCUMENTATION.s_expression}
         (link 
-          "APC 2023 — ${table_of_contents_name}"
-          "/medical-resources/primary-care/adult.pdf#page=${page_number}"
-          "/medical-resources/za/primary-care/adult/thumbnails/400/${page_number}.png"
+          "APC 2023 — ${table_of_contents_entry.table_of_contents_name}"
+          "${table_of_contents_entry.link_href}"
+          "${table_of_contents_entry.thumbnail_href}"
         )
-        ))`
-  )
+      )
+    )
+  `)
+
+  return { ...task, page_number: table_of_contents_entry.page_number }
 })
 
-export const TASK_DEFS = [
+export const TASKS = [
+  ...TASKS_LISP.map(asTask),
   ...MEDICAL_GUIDANCE_TASKS,
-  ...TASKS_LISP,
 ]
-
-export const TASKS = TASK_DEFS.map(asTask)
 /*
 // Triage nurse has permission.
   check_for finding              Yes

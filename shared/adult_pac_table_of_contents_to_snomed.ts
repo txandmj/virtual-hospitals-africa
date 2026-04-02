@@ -1,103 +1,92 @@
-export const ADULT_PAC_SYMPTOMS_TABLE_OF_CONTENTS_TO_SNOMED = {
-  'Abused patient': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Victim of abuse" "finding") possible)',
-      'snomed_concept_id': '386702006',
-      'name': 'Victim of abuse',
-      'category': 'finding',
-    },
-  ],
-  'Abdominal pain': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Abdominal pain" "finding") possible)',
-      'snomed_concept_id': '21522001',
-      'name': 'Abdominal pain',
-      'category': 'finding',
-    },
-  ],
-  'Aggressive patient': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Aggressive behavior" "finding") possible)',
-      'snomed_concept_id': '61372001',
-      'name': 'Aggressive behavior',
-      'category': 'finding',
-    },
-  ],
-  'Anaemia': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Anemia" "disorder") possible)',
-      'snomed_concept_id': '271737000',
-      'name': 'Anemia',
-      'category': 'disorder',
-    },
-  ],
-  'Anal symptoms': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Rectal symptoms" "finding") possible)',
-      'snomed_concept_id': '309572008',
-      'name': 'Rectal symptoms',
-      'category': 'finding',
-    },
-  ],
-  'Anaphylaxis': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Anaphylaxis" "disorder") possible)',
-      'snomed_concept_id': '39579001',
-      'name': 'Anaphylaxis',
-      'category': 'disorder',
-    },
-  ],
-  'Anxiety': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Anxiety" "finding") possible)',
-      'snomed_concept_id': '48694002',
-      'name': 'Anxiety',
-      'category': 'finding',
-    },
-  ],
-  'Arm symptoms': [
-    {
-      'type': 'by_finding_site',
-      's_expression': '(clinical_finding (finding_site (snomed_concept "Upper limb structure" "body structure")))',
-      'snomed_concept_id': '53120007',
-      'name': 'Upper limb structure',
-      'category': 'body structure',
-    },
-  ],
-  'Back pain': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Backache" "finding") possible)',
-      'snomed_concept_id': '161891005',
-      'name': 'Backache',
-      'category': 'finding',
-    },
-  ],
-  'Bites': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Bite - wound" "disorder") possible)',
-      'snomed_concept_id': '3404009',
-      'name': 'Bite',
-      'category': 'disorder',
-    },
-  ],
-  'Blackheads': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Comedone" "disorder") possible)',
-      'snomed_concept_id': '247467008',
-      'name': 'Comedone',
-      'category': 'disorder',
-    },
-  ],
+import { SnomedCategory } from '../db.d.ts'
+import { Dict } from '../types.ts'
+
+type TableOfContentsEntry = {
+  type: 'specific_concept' | 'by_finding_site'
+  s_expression: string
+  snomed_concept_id: string
+  name: string
+  category: SnomedCategory
+}
+
+export const ADULT_PAC_SYMPTOMS_TABLE_OF_CONTENTS_TO_SNOMED: Dict<TableOfContentsEntry> = {
+  'Abused patient': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Victim of abuse" "finding") possible)',
+    'snomed_concept_id': '386702006',
+    'name': 'Victim of abuse',
+    'category': 'finding',
+  },
+  'Abdominal pain': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Abdominal pain" "finding") possible)',
+    'snomed_concept_id': '21522001',
+    'name': 'Abdominal pain',
+    'category': 'finding',
+  },
+  'Aggressive patient': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Aggressive behavior" "finding") possible)',
+    'snomed_concept_id': '61372001',
+    'name': 'Aggressive behavior',
+    'category': 'finding',
+  },
+  'Anaemia': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Anemia" "disorder") possible)',
+    'snomed_concept_id': '271737000',
+    'name': 'Anemia',
+    'category': 'disorder',
+  },
+  'Anal symptoms': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Rectal symptoms" "finding") possible)',
+    'snomed_concept_id': '309572008',
+    'name': 'Rectal symptoms',
+    'category': 'finding',
+  },
+  'Anaphylaxis': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Anaphylaxis" "disorder") possible)',
+    'snomed_concept_id': '39579001',
+    'name': 'Anaphylaxis',
+    'category': 'disorder',
+  },
+  'Anxiety': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Anxiety" "finding") possible)',
+    'snomed_concept_id': '48694002',
+    'name': 'Anxiety',
+    'category': 'finding',
+  },
+  'Arm symptoms': {
+    'type': 'by_finding_site',
+    's_expression': '(clinical_finding (finding_site (snomed_concept "Upper limb structure" "body structure")))',
+    'snomed_concept_id': '53120007',
+    'name': 'Upper limb structure',
+    'category': 'body structure',
+  },
+  'Back pain': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Backache" "finding") possible)',
+    'snomed_concept_id': '161891005',
+    'name': 'Backache',
+    'category': 'finding',
+  },
+  'Bites': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Bite - wound" "disorder") possible)',
+    'snomed_concept_id': '3404009',
+    'name': 'Bite',
+    'category': 'disorder',
+  },
+  'Blackheads': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Comedone" "disorder") possible)',
+    'snomed_concept_id': '247467008',
+    'name': 'Comedone',
+    'category': 'disorder',
+  },
   // Commenting out synonyms
   // 'Blackout': [
   //   {
@@ -108,109 +97,97 @@ export const ADULT_PAC_SYMPTOMS_TABLE_OF_CONTENTS_TO_SNOMED = {
   //     'category': 'finding',
   //   },
   // ],
-  'Body pain': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Generalized aches and pains" "finding") possible)',
-      'snomed_concept_id': '82991003',
-      'name': 'Generalized aches and pains',
-      'category': 'finding',
-    },
-  ],
-  'Breast symptoms': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Breast signs and symptoms" "finding") possible)',
-      'snomed_concept_id': '198116001',
-      'name': 'Breast signs and symptoms',
-      'category': 'finding',
-    },
-  ],
-  'Breathing difficulty': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Difficulty breathing" "finding") possible)',
-      'snomed_concept_id': '230145002',
-      'name': 'Difficulty breathing',
-      'category': 'finding',
-    },
-  ],
-  'Burns': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Burn" "disorder") possible)',
-      'snomed_concept_id': '125666000',
-      'name': 'Burn',
-      'category': 'disorder',
-    },
-  ],
-  'Cardiac arrest': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Cardiac arrest" "disorder") possible)',
-      'snomed_concept_id': '410429000',
-      'name': 'Cardiac arrest',
-      'category': 'disorder',
-    },
-  ],
-  // TODO handle these
-  // "Cervical screening": "not_a_symptom",
-  'Chest pain': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Chest pain" "finding") possible)',
-      'snomed_concept_id': '29857009',
-      'name': 'Chest pain',
-      'category': 'finding',
-    },
-  ],
-  'Cholera': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Cholera" "disorder") possible)',
-      'snomed_concept_id': '63650001',
-      'name': 'Cholera',
-      'category': 'disorder',
-    },
-  ],
-  'Collapse': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Collapse" "finding") possible)',
-      'snomed_concept_id': '271787007',
-      'name': 'Collapse',
-      'category': 'finding',
-    },
-  ],
-  'Coma': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Coma" "disorder") possible)',
-      'snomed_concept_id': '371632003',
-      'name': 'Coma',
-      'category': 'disorder',
-    },
-  ],
-  // TODO handle these
-  // "Condom broken": "not_a_symptom",
-  'Confused patient': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Clouded consciousness" "finding") possible)',
-      'snomed_concept_id': '40917007',
-      'name': 'Clouded consciousness',
-      'category': 'finding',
-    },
-  ],
-  'Constipation': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Constipation" "finding") possible)',
-      'snomed_concept_id': '14760008',
-      'name': 'Constipation',
-      'category': 'finding',
-    },
-  ],
+  'Body pain': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Generalized aches and pains" "finding") possible)',
+    'snomed_concept_id': '82991003',
+    'name': 'Generalized aches and pains',
+    'category': 'finding',
+  },
+  'Breast symptoms': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Breast signs and symptoms" "finding") possible)',
+    'snomed_concept_id': '198116001',
+    'name': 'Breast signs and symptoms',
+    'category': 'finding',
+  },
+  'Breathing difficulty': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Difficulty breathing" "finding") possible)',
+    'snomed_concept_id': '230145002',
+    'name': 'Difficulty breathing',
+    'category': 'finding',
+  },
+  'Burns': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Burn" "disorder") possible)',
+    'snomed_concept_id': '125666000',
+    'name': 'Burn',
+    'category': 'disorder',
+  },
+  'Cardiac arrest': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Cardiac arrest" "disorder") possible)',
+    'snomed_concept_id': '410429000',
+    'name': 'Cardiac arrest',
+    'category': 'disorder',
+  },
+  'Cervical screening': {
+    'type': 'specific_concept',
+    's_expression': '(procedure (snomed_concept "Screening for malignant neoplasm of cervix" "procedure"))',
+    'snomed_concept_id': '171149006',
+    'name': 'Chest pain',
+    'category': 'procedure',
+  },
+  'Chest pain': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Chest pain" "finding") possible)',
+    'snomed_concept_id': '29857009',
+    'name': 'Chest pain',
+    'category': 'finding',
+  },
+  'Cholera': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Cholera" "disorder") possible)',
+    'snomed_concept_id': '63650001',
+    'name': 'Cholera',
+    'category': 'disorder',
+  },
+  'Collapse': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Collapse" "finding") possible)',
+    'snomed_concept_id': '271787007',
+    'name': 'Collapse',
+    'category': 'finding',
+  },
+  'Coma': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Coma" "disorder") possible)',
+    'snomed_concept_id': '371632003',
+    'name': 'Coma',
+    'category': 'disorder',
+  },
+  'Condom broken': {
+    'type': 'specific_concept',
+    's_expression': '(clinical_finding (snomed_concept "Contraception failure" "finding"))',
+    'snomed_concept_id': '102955006',
+    'name': 'Coma',
+    'category': 'finding',
+  },
+  'Confused patient': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Clouded consciousness" "finding") possible)',
+    'snomed_concept_id': '40917007',
+    'name': 'Clouded consciousness',
+    'category': 'finding',
+  },
+  'Constipation': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Constipation" "finding") possible)',
+    'snomed_concept_id': '14760008',
+    'name': 'Constipation',
+    'category': 'finding',
+  },
   // TODO remove this I think: you only need one page for the same type
   // Commenting out synonyms
   // 'Convulsion': [
@@ -222,170 +199,134 @@ export const ADULT_PAC_SYMPTOMS_TABLE_OF_CONTENTS_TO_SNOMED = {
   //     'category': 'finding',
   //   },
   // ],
-  'Cough': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Cough" "finding") possible)',
-      'snomed_concept_id': '49727002',
-      'name': 'Cough',
-      'category': 'finding',
-    },
-  ],
-  'Dental symptoms': [
-    {
-      'type': 'by_finding_site',
-      's_expression': '(clinical_finding (finding_site (snomed_concept "Dental arch structure" "body structure")))',
-      'snomed_concept_id': '4442007',
-      'name': 'Dental arch structure',
-      'category': 'body structure',
-    },
-  ],
-  'Diarrhoea': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Diarrhea" "finding") possible)',
-      'snomed_concept_id': '62315008',
-      'name': 'Diarrhea',
-      'category': 'finding',
-    },
-  ],
-  'Discharge, genital': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Abnormal urogenital discharge" "finding") possible)',
-      'snomed_concept_id': '422910009',
-      'name': 'Abnormal urogenital discharge',
-      'category': 'finding',
-    },
-  ],
-  'Disruptive patient': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Disruptive behavior" "finding") possible)',
-      'snomed_concept_id': '248044002',
-      'name': 'Disruptive behavior',
-      'category': 'finding',
-    },
-  ],
-  'Dizziness': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Dizziness" "finding") possible)',
-      'snomed_concept_id': '404640003',
-      'name': 'Dizziness',
-      'category': 'finding',
-    },
-  ],
-  'Ear symptoms': [
-    {
-      'type': 'by_finding_site',
-      's_expression': '(clinical_finding (finding_site (snomed_concept "Ear structure" "body structure")))',
-      'snomed_concept_id': '117590005',
-      'name': 'Ear structure',
-      'category': 'body structure',
-    },
-  ],
+  'Cough': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Cough" "finding") possible)',
+    'snomed_concept_id': '49727002',
+    'name': 'Cough',
+    'category': 'finding',
+  },
+  'Dental symptoms': {
+    'type': 'by_finding_site',
+    's_expression': '(clinical_finding (finding_site (snomed_concept "Dental arch structure" "body structure")))',
+    'snomed_concept_id': '4442007',
+    'name': 'Dental arch structure',
+    'category': 'body structure',
+  },
+  'Diarrhoea': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Diarrhea" "finding") possible)',
+    'snomed_concept_id': '62315008',
+    'name': 'Diarrhea',
+    'category': 'finding',
+  },
+  'Discharge, genital': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Abnormal urogenital discharge" "finding") possible)',
+    'snomed_concept_id': '422910009',
+    'name': 'Abnormal urogenital discharge',
+    'category': 'finding',
+  },
+  'Disruptive patient': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Disruptive behavior" "finding") possible)',
+    'snomed_concept_id': '248044002',
+    'name': 'Disruptive behavior',
+    'category': 'finding',
+  },
+  'Dizziness': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Dizziness" "finding") possible)',
+    'snomed_concept_id': '404640003',
+    'name': 'Dizziness',
+    'category': 'finding',
+  },
+  'Ear symptoms': {
+    'type': 'by_finding_site',
+    's_expression': '(clinical_finding (finding_site (snomed_concept "Ear structure" "body structure")))',
+    'snomed_concept_id': '117590005',
+    'name': 'Ear structure',
+    'category': 'body structure',
+  },
   // TODO handle these
   // "Emergency patient": "not_a_symptom",
-  'Eye symptoms': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Eye symptom" "finding") possible)',
-      'snomed_concept_id': '308923001',
-      'name': 'Eye symptom',
-      'category': 'finding',
-    },
-  ],
-  'Lump, skin': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Mass of skin" "finding") possible)',
-      'snomed_concept_id': '297960002',
-      'name': 'Mass of skin',
-      'category': 'finding',
-    },
-  ],
-  'Lymphadenopathy': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Lymphadenopathy" "disorder") possible)',
-      'snomed_concept_id': '30746006',
-      'name': 'Lymphadenopathy',
-      'category': 'disorder',
-    },
-  ],
-  'Menstrual symptoms': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Disorder of menstruation" "disorder") possible)',
-      'snomed_concept_id': '386804004',
-      'name': 'Disorder of menstruation',
-      'category': 'disorder',
-    },
-  ],
-  'Miserable patient': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Symptoms of depression" "finding") possible)',
-      'snomed_concept_id': '359746009',
-      'name': 'Symptoms of depression',
-      'category': 'finding',
-    },
-  ],
-  'Mouth/Throat symptoms': [
-    {
-      'type': 'by_finding_site',
-      's_expression': '(clinical_finding (finding_site (snomed_concept "Structure of mouth and/or pharynx" "body structure")))',
-      'snomed_concept_id': '162009001',
-      'name': 'Mouth/Throat symptoms',
-      'category': 'body structure',
-    },
-  ],
-  'Face symptoms': [
-    {
-      'type': 'by_finding_site',
-      's_expression': '(clinical_finding (finding_site (snomed_concept "Face structure" "body structure")))',
-      'snomed_concept_id': '89545001',
-      'name': 'Face structure',
-      'category': 'body structure',
-    },
-  ],
-  'Faint': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Syncope" "finding") possible)',
-      'snomed_concept_id': '271594007',
-      'name': 'Syncope',
-      'category': 'finding',
-    },
-  ],
-  'Falls': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Falls" "finding") possible)',
-      'snomed_concept_id': '161898004',
-      'name': 'Falls',
-      'category': 'finding',
-    },
-  ],
-  'Fatigue': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Fatigue" "finding") possible)',
-      'snomed_concept_id': '84229001',
-      'name': 'Fatigue',
-      'category': 'finding',
-    },
-  ],
-  'Fever': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Fever" "finding") possible)',
-      'snomed_concept_id': '386661006',
-      'name': 'Fever',
-      'category': 'finding',
-    },
-  ],
+  'Eye symptoms': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Eye symptom" "finding") possible)',
+    'snomed_concept_id': '308923001',
+    'name': 'Eye symptom',
+    'category': 'finding',
+  },
+  'Lump, skin': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Mass of skin" "finding") possible)',
+    'snomed_concept_id': '297960002',
+    'name': 'Mass of skin',
+    'category': 'finding',
+  },
+  'Lymphadenopathy': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Lymphadenopathy" "disorder") possible)',
+    'snomed_concept_id': '30746006',
+    'name': 'Lymphadenopathy',
+    'category': 'disorder',
+  },
+  'Menstrual symptoms': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Disorder of menstruation" "disorder") possible)',
+    'snomed_concept_id': '386804004',
+    'name': 'Disorder of menstruation',
+    'category': 'disorder',
+  },
+  'Miserable patient': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Symptoms of depression" "finding") possible)',
+    'snomed_concept_id': '359746009',
+    'name': 'Symptoms of depression',
+    'category': 'finding',
+  },
+  'Mouth/Throat symptoms': {
+    'type': 'by_finding_site',
+    's_expression': '(clinical_finding (finding_site (snomed_concept "Structure of mouth and/or pharynx" "body structure")))',
+    'snomed_concept_id': '162009001',
+    'name': 'Mouth/Throat symptoms',
+    'category': 'body structure',
+  },
+  'Face symptoms': {
+    'type': 'by_finding_site',
+    's_expression': '(clinical_finding (finding_site (snomed_concept "Face structure" "body structure")))',
+    'snomed_concept_id': '89545001',
+    'name': 'Face structure',
+    'category': 'body structure',
+  },
+  'Faint': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Syncope" "finding") possible)',
+    'snomed_concept_id': '271594007',
+    'name': 'Syncope',
+    'category': 'finding',
+  },
+  'Falls': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Falls" "finding") possible)',
+    'snomed_concept_id': '161898004',
+    'name': 'Falls',
+    'category': 'finding',
+  },
+  'Fatigue': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Fatigue" "finding") possible)',
+    'snomed_concept_id': '84229001',
+    'name': 'Fatigue',
+    'category': 'finding',
+  },
+  'Fever': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Fever" "finding") possible)',
+    'snomed_concept_id': '386661006',
+    'name': 'Fever',
+    'category': 'finding',
+  },
   // Commenting out synonyms
   // 'Fits': [
   //   {
@@ -396,152 +337,120 @@ export const ADULT_PAC_SYMPTOMS_TABLE_OF_CONTENTS_TO_SNOMED = {
   //     'category': 'finding',
   //   },
   // ],
-  'Foot symptoms': [
-    {
-      'type': 'by_finding_site',
-      's_expression': '(clinical_finding (finding_site (snomed_concept "Foot structure" "body structure")))',
-      'snomed_concept_id': '56459004',
-      'name': 'Foot structure',
-      'category': 'body structure',
-    },
-  ],
+  'Foot symptoms': {
+    'type': 'by_finding_site',
+    's_expression': '(clinical_finding (finding_site (snomed_concept "Foot structure" "body structure")))',
+    'snomed_concept_id': '56459004',
+    'name': 'Foot structure',
+    'category': 'body structure',
+  },
   // TODO I don't think we need this per se
   // "Foot care": "site",
-  'Fracture': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Fracture" "morphologic abnormality") possible)',
-      'snomed_concept_id': '72704001',
-      'name': 'Fracture',
-      'category': 'morphologic abnormality',
-    },
-  ],
-  'Nail symptoms': [
-    {
-      'type': 'by_finding_site',
-      's_expression': '(clinical_finding (finding_site (snomed_concept "Nail unit structure" "body structure")))',
-      'snomed_concept_id': '770802007',
-      'name': 'Nail unit structure',
-      'category': 'body structure',
-    },
-  ],
-  'Nausea': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Nausea" "finding") possible)',
-      'snomed_concept_id': '422587007',
-      'name': 'Nausea',
-      'category': 'finding',
-    },
-  ],
-  'Neck pain': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Neck pain" "finding") possible)',
-      'snomed_concept_id': '81680005',
-      'name': 'Neck pain',
-      'category': 'finding',
-    },
-  ],
-  'Needlestick injury': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Accidental needle stick injury" "disorder") possible)',
-      'snomed_concept_id': '10850741000119108',
-      'name': 'Accidental needle stick injury',
-      'category': 'disorder',
-    },
-  ],
-  'Nose symptoms': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Nasal symptom" "finding") possible)',
-      'snomed_concept_id': '249307003',
-      'name': 'Nasal symptom',
-      'category': 'finding',
-    },
-  ],
-  'Genital symptoms': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Symptom: genital area" "finding") possible)',
-      'snomed_concept_id': '162428001',
-      'name': 'Symptom: genital area',
-      'category': 'finding',
-    },
-  ],
-  'Glucose': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Finding of glucose level" "finding") possible)',
-      'snomed_concept_id': '365811003',
-      'name': 'Finding of glucose level',
-      'category': 'finding',
-    },
-  ],
-  'Gum symptoms': [
-    {
-      'type': 'by_finding_site',
-      's_expression': '(clinical_finding (finding_site (snomed_concept "Gingival structure" "body structure")))',
-      'snomed_concept_id': '113279002',
-      'name': 'Gingival structure',
-      'category': 'body structure',
-    },
-  ],
-  'Overweight patient': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Overweight" "finding") possible)',
-      'snomed_concept_id': '238131007',
-      'name': 'Overweight',
-      'category': 'finding',
-    },
-  ],
-  'Hair loss': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Alopecia" "disorder") possible)',
-      'snomed_concept_id': '56317004',
-      'name': 'Alopecia',
-      'category': 'disorder',
-    },
-  ],
-  'Hand symptoms': [
-    {
-      'type': 'by_finding_site',
-      's_expression': '(clinical_finding (finding_site (snomed_concept "Hand structure" "body structure")))',
-      'snomed_concept_id': '85562004',
-      'name': 'Hand structure',
-      'category': 'body structure',
-    },
-  ],
-  'Headache': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Headache" "finding") possible)',
-      'snomed_concept_id': '25064002',
-      'name': 'Headache',
-      'category': 'finding',
-    },
-  ],
-  'Hearing symptoms': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Hearing symptoms" "finding") possible)',
-      'snomed_concept_id': '162338005',
-      'name': 'Hearing symptoms',
-      'category': 'finding',
-    },
-  ],
-  'Heartburn': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Heartburn" "finding") possible)',
-      'snomed_concept_id': '16331000',
-      'name': 'Heartburn',
-      'category': 'finding',
-    },
-  ],
+  'Fracture': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Fracture" "morphologic abnormality") possible)',
+    'snomed_concept_id': '72704001',
+    'name': 'Fracture',
+    'category': 'morphologic abnormality',
+  },
+  'Nail symptoms': {
+    'type': 'by_finding_site',
+    's_expression': '(clinical_finding (finding_site (snomed_concept "Nail unit structure" "body structure")))',
+    'snomed_concept_id': '770802007',
+    'name': 'Nail unit structure',
+    'category': 'body structure',
+  },
+  'Nausea': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Nausea" "finding") possible)',
+    'snomed_concept_id': '422587007',
+    'name': 'Nausea',
+    'category': 'finding',
+  },
+  'Neck pain': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Neck pain" "finding") possible)',
+    'snomed_concept_id': '81680005',
+    'name': 'Neck pain',
+    'category': 'finding',
+  },
+  'Needlestick injury': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Accidental needle stick injury" "disorder") possible)',
+    'snomed_concept_id': '10850741000119108',
+    'name': 'Accidental needle stick injury',
+    'category': 'disorder',
+  },
+  'Nose symptoms': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Nasal symptom" "finding") possible)',
+    'snomed_concept_id': '249307003',
+    'name': 'Nasal symptom',
+    'category': 'finding',
+  },
+  'Genital symptoms': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Symptom: genital area" "finding") possible)',
+    'snomed_concept_id': '162428001',
+    'name': 'Symptom: genital area',
+    'category': 'finding',
+  },
+  'Glucose': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Finding of glucose level" "finding") possible)',
+    'snomed_concept_id': '365811003',
+    'name': 'Finding of glucose level',
+    'category': 'finding',
+  },
+  'Gum symptoms': {
+    'type': 'by_finding_site',
+    's_expression': '(clinical_finding (finding_site (snomed_concept "Gingival structure" "body structure")))',
+    'snomed_concept_id': '113279002',
+    'name': 'Gingival structure',
+    'category': 'body structure',
+  },
+  'Overweight patient': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Overweight" "finding") possible)',
+    'snomed_concept_id': '238131007',
+    'name': 'Overweight',
+    'category': 'finding',
+  },
+  'Hair loss': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Alopecia" "disorder") possible)',
+    'snomed_concept_id': '56317004',
+    'name': 'Alopecia',
+    'category': 'disorder',
+  },
+  'Hand symptoms': {
+    'type': 'by_finding_site',
+    's_expression': '(clinical_finding (finding_site (snomed_concept "Hand structure" "body structure")))',
+    'snomed_concept_id': '85562004',
+    'name': 'Hand structure',
+    'category': 'body structure',
+  },
+  'Headache': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Headache" "finding") possible)',
+    'snomed_concept_id': '25064002',
+    'name': 'Headache',
+    'category': 'finding',
+  },
+  'Hearing symptoms': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Hearing symptoms" "finding") possible)',
+    'snomed_concept_id': '162338005',
+    'name': 'Hearing symptoms',
+    'category': 'finding',
+  },
+  'Heartburn': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Heartburn" "finding") possible)',
+    'snomed_concept_id': '16331000',
+    'name': 'Heartburn',
+    'category': 'finding',
+  },
   // Commenting out synonyms
   // 'Pain, back': [
   //   {
@@ -572,15 +481,13 @@ export const ADULT_PAC_SYMPTOMS_TABLE_OF_CONTENTS_TO_SNOMED = {
   //     'category': 'finding',
   //   },
   // ],
-  'Pain, chronic': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Chronic pain" "finding") possible)',
-      'snomed_concept_id': '82423001',
-      'name': 'Chronic pain',
-      'category': 'finding',
-    },
-  ],
+  'Pain, chronic': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Chronic pain" "finding") possible)',
+    'snomed_concept_id': '82423001',
+    'name': 'Chronic pain',
+    'category': 'finding',
+  },
   // Commenting out synonyms
   // 'Pain, neck': [
   //   {
@@ -591,15 +498,13 @@ export const ADULT_PAC_SYMPTOMS_TABLE_OF_CONTENTS_TO_SNOMED = {
   //     'category': 'finding',
   //   },
   // ],
-  'Pallor': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Pale complexion" "finding") possible)',
-      'snomed_concept_id': '398979000',
-      'name': 'Pale complexion',
-      'category': 'finding',
-    },
-  ],
+  'Pallor': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Pale complexion" "finding") possible)',
+    'snomed_concept_id': '398979000',
+    'name': 'Pale complexion',
+    'category': 'finding',
+  },
   // Commenting out synonyms
   // 'Period problems': [
   //   {
@@ -610,254 +515,202 @@ export const ADULT_PAC_SYMPTOMS_TABLE_OF_CONTENTS_TO_SNOMED = {
   //     'category': 'disorder',
   //   },
   // ],
-  'Pimples': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Pimple" "morphologic abnormality") possible)',
-      'snomed_concept_id': '103605005',
-      'name': 'Pimple',
-      'category': 'morphologic abnormality',
-    },
-  ],
-  'Injured patient': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Traumatic or non-traumatic injury" "disorder") possible)',
-      'snomed_concept_id': '417163006',
-      'name': 'Traumatic or non-traumatic injury',
-      'category': 'disorder',
-    },
-  ],
-  'Itch': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Itching" "finding") possible)',
-      'snomed_concept_id': '418290006',
-      'name': 'Itching',
-      'category': 'finding',
-    },
-  ],
-  'Rape': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Victim of rape" "finding") possible)',
-      'snomed_concept_id': '42085001',
-      'name': 'Victim of rape',
-      'category': 'finding',
-    },
-  ],
-  'Rash': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Eruption of skin" "disorder") possible)',
-      'snomed_concept_id': '271807003',
-      'name': 'Eruption of skin',
-      'category': 'disorder',
-    },
-  ],
-  'Respiratory arrest': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Respiratory arrest" "disorder") possible)',
-      'snomed_concept_id': '87317003',
-      'name': 'Respiratory arrest',
-      'category': 'disorder',
-    },
-  ],
-  'Jaundice': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Jaundice" "finding") possible)',
-      'snomed_concept_id': '18165001',
-      'name': 'Jaundice',
-      'category': 'finding',
-    },
-  ],
-  'Joint symptoms': [
-    {
-      'type': 'by_finding_site',
-      's_expression': '(clinical_finding (finding_site (snomed_concept "Joint structure" "body structure")))',
-      'snomed_concept_id': '39352004',
-      'name': 'Joint structure',
-      'category': 'body structure',
-    },
-  ],
-  'Leg symptoms': [
-    {
-      'type': 'by_finding_site',
-      's_expression': '(clinical_finding (finding_site (snomed_concept "Lower limb structure" "body structure")))',
-      'snomed_concept_id': '61685007',
-      'name': 'Lower limb structure',
-      'category': 'body structure',
-    },
-  ],
-  'Lump, neck/axilla/groin': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Groin mass" "finding") possible)',
-      'snomed_concept_id': '281398003',
-      'name': 'Groin mass',
-      'category': 'finding',
-    },
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Mass of axilla" "finding") possible)',
-      'snomed_concept_id': '300863000',
-      'name': 'Mass of axilla',
-      'category': 'finding',
-    },
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Mass of neck" "finding") possible)',
-      'snomed_concept_id': '299703001',
-      'name': 'Mass of neck',
-      'category': 'finding',
-    },
-  ],
-  'Scalp symptoms': [
-    {
-      'type': 'by_finding_site',
-      's_expression': '(clinical_finding (finding_site (snomed_concept "Scalp structure" "body structure")))',
-      'snomed_concept_id': '41695006',
-      'name': 'Scalp structure',
-      'category': 'body structure',
-    },
-  ],
-  'Scrotal symptoms': [
-    {
-      'type': 'by_finding_site',
-      's_expression': '(clinical_finding (finding_site (snomed_concept "Scrotal structure" "body structure")))',
-      'snomed_concept_id': '20233005',
-      'name': 'Scrotal structure',
-      'category': 'body structure',
-    },
-  ],
-  'Seizures': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Seizure related finding" "finding") possible)',
-      'snomed_concept_id': '313287004',
-      'name': 'Seizure',
-      'category': 'finding',
-    },
-  ],
-  'Self-harm': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Self-injurious behavior" "finding") possible)',
-      'snomed_concept_id': '248062006',
-      'name': 'Self-injurious behavior',
-      'category': 'finding',
-    },
-  ],
-  'Sexual problems': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Sexuality related problem" "finding") possible)',
-      'snomed_concept_id': '106143002',
-      'name': 'Sexuality related problem',
-      'category': 'finding',
-    },
-  ],
-  'Sexually transmitted infections': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Sexually transmitted infectious disease" "disorder") possible)',
-      'snomed_concept_id': '8098009',
-      'name': 'Sexually transmitted infectious disease',
-      'category': 'disorder',
-    },
-  ],
-  'Skin symptoms': [
-    {
-      'type': 'by_finding_site',
-      's_expression': '(clinical_finding (finding_site (snomed_concept "Skin structure" "body structure")))',
-      'snomed_concept_id': '39937001',
-      'name': 'Skin structure',
-      'category': 'body structure',
-    },
-  ],
-  'Sleeping difficulty': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Difficulty sleeping" "finding") possible)',
-      'snomed_concept_id': '301345002',
-      'name': 'Difficulty sleeping',
-      'category': 'finding',
-    },
-  ],
-  'Smoking': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Finding of tobacco smoking behavior" "finding") possible)',
-      'snomed_concept_id': '365981007',
-      'name': 'Finding of tobacco smoking behavior',
-      'category': 'finding',
-    },
-  ],
-  'Stings': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Sting" "morphologic abnormality") possible)',
-      'snomed_concept_id': '72587008',
-      'name': 'Sting',
-      'category': 'morphologic abnormality',
-    },
-  ],
-  'Stress': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Stress" "finding") possible)',
-      'snomed_concept_id': '73595000',
-      'name': 'Stress',
-      'category': 'finding',
-    },
-  ],
-  'Suicidal patient': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Suicidal" "finding") possible)',
-      'snomed_concept_id': '267073005',
-      'name': 'Suicidal',
-      'category': 'finding',
-    },
-  ],
-  'Syphilis': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Syphilis" "disorder") possible)',
-      'snomed_concept_id': '76272004',
-      'name': 'Syphilis',
-      'category': 'disorder',
-    },
-  ],
-  'Tasting difficulty': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Finding of sense of taste" "finding") possible)',
-      'snomed_concept_id': '76489005',
-      'name': 'Finding of sense of taste',
-      'category': 'finding',
-    },
-  ],
-  'Teeth symptoms': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Tooth symptoms" "finding") possible)',
-      'snomed_concept_id': '162004006',
-      'name': 'Tooth symptoms',
-      'category': 'finding',
-    },
-  ],
-  'Throat symptoms': [
-    {
-      'type': 'by_finding_site',
-      's_expression': '(clinical_finding (finding_site (snomed_concept "Structure of internal nose and/or pharynx and/or larynx" "body structure")))',
-      'snomed_concept_id': '1162925002',
-      'name': 'Structure of internal nose and/or pharynx and/or larynx',
-      'category': 'body structure',
-    },
-  ],
+  'Pimples': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Pimple" "morphologic abnormality") possible)',
+    'snomed_concept_id': '103605005',
+    'name': 'Pimple',
+    'category': 'morphologic abnormality',
+  },
+  'Injured patient': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Traumatic or non-traumatic injury" "disorder") possible)',
+    'snomed_concept_id': '417163006',
+    'name': 'Traumatic or non-traumatic injury',
+    'category': 'disorder',
+  },
+  'Itch': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Itching" "finding") possible)',
+    'snomed_concept_id': '418290006',
+    'name': 'Itching',
+    'category': 'finding',
+  },
+  'Rape': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Victim of rape" "finding") possible)',
+    'snomed_concept_id': '42085001',
+    'name': 'Victim of rape',
+    'category': 'finding',
+  },
+  'Rash': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Eruption of skin" "disorder") possible)',
+    'snomed_concept_id': '271807003',
+    'name': 'Eruption of skin',
+    'category': 'disorder',
+  },
+  'Respiratory arrest': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Respiratory arrest" "disorder") possible)',
+    'snomed_concept_id': '87317003',
+    'name': 'Respiratory arrest',
+    'category': 'disorder',
+  },
+  'Jaundice': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Jaundice" "finding") possible)',
+    'snomed_concept_id': '18165001',
+    'name': 'Jaundice',
+    'category': 'finding',
+  },
+  'Joint symptoms': {
+    'type': 'by_finding_site',
+    's_expression': '(clinical_finding (finding_site (snomed_concept "Joint structure" "body structure")))',
+    'snomed_concept_id': '39352004',
+    'name': 'Joint structure',
+    'category': 'body structure',
+  },
+  'Leg symptoms': {
+    'type': 'by_finding_site',
+    's_expression': '(clinical_finding (finding_site (snomed_concept "Lower limb structure" "body structure")))',
+    'snomed_concept_id': '61685007',
+    'name': 'Lower limb structure',
+    'category': 'body structure',
+  },
+  'Lump, groin': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Groin mass" "finding") possible)',
+    'snomed_concept_id': '281398003',
+    'name': 'Groin mass',
+    'category': 'finding',
+  },
+  'Lump, axilla': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Mass of axilla" "finding") possible)',
+    'snomed_concept_id': '300863000',
+    'name': 'Mass of axilla',
+    'category': 'finding',
+  },
+  'Lump, neck': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Mass of neck" "finding") possible)',
+    'snomed_concept_id': '299703001',
+    'name': 'Mass of neck',
+    'category': 'finding',
+  },
+  'Scalp symptoms': {
+    'type': 'by_finding_site',
+    's_expression': '(clinical_finding (finding_site (snomed_concept "Scalp structure" "body structure")))',
+    'snomed_concept_id': '41695006',
+    'name': 'Scalp structure',
+    'category': 'body structure',
+  },
+  'Scrotal symptoms': {
+    'type': 'by_finding_site',
+    's_expression': '(clinical_finding (finding_site (snomed_concept "Scrotal structure" "body structure")))',
+    'snomed_concept_id': '20233005',
+    'name': 'Scrotal structure',
+    'category': 'body structure',
+  },
+  'Seizures': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Seizure related finding" "finding") possible)',
+    'snomed_concept_id': '313287004',
+    'name': 'Seizure',
+    'category': 'finding',
+  },
+  'Self-harm': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Self-injurious behavior" "finding") possible)',
+    'snomed_concept_id': '248062006',
+    'name': 'Self-injurious behavior',
+    'category': 'finding',
+  },
+  'Sexual problems': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Sexuality related problem" "finding") possible)',
+    'snomed_concept_id': '106143002',
+    'name': 'Sexuality related problem',
+    'category': 'finding',
+  },
+  'Sexually transmitted infections': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Sexually transmitted infectious disease" "disorder") possible)',
+    'snomed_concept_id': '8098009',
+    'name': 'Sexually transmitted infectious disease',
+    'category': 'disorder',
+  },
+  'Skin symptoms': {
+    'type': 'by_finding_site',
+    's_expression': '(clinical_finding (finding_site (snomed_concept "Skin structure" "body structure")))',
+    'snomed_concept_id': '39937001',
+    'name': 'Skin structure',
+    'category': 'body structure',
+  },
+  'Sleeping difficulty': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Difficulty sleeping" "finding") possible)',
+    'snomed_concept_id': '301345002',
+    'name': 'Difficulty sleeping',
+    'category': 'finding',
+  },
+  'Smoking': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Finding of tobacco smoking behavior" "finding") possible)',
+    'snomed_concept_id': '365981007',
+    'name': 'Finding of tobacco smoking behavior',
+    'category': 'finding',
+  },
+  'Stings': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Sting" "morphologic abnormality") possible)',
+    'snomed_concept_id': '72587008',
+    'name': 'Sting',
+    'category': 'morphologic abnormality',
+  },
+  'Stress': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Stress" "finding") possible)',
+    'snomed_concept_id': '73595000',
+    'name': 'Stress',
+    'category': 'finding',
+  },
+  'Suicidal patient': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Suicidal" "finding") possible)',
+    'snomed_concept_id': '267073005',
+    'name': 'Suicidal',
+    'category': 'finding',
+  },
+  'Syphilis': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Syphilis" "disorder") possible)',
+    'snomed_concept_id': '76272004',
+    'name': 'Syphilis',
+    'category': 'disorder',
+  },
+  'Tasting difficulty': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Finding of sense of taste" "finding") possible)',
+    'snomed_concept_id': '76489005',
+    'name': 'Finding of sense of taste',
+    'category': 'finding',
+  },
+  'Teeth symptoms': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Tooth symptoms" "finding") possible)',
+    'snomed_concept_id': '162004006',
+    'name': 'Tooth symptoms',
+    'category': 'finding',
+  },
+  'Throat symptoms': {
+    'type': 'by_finding_site',
+    's_expression': '(clinical_finding (finding_site (snomed_concept "Structure of internal nose and/or pharynx and/or larynx" "body structure")))',
+    'snomed_concept_id': '1162925002',
+    'name': 'Structure of internal nose and/or pharynx and/or larynx',
+    'category': 'body structure',
+  },
   // Commenting out synonyms
   // 'Tiredness': [
   //   {
@@ -878,60 +731,48 @@ export const ADULT_PAC_SYMPTOMS_TABLE_OF_CONTENTS_TO_SNOMED = {
   //     'category': 'finding',
   //   },
   // ],
-  'Ulcer, genital': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Ulceration of genital organ" "disorder") possible)',
-      'snomed_concept_id': '1371402009',
-      'name': 'Ulceration of genital organ',
-      'category': 'disorder',
-    },
-  ],
-  'Ulcer, skin': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Skin ulcer" "disorder") possible)',
-      'snomed_concept_id': '46742003',
-      'name': 'Skin ulcer',
-      'category': 'disorder',
-    },
-  ],
-  'Unconscious patient': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Unconscious" "finding") possible)',
-      'snomed_concept_id': '418107008',
-      'name': 'Unconscious',
-      'category': 'finding',
-    },
-  ],
-  'Urinary symptoms': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Urinary symptoms" "finding") possible)',
-      'snomed_concept_id': '249274008',
-      'name': 'Urinary symptoms',
-      'category': 'finding',
-    },
-  ],
-  'Vaginal bleeding': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Bleeding from vagina" "finding") possible)',
-      'snomed_concept_id': '289530006',
-      'name': 'Bleeding from vagina',
-      'category': 'finding',
-    },
-  ],
-  'Vaginal discharge': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Vaginal discharge" "finding") possible)',
-      'snomed_concept_id': '271939006',
-      'name': 'Vaginal discharge',
-      'category': 'finding',
-    },
-  ],
+  'Ulcer, genital': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Ulceration of genital organ" "disorder") possible)',
+    'snomed_concept_id': '1371402009',
+    'name': 'Ulceration of genital organ',
+    'category': 'disorder',
+  },
+  'Ulcer, skin': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Skin ulcer" "disorder") possible)',
+    'snomed_concept_id': '46742003',
+    'name': 'Skin ulcer',
+    'category': 'disorder',
+  },
+  'Unconscious patient': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Unconscious" "finding") possible)',
+    'snomed_concept_id': '418107008',
+    'name': 'Unconscious',
+    'category': 'finding',
+  },
+  'Urinary symptoms': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Urinary symptoms" "finding") possible)',
+    'snomed_concept_id': '249274008',
+    'name': 'Urinary symptoms',
+    'category': 'finding',
+  },
+  'Vaginal bleeding': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Bleeding from vagina" "finding") possible)',
+    'snomed_concept_id': '289530006',
+    'name': 'Bleeding from vagina',
+    'category': 'finding',
+  },
+  'Vaginal discharge': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Vaginal discharge" "finding") possible)',
+    'snomed_concept_id': '271939006',
+    'name': 'Vaginal discharge',
+    'category': 'finding',
+  },
   // Commenting out synonyms
   // 'Violent patient': [
   //   {
@@ -942,82 +783,66 @@ export const ADULT_PAC_SYMPTOMS_TABLE_OF_CONTENTS_TO_SNOMED = {
   //     'category': 'finding',
   //   },
   // ],
-  'Vision symptoms': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Visual symptoms" "finding") possible)',
-      'snomed_concept_id': '162274004',
-      'name': 'Visual symptoms',
-      'category': 'finding',
-    },
-  ],
-  'Vomiting': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Finding of vomiting" "finding") possible)',
-      'snomed_concept_id': '422400008',
-      'name': 'Vomiting',
-      'category': 'disorder',
-    },
-  ],
-  'Warts, genital': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Genital warts" "disorder") possible)',
-      'snomed_concept_id': '266113007',
-      'name': 'Genital warts',
-      'category': 'disorder',
-    },
-  ],
-  'Weakness': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Asthenia" "finding") possible)',
-      'snomed_concept_id': '13791008',
-      'name': 'Asthenia',
-      'category': 'finding',
-    },
-  ],
-  'Weight loss': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Unintentional weight loss" "finding") possible)',
-      'snomed_concept_id': '448765001',
-      'name': 'Unintentional weight loss',
-      'category': 'finding',
-    },
-  ],
-  'Wheeze': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Wheezing" "finding") possible)',
-      'snomed_concept_id': '56018004',
-      'name': 'Wheezing',
-      'category': 'finding',
-    },
-  ],
-  'Wound, acute': [
-    {
-      'type': 'specific_concept',
-      's_expression': `
+  'Vision symptoms': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Visual symptoms" "finding") possible)',
+    'snomed_concept_id': '162274004',
+    'name': 'Visual symptoms',
+    'category': 'finding',
+  },
+  'Vomiting': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Finding of vomiting" "finding") possible)',
+    'snomed_concept_id': '422400008',
+    'name': 'Vomiting',
+    'category': 'disorder',
+  },
+  'Warts, genital': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Genital warts" "disorder") possible)',
+    'snomed_concept_id': '266113007',
+    'name': 'Genital warts',
+    'category': 'disorder',
+  },
+  'Weakness': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Asthenia" "finding") possible)',
+    'snomed_concept_id': '13791008',
+    'name': 'Asthenia',
+    'category': 'finding',
+  },
+  'Weight loss': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Unintentional weight loss" "finding") possible)',
+    'snomed_concept_id': '448765001',
+    'name': 'Unintentional weight loss',
+    'category': 'finding',
+  },
+  'Wheeze': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Wheezing" "finding") possible)',
+    'snomed_concept_id': '56018004',
+    'name': 'Wheezing',
+    'category': 'finding',
+  },
+  'Wound, acute': {
+    'type': 'specific_concept',
+    's_expression': `
         (clinical_finding (snomed_concept "Wound" "disorder")
           (excluding (clinical_finding (snomed_concept "Bite - wound" "disorder")))
         )
       `,
-      'snomed_concept_id': '416462003',
-      'name': 'Wound',
-      'category': 'disorder',
-    },
-  ],
-  'Wound, chronic': [
-    {
-      'type': 'specific_concept',
-      's_expression': '(active_condition (snomed_concept "Chronic wound" "disorder") possible)',
-      'snomed_concept_id': '92161000112103',
-      'name': 'Chronic wound',
-      'category': 'disorder',
-    },
-  ],
+    'snomed_concept_id': '416462003',
+    'name': 'Wound',
+    'category': 'disorder',
+  },
+  'Wound, chronic': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Chronic wound" "disorder") possible)',
+    'snomed_concept_id': '92161000112103',
+    'name': 'Chronic wound',
+    'category': 'disorder',
+  },
   //   'Foot symptoms care': [
   //     {
   //       'type': 'by_finding_site',
@@ -1027,4 +852,343 @@ export const ADULT_PAC_SYMPTOMS_TABLE_OF_CONTENTS_TO_SNOMED = {
   //       'category': 'body structure',
   //     },
   //   ],
+}
+
+export const ADULT_PAC_CHRONIC_CONDITIONS_TABLE_OF_CONTENTS_TO_SNOMED: Dict<TableOfContentsEntry> = {
+  'Assess and manage TB infection': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Inactive tuberculosis" "finding") possible)',
+    'snomed_concept_id': '11999007',
+    'name': 'Assess and manage TB infection',
+    'category': 'finding',
+  },
+  'How to collect a good sputum specimen for TB': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Tuberculosis" "disorder") possible)',
+    'snomed_concept_id': '56717001',
+    'name': 'How to collect a good sputum specimen for TB',
+    'category': 'disorder',
+  },
+  'TB: diagnosis': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Tuberculosis" "disorder") possible)',
+    'snomed_concept_id': '56717001',
+    'name': 'TB: diagnosis',
+    'category': 'disorder',
+  },
+  'Drug-sensitive TB (DS-TB): routine care': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Tuberculosis" "disorder"))',
+    'snomed_concept_id': '56717001',
+    'name': 'Drug-sensitive TB (DS-TB): routine care',
+    'category': 'disorder',
+  },
+  'INH mono-resistant TB: routine care': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Isoniazid resistant tuberculosis" "disorder"))',
+    'snomed_concept_id': '414546009',
+    'name': 'INH mono-resistant TB: routine care',
+    'category': 'disorder',
+  },
+  'Rifampicin-resistant TB (RR-TB): routine care': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Rifampicin resistant tuberculosis" "disorder"))',
+    'snomed_concept_id': '415345001',
+    'name': 'Rifampicin-resistant TB (RR-TB): routine care',
+    'category': 'disorder',
+  },
+  'HIV: pre-exposure prophylaxis (PrEP)': {
+    'type': 'specific_concept',
+    's_expression': '(procedure (snomed_concept "Pre-exposure prophylaxis" "procedure"))',
+    'snomed_concept_id': '1137457009',
+    'name': 'HIV: pre-exposure prophylaxis (PrEP)',
+    'category': 'procedure',
+  },
+  'HIV: post-exposure prophylaxis (PEP)': {
+    'type': 'specific_concept',
+    's_expression': '(procedure (snomed_concept "Post-exposure prophylaxis" "procedure"))',
+    'snomed_concept_id': '409516001',
+    'name': 'HIV: post-exposure prophylaxis (PEP)',
+    'category': 'procedure',
+  },
+  'HIV: diagnosis': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Human immunodeficiency virus infection" "disorder") possible)',
+    'snomed_concept_id': '86406008',
+    'name': 'HIV: diagnosis',
+    'category': 'disorder',
+  },
+  'HIV: routine care': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Human immunodeficiency virus infection" "disorder"))',
+    'snomed_concept_id': '86406008',
+    'name': 'HIV: routine care',
+    'category': 'disorder',
+  },
+  'Cardiovascular disease risk: diagnosis': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Disorder of cardiovascular system" "disorder") possible)',
+    'snomed_concept_id': '49601007',
+    'name': 'Cardiovascular disease risk: diagnosis',
+    'category': 'disorder',
+  },
+  'Cardiovascular disease risk: routine care': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Disorder of cardiovascular system" "disorder"))',
+    'snomed_concept_id': '49601007',
+    'name': 'Cardiovascular disease risk: routine care',
+    'category': 'disorder',
+  },
+  'Diabetes: diagnosis': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Diabetes mellitus" "disorder") possible)',
+    'snomed_concept_id': '73211009',
+    'name': 'Diabetes: diagnosis',
+    'category': 'disorder',
+  },
+  'Diabetes: routine care': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Diabetes mellitus" "disorder"))',
+    'snomed_concept_id': '73211009',
+    'name': 'Diabetes: routine care',
+    'category': 'disorder',
+  },
+  'Hypertension: diagnosis': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Hypertensive disorder, systemic arterial" "disorder") possible)',
+    'snomed_concept_id': '38341003',
+    'name': 'Hypertension: diagnosis',
+    'category': 'disorder',
+  },
+  'Hypertension: routine care': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Hypertensive disorder, systemic arterial" "disorder"))',
+    'snomed_concept_id': '38341003',
+    'name': 'Hypertension: routine care',
+    'category': 'disorder',
+  },
+  'Heart failure': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Heart failure" "disorder"))',
+    'snomed_concept_id': '84114007',
+    'name': 'Heart failure',
+    'category': 'disorder',
+  },
+  'Stroke': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Cerebrovascular accident" "disorder"))',
+    'snomed_concept_id': '230690007',
+    'name': 'Stroke',
+    'category': 'disorder',
+  },
+  'Ischaemic heart disease: initial assessment': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Ischemic heart disease" "disorder") possible)',
+    'snomed_concept_id': '414545008',
+    'name': 'Ischaemic heart disease: initial assessment',
+    'category': 'disorder',
+  },
+  'Ischaemic heart disease: routine care': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Ischemic heart disease" "disorder"))',
+    'snomed_concept_id': '414545008',
+    'name': 'Ischaemic heart disease: routine care',
+    'category': 'disorder',
+  },
+  'Peripheral vascular disease': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Peripheral vascular disease" "disorder"))',
+    'snomed_concept_id': '400047006',
+    'name': 'Peripheral vascular disease',
+    'category': 'disorder',
+  },
+  'Hepatitis B (HBV)': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Viral hepatitis type B" "disorder"))',
+    'snomed_concept_id': '66071002',
+    'name': 'Hepatitis B (HBV)',
+    'category': 'disorder',
+  },
+  'Long COVID': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Chronic post-COVID-19 syndrome" "disorder"))',
+    'snomed_concept_id': '1119304009',
+    'name': 'Long COVID',
+    'category': 'disorder',
+  },
+  'The mentally ill patient needing treatment or admission': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Mental disorder" "disorder"))',
+    'snomed_concept_id': '74732009',
+    'name': 'The mentally ill patient needing treatment or admission',
+    'category': 'disorder',
+  },
+  'Tobacco smoking': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Nicotine dependence" "disorder"))',
+    'snomed_concept_id': '56294008',
+    'name': 'Tobacco smoking',
+    'category': 'disorder',
+  },
+  'Alcohol use': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Alcohol use disorder" "disorder"))',
+    'snomed_concept_id': '1336085007',
+    'name': 'Alcohol use',
+    'category': 'disorder',
+  },
+  'Drug use': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Substance use disorder" "disorder"))',
+    'snomed_concept_id': '1306691007',
+    'name': 'Drug use',
+    'category': 'disorder',
+  },
+  'Depression: diagnosis': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Depressive disorder" "disorder") possible)',
+    'snomed_concept_id': '35489007',
+    'name': 'Depression: diagnosis',
+    'category': 'disorder',
+  },
+  'Depression: routine care': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Depressive disorder" "disorder"))',
+    'snomed_concept_id': '35489007',
+    'name': 'Depression: routine care',
+    'category': 'disorder',
+  },
+  'Anxiety: routine care': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Anxiety disorder" "disorder"))',
+    'snomed_concept_id': '197480006',
+    'name': 'Anxiety: routine care',
+    'category': 'disorder',
+  },
+  'Schizophrenia': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Schizophrenia" "disorder"))',
+    'snomed_concept_id': '58214004',
+    'name': 'Schizophrenia',
+    'category': 'disorder',
+  },
+  'Dementia': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Dementia" "disorder"))',
+    'snomed_concept_id': '52448006',
+    'name': 'Dementia',
+    'category': 'disorder',
+  },
+  'Epilepsy': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Epilepsy" "disorder"))',
+    'snomed_concept_id': '84757009',
+    'name': 'Epilepsy',
+    'category': 'disorder',
+  },
+  'Chronic arthritis': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Chronic arthritis" "disorder"))',
+    'snomed_concept_id': '35908007',
+    'name': 'Chronic arthritis',
+    'category': 'disorder',
+  },
+  'Gout': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Gout" "disorder"))',
+    'snomed_concept_id': '90560007',
+    'name': 'Gout',
+    'category': 'disorder',
+  },
+  'Fibromyalgia': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Fibromyalgia" "disorder"))',
+    'snomed_concept_id': '203082005',
+    'name': 'Fibromyalgia',
+    'category': 'disorder',
+  },
+  'Cervical Screening': {
+    'type': 'specific_concept',
+    's_expression': '(procedure (snomed_concept "Screening for malignant neoplasm of cervix" "procedure"))',
+    'snomed_concept_id': '171149006',
+    'name': 'Cervical Screening',
+    'category': 'procedure',
+  },
+  'Contraception': {
+    'type': 'specific_concept',
+    's_expression': '(procedure (snomed_concept "Contraception care" "regime/therapy"))',
+    'snomed_concept_id': '389095005',
+    'name': 'Contraception',
+    'category': 'regime/therapy',
+  },
+  'Pregnancy': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Pregnancy" "finding"))',
+    'snomed_concept_id': '77386006',
+    'name': 'Pregnancy',
+    'category': 'finding',
+  },
+  'Routine antenatal care': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Pregnancy" "finding"))',
+    'snomed_concept_id': '77386006',
+    'name': 'Routine antenatal care',
+    'category': 'finding',
+  },
+  'Routine postnatal care': {
+    'type': 'specific_concept',
+    's_expression': '(procedure (snomed_concept "Postpartum care" "regime/therapy"))',
+    'snomed_concept_id': '133906008',
+    'name': 'Routine postnatal care',
+    'category': 'regime/therapy',
+  },
+  // TODO Not technically correct as this is referring to the measurement of viral load
+  'Manage the pregnant/breastfeeding mother with an unsuppressed VL (≥ 50)': {
+    'type': 'specific_concept',
+    's_expression': `
+        (and (active_condition (snomed_concept "Human immunodeficiency virus infection" "disorder"))
+             (or (active_condition (snomed_concept "Pregnancy" "finding"))
+                 (active_condition (snomed_concept "Maternal breastfeeding" "finding"))
+             )
+        )
+      `,
+    'snomed_concept_id': '86406008',
+    'name': 'Manage the pregnant/breastfeeding mother with an unsuppressed VL (≥ 50)',
+    'category': 'disorder',
+  },
+  'Prevent communicable infections in the newborn': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Pregnancy" "finding"))',
+    'snomed_concept_id': '77386006',
+    'name': 'Prevent communicable infections in the newborn',
+    'category': 'finding',
+  },
+  'Prevent vertical transmission of HIV': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Human immunodeficiency virus infection" "disorder"))',
+    'snomed_concept_id': '86406008',
+    'name': 'Prevent vertical transmission of HIV',
+    'category': 'disorder',
+  },
+  'Menopause': {
+    'type': 'specific_concept',
+    's_expression': '(active_condition (snomed_concept "Menopause present" "finding"))',
+    'snomed_concept_id': '289903006',
+    'name': 'Menopause',
+    'category': 'finding',
+  },
+  'Routine palliative care': {
+    'type': 'specific_concept',
+    's_expression': '(procedure (snomed_concept "Palliative care" "regime/therapy"))',
+    'snomed_concept_id': '103735009',
+    'name': 'Routine palliative care',
+    'category': 'regime/therapy',
+  },
+  "Address the dying patient's needs": {
+    'type': 'specific_concept',
+    's_expression': '(procedure (snomed_concept "Terminal care" "regime/therapy"))',
+    'snomed_concept_id': '182964004',
+    'name': "Address the dying patient's needs",
+    'category': 'regime/therapy',
+  },
 }

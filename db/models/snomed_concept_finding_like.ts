@@ -11,8 +11,8 @@ type SearchTerms = {
 
 export const FINDING_LIKE_CATEGORIES: SnomedCategory[] = [
   'finding' as const,
-  'morphologic abnormality' as const,
   'disorder' as const,
+  'morphologic abnormality' as const,
   'situation' as const,
   'event' as const,
 ]
