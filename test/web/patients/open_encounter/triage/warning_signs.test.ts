@@ -1005,6 +1005,8 @@ describeParallel('triage/warning_signs', () => {
 
           if (sign.priority === 'Emergency') {
             assert($.url.endsWith('route_patient'))
+          } else if (pregnant) {
+            assert($.url.endsWith('height_and_weight'))
           } else {
             assert($.url.endsWith('brief_history'))
           }
@@ -1084,6 +1086,6 @@ describeParallel('triage/warning_signs', () => {
     // testRoundTrip(KEYED_WARNING_SIGNS['Pregnancy and abdominal pain'], true, { only: true })
 
     // Emergency
-    testRoundTrip(KEYED_WARNING_SIGNS['Burn Facial'], false, { only: true })
+    // testRoundTrip(KEYED_WARNING_SIGNS['Burn Facial'], false, { only: true })
   })
 })
