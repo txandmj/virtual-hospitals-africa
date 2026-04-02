@@ -309,7 +309,7 @@ async function buildAndAppendContent(pageId: string, entry: PageEntry): Promise<
   }
 
   // 2. Task test-result images
-  const test_result_dir = `${TEST_RESULTS_DIR}/${entry.title}`
+  const test_result_dir = `${TEST_RESULTS_DIR}/${entry.page_number}`
   if (await fileExists(test_result_dir)) {
     const images: string[] = []
     for await (const dir_entry of Deno.readDir(test_result_dir)) {
