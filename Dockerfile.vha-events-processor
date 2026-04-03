@@ -1,7 +1,20 @@
-FROM denoland/deno:alpine-2.6.1 as build
+FROM denoland/deno:2.7.5
 WORKDIR /app
-COPY ./ /app
+
+COPY deno.json deno.lock ./
+RUN deno install
+
+COPY events ./events
+COPY util ./util
+COPY shared ./shared
+COPY external-clients ./external-clients
+COPY db/models ./db/models
+COPY db/db.ts ./db/db.ts
+COPY db/helpers.ts ./db/helpers.ts
+COPY types.ts ./types.ts
+COPY db.d.ts ./db.d.ts
+COPY s_expression/*.ts ./s_expression/
+
 RUN touch .env
-EXPOSE 8000
 
 CMD ["deno", "task", "events:processor"]
