@@ -61,6 +61,15 @@ const CommonConditionSchema = z.object(
 
 export const TriageBriefHistorySchema = z.object({
   common_conditions: CommonConditionSchema,
+  additional_chronic_conditions: z.record(
+    z.string().uuid(),
+    z.object({
+      specific_snomed_concept_id: snomed_concept_id,
+      specific_snomed_concept_name: z.string(),
+      specific_snomed_concept_category: snomed_category,
+      existing: z.boolean().nullish(),
+    }),
+  ).optional(),
   allergies: AllergiesSchema.optional(),
 })
 
@@ -144,6 +153,20 @@ export const handler = postHandler(
 
       findings_to_insert.push(
         selfReportedStatusSExpression(condition_snomed_concept, condition.existence),
+      )
+    }
+
+    for (const [_record_id, record] of entries(form_values.additional_chronic_conditions || {})) {
+      if (record.existing) continue
+
+      findings_to_insert.push(
+        selfReportedStatusSExpression({
+          s_expression: `(
+            snomed_concept 
+            "${record.specific_snomed_concept_name}"
+            "${record.specific_snomed_concept_category}"
+          )`,
+        }, 'Yes'),
       )
     }
 

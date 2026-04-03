@@ -3,10 +3,12 @@ import { IdSelectable, TrxOrDbOrQueryCreator } from '../../types.ts'
 import { base, identity } from './_base.ts'
 import { SnomedCategory } from '../../db.d.ts'
 import { idSelection } from '../helpers.ts'
+import { CHRONIC, CLINICAL_COURSE } from '../../shared/snomed_concepts.ts'
 
 type SearchTerms = {
   snomed_concept_id?: IdSelectable
   search?: string
+  chronic?: boolean
 }
 
 export const FINDING_LIKE_CATEGORIES: SnomedCategory[] = [
@@ -84,6 +86,13 @@ function baseQuery(trx: TrxOrDbOrQueryCreator, terms: SearchTerms) {
     query = query
       .where(sql<boolean>`${terms.search} <% term`)
       .orderBy(best_similarity, 'desc')
+  }
+
+  if (terms.chronic) {
+    query = query
+      .innerJoin('snomed_relationship', 'snomed_relationship.source_id', 'snomed_inferred_canonical_name_and_category.id')
+      .where('snomed_relationship.type_id', '=', CLINICAL_COURSE.id)
+      .where('snomed_relationship.destination_id', '=', CHRONIC.id)
   }
 
   return query
