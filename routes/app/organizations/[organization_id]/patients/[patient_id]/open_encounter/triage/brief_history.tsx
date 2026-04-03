@@ -22,6 +22,9 @@ import { events } from '../../../../../../../../db/models/events.ts'
 import { parseWithSchema } from '../../../../../../../../shared/s_expression.ts'
 import { insertable_finding_base, InsertableFindingBase } from '../../../../../../../../shared/s_expression_schemas.ts'
 import zip from '../../../../../../../../util/zip.ts'
+import { snomed_concept_finding_like } from '../../../../../../../../db/models/snomed_concept_finding_like.ts'
+import { patient_records_any_top_level } from '../../../../../../../../db/models/patient_records_any_top_level.ts'
+import { SearchResult } from '../../../../../../../../db/models/_base.ts'
 
 const ConditionSchemaOptional = z.object(
   {
@@ -61,6 +64,7 @@ const CommonConditionSchema = z.object(
 
 export const TriageBriefHistorySchema = z.object({
   common_conditions: CommonConditionSchema,
+  additional_chronic_conditions: AllergiesSchema.optional(),
   allergies: AllergiesSchema.optional(),
 })
 
@@ -72,6 +76,20 @@ function mostRecentRecords({ state }: OpenEncounterWorkflowContext) {
     health_worker_id,
     conditions: COMMON_CONDITIONS,
   })
+}
+
+function additionalChronicConditions({ state }: OpenEncounterWorkflowContext) {
+  const { trx, encounter, patient_id, health_worker_id } = state
+  return patient_records_any_top_level.findAll(trx, {
+    patient_id,
+    specific_snomed_concept_id: snomed_concept_finding_like.distinctIds(trx, { chronic: true }),
+  }).then((records) =>
+    patient_record_providers.hydrateIntermediateRecords(trx, {
+      records: records as SearchResult<typeof patient_findings>[],
+      encounter,
+      health_worker_id,
+    })
+  )
 }
 
 function existingAllergies({ state }: OpenEncounterWorkflowContext) {
@@ -144,6 +162,14 @@ export const handler = postHandler(
 
       findings_to_insert.push(
         selfReportedStatusSExpression(condition_snomed_concept, condition.existence),
+      )
+    }
+
+    for (const condition of form_values.additional_chronic_conditions || []) {
+      findings_to_insert.push(
+        selfReportedStatusSExpression({
+          s_expression: `(snomed_concept "${condition.name}" "${condition.category}")`,
+        }, 'Yes'),
       )
     }
 
@@ -235,14 +261,16 @@ export async function TriageBriefHistoryPage(
 
   assert(completedPersonal(patient))
 
-  const { most_recent_findings, existing_allergies } = await promiseProps({
+  const { most_recent_findings, additional_chronic_conditions, existing_allergies } = await promiseProps({
     most_recent_findings: mostRecentRecords(ctx),
+    additional_chronic_conditions: additionalChronicConditions(ctx),
     existing_allergies: existingAllergies(ctx),
   })
 
   return (
     <BriefHistorySection
       most_recent_findings={most_recent_findings}
+      additional_chronic_conditions={additional_chronic_conditions}
       existing_allergies={existing_allergies}
       sex={patient.sex}
       organization_id={organization_employment.id}

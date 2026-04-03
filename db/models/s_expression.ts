@@ -12,6 +12,7 @@ import isKeyOf from '../../util/isKeyOf.ts'
 import isObjectLike from '../../util/isObjectLike.ts'
 import { diagnosisToEvaluation } from '../../shared/diagnosis.ts'
 import { humanReadableJson } from '../../util/humanReadableJson.ts'
+import { activeConditionAsOr } from '../../shared/s_expression_active_condition_as_or.ts'
 
 type PatientIdentifiers = {
   patient_id: string | IdSelection
@@ -523,51 +524,65 @@ export const EXPRESSION_BUILDERS = {
   //     ),
   //   )
   // },
-  // or(trx, { patient_id, patient_encounter_id }, { expressions }) {
-  //   return baseQuery(trx, { patient_id, patient_encounter_id })
-  //     .where(
-  //       (eb) =>
-  //         eb.or(expressions.map((expression) =>
-  //           eb(
-  //             'patient_records_aggregated.id',
-  //             'in',
-  //             buildExpression(
-  //               trx,
-  //               { patient_id, patient_encounter_id },
-  //               expression,
-  //             ),
-  //           )
-  //         )),
-  //     )
-  // },
-  // and(trx, { patient_id, patient_encounter_id }, { expressions }) {
-  //   return baseQuery(trx, { patient_id, patient_encounter_id })
-  //     .where(
-  //       (eb) =>
-  //         eb.and(expressions.map((expression) =>
-  //           eb(
-  //             'patient_records_aggregated.id',
-  //             'in',
-  //             buildExpression(
-  //               trx,
-  //               { patient_id, patient_encounter_id },
-  //               expression,
-  //             ),
-  //           )
-  //         )),
-  //     )
-  // },
+  or(trx, { patient_id, patient_encounter_id }, { expressions }) {
+    return baseQuery(trx, { patient_id, patient_encounter_id })
+      .where(
+        (eb) =>
+          eb.or(expressions.map((expression) => (
+            assert(expression.atom === 'finding' || expression.atom === 'diagnosis'),
+              eb(
+                'patient_records_aggregated.id',
+                'in',
+                buildExpression(
+                  trx,
+                  { patient_id, patient_encounter_id },
+                  expression,
+                ),
+              )
+          ))),
+      )
+  },
+  and(trx, { patient_id, patient_encounter_id }, { expressions }) {
+    return baseQuery(trx, { patient_id, patient_encounter_id })
+      .where(
+        (eb) =>
+          eb.and(expressions.map((expression) => (
+            assert(expression.atom === 'finding' || expression.atom === 'diagnosis'),
+              eb(
+                'patient_records_aggregated.id',
+                'in',
+                buildExpression(
+                  trx,
+                  { patient_id, patient_encounter_id },
+                  expression,
+                ),
+              )
+          ))),
+      )
+  },
   diagnosis(trx, patient, diagnosis) {
     return evaluation(trx, patient, diagnosisToEvaluation(diagnosis))
   },
   measurement,
   // TODO: this is not quite right as this would pull historical findings
-  active_condition(trx, { patient_id }, { snomed_concept }) {
-    return baseQuery(trx, {
-      patient_id,
-      existence: 'Yes',
-      specific_snomed_concept: snomed_concept,
-    })
+  active_condition(trx, { patient_id }, node) {
+    const active_condition_as_or = activeConditionAsOr(node)
+    return baseQuery(trx, { patient_id })
+      .where(
+        (eb) =>
+          eb.or(active_condition_as_or.expressions.map((expression) => (
+            assert(expression.atom === 'finding' || expression.atom === 'diagnosis'),
+              eb(
+                'patient_records_aggregated.id',
+                'in',
+                buildExpression(
+                  trx,
+                  { patient_id },
+                  expression,
+                ),
+              )
+          ))),
+      )
   },
   '>'(trx, patient, node) {
     const { measurement: m, value } = node as MeasurementComparison

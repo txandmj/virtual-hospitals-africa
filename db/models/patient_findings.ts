@@ -32,7 +32,7 @@ import { SNOMED_CONCEPT_IDS_TO_WORKFLOW_NAMES } from '../../shared/workflow.ts'
 
 export type PatientFindingsSearch = PatientRecordsSearch & {
   procedure_id?: string | IdSelection
-  s_expression?: string | Lang['finding']
+  // s_expression?: string | Lang['finding']
   not_measurements?: boolean
   include_negative?: boolean
 }
@@ -127,6 +127,8 @@ export const patient_findings = base({
             'patient_records_aggregated.id',
           )
           .select('patient_evaluation_scores.score')
+          .orderBy('score_patient_records.created_at', 'desc')
+          .limit(1)
           .as('score'),
       ])
 

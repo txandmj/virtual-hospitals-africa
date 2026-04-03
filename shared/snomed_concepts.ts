@@ -649,3 +649,13 @@ export const TRIAGE_INDEX = asConcept({
   name: 'Triage index',
   category: 'assessment scale' as const,
 })
+export const CHRONIC = asConcept({
+  id: '90734009',
+  name: 'Chronic',
+  category: 'qualifier value' as const,
+})
+export const CLINICAL_COURSE = asConcept({
+  id: '263502005',
+  name: 'Clinical course',
+  category: 'attribute' as const,
+})

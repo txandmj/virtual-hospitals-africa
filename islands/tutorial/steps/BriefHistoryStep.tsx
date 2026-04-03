@@ -20,6 +20,7 @@ export function BriefHistoryStep({ sex }: Props) {
     <div data-tutorial='brief-history-section'>
       <BriefHistorySection
         most_recent_findings={TUTORIAL_BRIEF_HISTORY_COMMON_CONDITIONS}
+        additional_chronic_conditions={[]}
         existing_allergies={TUTORIAL_BRIEF_HISTORY_ALLERGIES}
         sex={sex}
         organization_id='tutorial-org'

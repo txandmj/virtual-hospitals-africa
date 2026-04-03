@@ -177,7 +177,7 @@ export type Lang = {
 
 export type AnyNode = Lang[keyof Lang]
 
-export type QueryableSingleNode = Lang[keyof QueryableSingleBaseLang]
+export type QueryableSingleNode = Lang[keyof QueryableSingleBaseLang] | Lang['or' | 'and']
 
 export type QueryableEvidenceNode = QueryableSingleNode | Lang[keyof QueryableMultiBaseLang]
 

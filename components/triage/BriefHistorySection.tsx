@@ -3,6 +3,7 @@
 // Brief history section - displays common conditions in a yes/no grid
 // =============================================================================
 
+import { AdditionalChronicConditionsMultiSelect } from '../../islands/triage/AdditionalChronicConditionsMultiSelect.tsx'
 import { YesNoGrid, YesNoQuestion } from '../../islands/form/inputs/yes_no.tsx'
 import { MostRecentRecord } from '../../islands/MostRecentRecord.tsx'
 import { AllergiesMultiSelect } from '../../islands/triage/AllergiesMultiSelect.tsx'
@@ -43,8 +44,9 @@ export function CommonConditionRow(
 }
 
 export function BriefHistorySection(
-  { most_recent_findings, existing_allergies, sex, organization_id }: {
+  { most_recent_findings, additional_chronic_conditions, existing_allergies, sex, organization_id }: {
     most_recent_findings: MostRecentBriefHistoryFindings
+    additional_chronic_conditions: RenderedFindingRelativeToHealthWorker[]
     existing_allergies: RenderedFindingRelativeToHealthWorker[]
     sex: Sex
     organization_id: string
@@ -63,6 +65,7 @@ export function BriefHistorySection(
           />
         ))}
       </YesNoGrid>
+      <AdditionalChronicConditionsMultiSelect existing_conditions={additional_chronic_conditions} organization_id={organization_id} />
       <AllergiesMultiSelect
         existing_allergies={existing_allergies}
         organization_id={organization_id}

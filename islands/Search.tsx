@@ -61,6 +61,7 @@ export type SearchPropsCommon<
   do_not_render_built_in_options?: boolean
   placeholder?: string
   skip_blank_search?: boolean
+  include_hidden_input_fields?: string[]
 }
 
 type SearchOptionsProps<T> = {
@@ -129,12 +130,14 @@ export default function Search<
   do_not_render_built_in_options,
   placeholder = '',
   skip_blank_search,
+  include_hidden_input_fields,
   ...props
 }: SearchProps<T>) {
   if (multi) {
     assert(signal)
     assert(Array.isArray(signal.value))
     assert(!onSelect)
+    assert(!include_hidden_input_fields)
   }
 
   // deno-lint-ignore react-rules-of-hooks
@@ -166,10 +169,11 @@ export default function Search<
   // while if the provided name is something like patient, we form the id field to be patient_id
   const is_array_or_record_item = isArrayOrUUIDRecordItem(name)
 
-  const search_field = multi ? undefined : just_name ? name : name && (is_array_or_record_item ? `${name}.name` : `${name}_name`)
+  const field_name_separator = is_array_or_record_item ? '.' : '_'
 
-  const id_field = just_name ? undefined : name &&
-    (is_array_or_record_item ? `${name}.id` : `${name}_id`)
+  const search_field = multi ? undefined : just_name ? name : name && `${name}${field_name_separator}name`
+
+  const id_field = just_name ? undefined : name && `${name}${field_name_separator}id`
 
   const input_ref = useRef<HTMLInputElement>(null)
   const button_ref = useRef<HTMLButtonElement>(null)
@@ -226,7 +230,7 @@ export default function Search<
             <LabelSpan label={label} required={required} />
           </Label>
         )}
-        <div className='relative'>
+        <div className={cls('relative', !multi && className)}>
           {multi
             ? (
               <div
@@ -442,6 +446,16 @@ export default function Search<
               </ComboboxOptions>
             )}
         </div>
+        {selected_singular?.value && include_hidden_input_fields?.length && include_hidden_input_fields.map((hidden_input_field) => (
+          assert(hidden_input_field in selected_singular.value!),
+            (
+              <HiddenInput
+                name={`${name}${field_name_separator}${hidden_input_field}`}
+                // deno-lint-ignore no-explicit-any
+                value={(selected_singular.value as any)[hidden_input_field] as string}
+              />
+            )
+        ))}
         {selected_singular && (
           selected_singular.value?.id && selected_singular.value.id !== 'add' &&
           id_field && (

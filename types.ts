@@ -2699,10 +2699,6 @@ export type RenderedFindingRelativeToHealthWorker = RenderedRecordRelativeToHeal
   as_part_of_procedure: AsPartOfProcedure
 }>
 
-export type RenderedFindingRelativeToHealthWorkerWithSemanticCategory = RenderedFindingRelativeToHealthWorker & {
-  semantic_category: keyof RenderedPatientHistory
-}
-
 export type RenderedProcedureRelativeToHealthWorker = RenderedRecordRelativeToHealthWorkerDef<'procedure', {
   provider: RenderedRecordProvider
   as_part_of_procedure: null | AsPartOfProcedure
