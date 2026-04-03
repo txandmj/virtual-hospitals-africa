@@ -28,9 +28,7 @@ export function AllergiesMultiSelect({
       </Label>
       {existing_allergies.length > 0 && (
         <div class='pl-1 pt-2 flex flex-col gap-2'>
-          {existing_allergies.map((allergy) => (
-            <MostRecentRecord key={allergy.id} record={allergy} organization_id={organization_id} />
-          ))}
+          {existing_allergies.map((allergy) => <MostRecentRecord key={allergy.id} record={allergy} organization_id={organization_id} />)}
         </div>
       )}
     </div>
