@@ -12,6 +12,8 @@ COPY db/models ./db/models
 COPY db/db.ts ./db/db.ts
 COPY db/helpers.ts ./db/helpers.ts
 COPY types.ts ./types.ts
+COPY db.d.ts ./db.d.ts
+COPY s_expression/*.ts ./s_expression/
 
 RUN touch .env
 
