@@ -695,7 +695,7 @@ export async function insertChunks<Table extends keyof DB>(trx: TrxOrDb, table: 
 }
 
 function isExpression(obj: any): obj is Expression<any> {
-  return isObjectLike(obj) && typeof obj.toOperationNode === 'function'
+  return isObjectLike(obj) && obj.constructor.name === 'ExpressionWrapper'
 }
 
 export function idSelection(

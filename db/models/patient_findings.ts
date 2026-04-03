@@ -127,6 +127,8 @@ export const patient_findings = base({
             'patient_records_aggregated.id',
           )
           .select('patient_evaluation_scores.score')
+          .orderBy('score_patient_records.created_at', 'desc')
+          .limit(1)
           .as('score'),
       ])
 

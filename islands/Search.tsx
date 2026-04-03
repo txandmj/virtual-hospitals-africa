@@ -446,7 +446,7 @@ export default function Search<
               </ComboboxOptions>
             )}
         </div>
-        {selected_singular?.value && (include_hidden_input_fields || []).map((hidden_input_field) => (
+        {selected_singular?.value && include_hidden_input_fields?.length && include_hidden_input_fields.map((hidden_input_field) => (
           assert(hidden_input_field in selected_singular.value!),
             (
               <HiddenInput

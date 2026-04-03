@@ -5,7 +5,7 @@ import { formatRecord } from '../../shared/patient_records.ts'
 import { patient_evaluations } from './patient_evaluations.ts'
 import { patient_findings } from './patient_findings.ts'
 import { patient_procedures } from './patient_procedures.ts'
-import { SelectQueryBuilder } from 'kysely'
+import { SelectQueryBuilder, sql } from 'kysely'
 import { DB, PatientRecordsAggregated } from '../../db.d.ts'
 import { assertUnreachable } from '../../util/assertUnreachable.ts'
 
@@ -23,13 +23,37 @@ export const patient_records_any_top_level = base({
     trx: TrxOrDbOrQueryCreator,
     opts: PatientRecordsSearch,
   ) {
-    const findings: SelectIntermediate = patient_findings.baseQuery(trx, opts)
-    const evaluations: SelectIntermediate = patient_evaluations.baseQuery(trx, opts)
-    const procedures: SelectIntermediate = patient_procedures.baseQuery(trx, opts)
-    return findings.unionAll(evaluations).unionAll(procedures)
+    
+    const findings = trx.selectFrom(
+      patient_findings.baseQuery(trx, opts).as('r')
+    ).select([
+      'r.id',
+      sql<IntermediateRecord>`row_to_json(r)`.as('record'),
+    ])
+
+    const evaluations = trx.selectFrom(
+      patient_evaluations.baseQuery(trx, opts).as('r')
+    ).select([
+      'r.id',
+      sql<IntermediateRecord>`row_to_json(r)`.as('record'),
+    ])
+
+    const procedures = trx.selectFrom(
+      patient_procedures.baseQuery(trx, opts).as('r')
+    ).select([
+      'r.id',
+      sql<IntermediateRecord>`row_to_json(r)`.as('record'),
+    ])
+
+    console.log('trying findings...')
+    return findings
+    // console.log('trying evaluations...')
+    // // return evaluations
+    // console.log('trying procedures...')
+    // // return procedures
+    // return findings.unionAll(evaluations).unionAll(procedures)
   },
-  formatResult(record): SearchResult<typeof patient_findings> | SearchResult<typeof patient_evaluations> | SearchResult<typeof patient_procedures> {
-    // Typescript needs a little love.
+  formatResult({ record }): SearchResult<typeof patient_findings> | SearchResult<typeof patient_evaluations> | SearchResult<typeof patient_procedures> {
     switch (record.type) {
       case 'finding': return formatRecord(record)
       case 'evaluation': return formatRecord(record)
