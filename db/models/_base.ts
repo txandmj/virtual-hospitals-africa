@@ -146,7 +146,6 @@ class BaseModel<
       },
     }
   }
-
   cacheWrites(): boolean {
     return !!this.caching?.cache_writes
   }
@@ -458,6 +457,21 @@ export type SearchResult<BM> = BM extends BaseModel<
   any,
   infer RenderedResult
 > ? RenderedResult
+  : never
+
+export type IntermediateResult<BM> = BM extends BaseModel<
+  // deno-lint-ignore no-explicit-any
+  any,
+  // deno-lint-ignore no-explicit-any
+  any,
+  // deno-lint-ignore no-explicit-any
+  any,
+  infer IntermediateResult,
+  // deno-lint-ignore no-explicit-any
+  any,
+  // deno-lint-ignore no-explicit-any
+  any
+> ? IntermediateResult
   : never
 
 export function base<

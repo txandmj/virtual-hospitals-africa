@@ -524,40 +524,42 @@ export const EXPRESSION_BUILDERS = {
   //     ),
   //   )
   // },
-  // or(trx, { patient_id, patient_encounter_id }, { expressions }) {
-  //   return baseQuery(trx, { patient_id, patient_encounter_id })
-  //     .where(
-  //       (eb) =>
-  //         eb.or(expressions.map((expression) =>
-  //           eb(
-  //             'patient_records_aggregated.id',
-  //             'in',
-  //             buildExpression(
-  //               trx,
-  //               { patient_id, patient_encounter_id },
-  //               expression,
-  //             ),
-  //           )
-  //         )),
-  //     )
-  // },
-  // and(trx, { patient_id, patient_encounter_id }, { expressions }) {
-  //   return baseQuery(trx, { patient_id, patient_encounter_id })
-  //     .where(
-  //       (eb) =>
-  //         eb.and(expressions.map((expression) =>
-  //           eb(
-  //             'patient_records_aggregated.id',
-  //             'in',
-  //             buildExpression(
-  //               trx,
-  //               { patient_id, patient_encounter_id },
-  //               expression,
-  //             ),
-  //           )
-  //         )),
-  //     )
-  // },
+  or(trx, { patient_id, patient_encounter_id }, { expressions }) {
+    return baseQuery(trx, { patient_id, patient_encounter_id })
+      .where(
+        (eb) =>
+          eb.or(expressions.map((expression) => (
+            assert(expression.atom === 'finding' || expression.atom === 'diagnosis'),
+              eb(
+                'patient_records_aggregated.id',
+                'in',
+                buildExpression(
+                  trx,
+                  { patient_id, patient_encounter_id },
+                  expression,
+                ),
+              )
+          ))),
+      )
+  },
+  and(trx, { patient_id, patient_encounter_id }, { expressions }) {
+    return baseQuery(trx, { patient_id, patient_encounter_id })
+      .where(
+        (eb) =>
+          eb.and(expressions.map((expression) => (
+            assert(expression.atom === 'finding' || expression.atom === 'diagnosis'),
+              eb(
+                'patient_records_aggregated.id',
+                'in',
+                buildExpression(
+                  trx,
+                  { patient_id, patient_encounter_id },
+                  expression,
+                ),
+              )
+          ))),
+      )
+  },
   diagnosis(trx, patient, diagnosis) {
     return evaluation(trx, patient, diagnosisToEvaluation(diagnosis))
   },

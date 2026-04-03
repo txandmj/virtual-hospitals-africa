@@ -37,15 +37,15 @@ http_server_output="$logs_dir/server.log"
 https_proxy_server_output="$logs_dir/proxy.log"
 echo "Logs for this run available at $logs_dir"
 
-deno task events:processor | tee "$events_processor_output" &
+deno task events:processor 2>&1 | tee "$events_processor_output" &
 EVENTS_PROCESSOR_PID="$!"
 
-HTTP_SERVER_PORT=$HTTP_SERVER_PORT HTTPS_PROXY_SERVER_PORT=$HTTPS_PROXY_SERVER_PORT deno task proxy | tee "$https_proxy_server_output" &
+HTTP_SERVER_PORT=$HTTP_SERVER_PORT HTTPS_PROXY_SERVER_PORT=$HTTPS_PROXY_SERVER_PORT deno task proxy 2>&1 | tee "$https_proxy_server_output" &
 PROXY_PID="$!"
 
 trap 'clean_up' EXIT
 
-PORT=$HTTP_SERVER_PORT HTTPS_PROXY_SERVER_PORT=$HTTPS_PROXY_SERVER_PORT deno task vite | tee "$http_server_output" &
+PORT=$HTTP_SERVER_PORT HTTPS_PROXY_SERVER_PORT=$HTTPS_PROXY_SERVER_PORT deno task vite 2>&1 | tee "$http_server_output" &
 SERVER_PID="$!"
 
 wait $EVENTS_PROCESSOR_PID $PROXY_PID $SERVER_PID

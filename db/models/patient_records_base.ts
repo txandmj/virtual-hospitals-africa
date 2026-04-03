@@ -1,4 +1,4 @@
-import { Maybe, Selecting, TrxOrDbOrQueryCreator } from '../../types.ts'
+import { Maybe, RecordValue, Selecting, TrxOrDbOrQueryCreator } from '../../types.ts'
 import generateUUID from '../../util/uuid.ts'
 import { asText, success_true } from '../helpers.ts'
 import { ALTERED, DIAGNOSIS, ENTERED_IN_ERROR, EVALUATION_ACTION, EVIDENCE_OF_CONTEXTUAL_QUALIFIER } from '../../shared/snomed_concepts.ts'
@@ -166,6 +166,6 @@ export function nonGroupedBaseQuery(
       'patient_records_aggregated.specific_snomed_concept_name',
       'patient_records_aggregated.specific_snomed_concept_category',
       'patient_records_aggregated.existence',
-      'patient_records_aggregated.value',
+      eb.ref('patient_records_aggregated.value').$castTo<RecordValue | null>().as('value'),
     ])
 }

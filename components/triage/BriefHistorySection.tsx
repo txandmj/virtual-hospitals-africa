@@ -44,8 +44,9 @@ export function CommonConditionRow(
 }
 
 export function BriefHistorySection(
-  { most_recent_findings, existing_allergies, sex, organization_id }: {
+  { most_recent_findings, additional_chronic_conditions, existing_allergies, sex, organization_id }: {
     most_recent_findings: MostRecentBriefHistoryFindings
+    additional_chronic_conditions: RenderedFindingRelativeToHealthWorker[]
     existing_allergies: RenderedFindingRelativeToHealthWorker[]
     sex: Sex
     organization_id: string
@@ -63,7 +64,7 @@ export function BriefHistorySection(
             most_recent_finding={most_recent_findings[condition.key]}
           />
         ))}
-        <AdditionalChronicConditions />
+        <AdditionalChronicConditions existing_conditions={additional_chronic_conditions} />
       </YesNoGrid>
       <AllergiesMultiSelect
         existing_allergies={existing_allergies}

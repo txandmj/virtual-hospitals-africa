@@ -73,7 +73,7 @@ function baseQuery(trx: TrxOrDbOrQueryCreator, terms: SearchTerms) {
       'snomed_inferred_canonical_name_and_category.category',
       best_similarity.as('best_similarity'),
     ])
-    .groupBy('snomed_inferred_canonical_name_and_category.id')
+    .groupBy('snomed_concept_finding_like.id')
 
   if (terms.snomed_concept_id) {
     query = query.where(

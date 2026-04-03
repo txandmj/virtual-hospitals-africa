@@ -451,6 +451,7 @@ export default function Search<
             (
               <HiddenInput
                 name={`${name}${field_name_separator}${hidden_input_field}`}
+                // deno-lint-ignore no-explicit-any
                 value={(selected_singular.value as any)[hidden_input_field] as string}
               />
             )

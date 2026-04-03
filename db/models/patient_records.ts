@@ -1,6 +1,6 @@
-import { IdSelection, InsertRows, Priority, TrxOrDbOrQueryCreator } from '../../types.ts'
+import { IdSelectable, IdSelection, InsertRows, Priority, TrxOrDbOrQueryCreator } from '../../types.ts'
 import generateUUID from '../../util/uuid.ts'
-import { blankSelection, jsonArrayFrom } from '../helpers.ts'
+import { blankSelection, idSelection, jsonArrayFrom } from '../helpers.ts'
 import { base } from './_base.ts'
 import { patient_record_qualifiers } from './patient_record_qualifiers.ts'
 import { buildExpression, maybeSnomedConceptBase, snomedConceptBase } from './s_expression.ts'
@@ -18,7 +18,7 @@ export type PatientRecordsSearch = {
   patient_id?: string | IdSelection
   patient_encounter_id?: string | IdSelection
   root_snomed_concept_id?: string | string[]
-  specific_snomed_concept_id?: string | string[]
+  specific_snomed_concept_id?: IdSelectable
   s_expression?: string | QueryableSingleNode
   excluding_patient_encounter_id?: string | IdSelection
   search?: string
@@ -426,8 +426,7 @@ export const patient_records = base({
     if (opts?.specific_snomed_concept_id) {
       qb = qb.where(
         'patient_records_aggregated.specific_snomed_concept_id',
-        isString(opts.specific_snomed_concept_id) ? '=' : 'in',
-        opts.specific_snomed_concept_id,
+        ...idSelection(opts.specific_snomed_concept_id),
       )
     }
     if (opts?.s_expression) {

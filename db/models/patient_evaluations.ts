@@ -109,7 +109,7 @@ export function insertOneNested(
 
 export type PatientEvaluationsSearch = PatientRecordsSearch & {
   evaluates_record_id?: string | IdSelection
-  s_expression?: string | Lang['evaluation']
+  // s_expression?: string | Lang['evaluation']
 }
 
 export function baseQuery(
