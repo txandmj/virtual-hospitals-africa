@@ -19,7 +19,7 @@
 (system_diagnosis_rule
   "Diagnose probable hypertensive urgency"
   (diagnosis
-    (snomed_concept "Hypertension" "disorder")
+    (snomed_concept "Hypertensive disorder, systemic arterial" "disorder")
     probable
   )
   adult
