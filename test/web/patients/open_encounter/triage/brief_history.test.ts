@@ -46,6 +46,7 @@ describeParallel('triage/brief_history', () => {
         const form_labels = getFormLabels($)
 
         assertEquals(form_values, {
+          additional_chronic_conditions: [],
           allergies: [],
           common_conditions: {
             arthritis: { existence: null },
@@ -113,6 +114,7 @@ describeParallel('triage/brief_history', () => {
         const form_labels = getFormLabels($)
 
         assertEquals(form_values, {
+          additional_chronic_conditions: [],
           allergies: [],
           common_conditions: {
             arthritis: { existence: null },
@@ -526,6 +528,7 @@ describeParallel('triage/brief_history', () => {
           $brief_history_after_returning_encounter_start,
         )
         assertEquals(form_values, {
+          additional_chronic_conditions: [],
           allergies: [],
           common_conditions: {
             arthritis: { existence: null },
