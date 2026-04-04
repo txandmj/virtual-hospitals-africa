@@ -15,6 +15,7 @@ import { PROCEDURE } from '../../shared/snomed_concepts.ts'
 import { describeParallel, itParallel } from 'test/_helpers/testParallel.ts'
 import assertLength from '../../util/assertLength.ts'
 import { assertEquals } from 'std/assert/assert_equals.ts'
+import { check_for } from '../../db/models/check_for.ts'
 
 describeParallel('db/models/s_expression.ts', () => {
   afterAll(() => db.destroy())
@@ -204,7 +205,7 @@ describeParallel('db/models/s_expression.ts', () => {
     },
   )
 
-  itParallel('respects excluding', async () => {
+  itParallel('respects (excluding)', async () => {
     const { employee, patient_id, patient_encounter_id } = await insertPatientSeekingTreatmentWithEmployeeAndCompleteRegistrationForTest(db)
     const inserted_findings = await patient_findings.insertMany(
       db,
@@ -237,5 +238,59 @@ describeParallel('db/models/s_expression.ts', () => {
     ).execute()
 
     assertEquals(excluding_animal_bite_result, [])
+  })
+
+  itParallel('respects (no)', async () => {
+    const { employee, patient_id, patient_encounter_id } = await insertPatientSeekingTreatmentWithEmployeeAndCompleteRegistrationForTest(db)
+    const inserted_findings = await patient_findings.insertMany(
+      db,
+      {
+        patient_id,
+        patient_encounter_id,
+        patient_encounter_employee_id: employee.patient_encounter_employee_id,
+        employment_id: employee.employee_id,
+        procedure: {
+          create_with_specific_snomed_concept_id: WORKFLOW_STEP_SNOMED_CONCEPTS.triage!.warning_signs.snomed_concept_id,
+        },
+        findings: check_for.asInsertableFindings(
+          check_for.Schema.array().parse([{
+            s_expression: `(clinical_finding (snomed_concept "Insect bite - wound" "disorder"))`,
+            existence: 'No',
+          }]),
+        ),
+      },
+    )
+
+    const positive_general_bite_result = await buildExpression(
+      db,
+      { patient_id, patient_encounter_id },
+      `(clinical_finding (snomed_concept "Bite - wound" "disorder"))`,
+    ).execute()
+
+    assertEquals(positive_general_bite_result, [])
+
+    const negative_general_bite_result = await buildExpression(
+      db,
+      { patient_id, patient_encounter_id },
+      `(no (clinical_finding (snomed_concept "Bite - wound" "disorder")))`,
+    ).execute()
+
+    assertEquals(negative_general_bite_result, [])
+
+    const positive_insect_bite_result = await buildExpression(
+      db,
+      { patient_id, patient_encounter_id },
+      `(clinical_finding (snomed_concept "Insect bite - wound" "disorder"))`,
+    ).execute()
+
+    assertEquals(positive_insect_bite_result, [])
+
+    const negative_insect_bite_result = await buildExpression(
+      db,
+      { patient_id, patient_encounter_id },
+      `(no (clinical_finding (snomed_concept "Insect bite - wound" "disorder")))`,
+    ).execute()
+
+    assertEquals(negative_insect_bite_result, [{ id: inserted_findings.finding_ids[0] }])
   })
 })

@@ -17,6 +17,7 @@ import {
   EVALUATION_FOR_SIGNS_AND_SYMPTOMS_OF_PHYSICAL_HEALTH_PROBLEMS,
   EVENT,
   MEASUREMENT_PROCEDURE,
+  NO_QUALIFIER,
   PATIENT_MANAGEMENT_PROCEDURE,
   PROCEDURE,
 } from './snomed_concepts.ts'
@@ -444,6 +445,23 @@ export const clinical_finding: z.ZodType<NonNullableProperty<Lang['finding'], 'r
 ).describe('clinical_finding')
 
 export const finding: z.ZodType<Lang['finding']> = z.lazy(() => finding_base.or(clinical_finding).or(allergy)).describe('finding')
+
+export const no_finding: z.ZodType<Lang['finding']> = z.lazy(() =>
+  z.object({
+    atom: z.literal('no'),
+    args: z.tuple([finding]),
+  }).transform(({ args: [finding] }) => {
+    assert(!finding.value_snomed_concept, 'Attempt to overwrite value_snomed_concept with (no)')
+    return {
+      ...finding,
+      value_snomed_concept: {
+        atom: 'snomed_concept' as const,
+        ...NO_QUALIFIER,
+      },
+      existence: 'No' as const,
+    }
+  })
+).describe('no')
 
 export const timestamp: z.ZodType<Lang['timestamp']> = z.lazy(() =>
   z.object({
@@ -1118,6 +1136,7 @@ export const any_query_single: z.ZodType<QueryableSingleNode> = z.lazy(() =>
   z.union([
     event,
     finding,
+    no_finding,
     evaluation,
     procedure,
     measurement,
