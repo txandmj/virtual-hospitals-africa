@@ -40,16 +40,6 @@ describeParallel('/app/snomed/warning-signs', () => {
               'priority_by_virtue_of_matching_warning_sign': null,
             },
             {
-              'clinical_finding_s_expression': '(clinical_finding (snomed_concept "No earache" "situation"))',
-              'snomed_concept_id': '162357001',
-              'name': 'No earache',
-              'description': 'situation',
-              'category': 'Search Results',
-              'best_similarity': z.number(),
-              'priority': null,
-              'priority_by_virtue_of_matching_warning_sign': null,
-            },
-            {
               'clinical_finding_s_expression': '(clinical_finding (snomed_concept "Otalgia of left ear" "finding"))',
               'snomed_concept_id': '1010233001',
               'name': 'Otalgia of left ear',
