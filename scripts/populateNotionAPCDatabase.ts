@@ -223,12 +223,14 @@ async function buildPageEntries(): Promise<PageEntry[]> {
 
 // ---- Notion database operations ----
 
-async function archiveAllPages(): Promise<void> {
-  console.log('Archiving existing pages...')
+async function fetchExistingPageTitles(): Promise<Set<string>> {
+  const titles = new Set<string>()
   let cursor: string | undefined
-  let archived = 0
   do {
-    const data = await notionRequest<{ results: { id: string }[]; next_cursor: string | null }>(
+    const data = await notionRequest<{
+      results: { properties: { Page: { title: { plain_text: string }[] } } }[]
+      next_cursor: string | null
+    }>(
       `https://api.notion.com/v1/databases/${DATABASE_ID}/query`,
       {
         method: 'POST',
@@ -237,16 +239,12 @@ async function archiveAllPages(): Promise<void> {
       },
     )
     for (const page of data.results) {
-      await notionRequest(`https://api.notion.com/v1/pages/${page.id}`, {
-        method: 'PATCH',
-        headers: notionHeaders(),
-        body: JSON.stringify({ archived: true }),
-      })
-      archived++
+      const title = page.properties.Page?.title?.[0]?.plain_text
+      if (title) titles.add(title)
     }
     cursor = data.next_cursor ?? undefined
   } while (cursor)
-  console.log(`Archived ${archived} existing pages.`)
+  return titles
 }
 
 async function createPageRow(entry: PageEntry): Promise<string> {
@@ -359,12 +357,16 @@ async function buildAndAppendContent(pageId: string, entry: PageEntry): Promise<
 
 async function main() {
   const entries = await buildPageEntries()
-  console.log({ entries })
-  console.log(`Found ${entries.length} unique pages to create.`)
+  console.log(`Found ${entries.length} unique pages in TOC.`)
 
-  await archiveAllPages()
+  console.log('Fetching existing Notion pages...')
+  const existing = await fetchExistingPageTitles()
+  console.log(`${existing.size} pages already exist.`)
 
-  for (const entry of entries) {
+  const to_create = entries.filter((e) => !existing.has(e.title))
+  console.log(`Creating ${to_create.length} new pages...`)
+
+  for (const entry of to_create) {
     console.log(`Creating ${entry.title}...`)
     const page_id = await createPageRow(entry)
     await buildAndAppendContent(page_id, entry)
