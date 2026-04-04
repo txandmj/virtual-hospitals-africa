@@ -6,6 +6,7 @@
   (check_for
     (clinical_finding (snomed_concept "Decreased level of consciousness" "finding"))
     (clinical_finding (snomed_concept "Numbness of limbs" "finding"))
+    (clinical_finding (snomed_concept "Numbness of lower limb" "finding"))
     (clinical_finding (snomed_concept "Headache" "finding") (qualifier (snomed_concept "Sudden onset" "qualifier value")) (qualifier (snomed_concept "Severe (severity modifier)" "qualifier value")))
     (clinical_finding (snomed_concept "Dizziness" "finding") (qualifier (snomed_concept "Sudden onset" "qualifier value")) (qualifier (snomed_concept "Severe (severity modifier)" "qualifier value")))
     (clinical_finding (snomed_concept "Frequent headache" "finding") (qualifier (snomed_concept "Worsening" "qualifier value")))
