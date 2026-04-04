@@ -8,7 +8,7 @@
   adult
   (and
     (clinical_finding (snomed_concept "Headache" "finding"))
-    (or (clinical_finding (snomed_concept "Common cold" "disorder") (qualifier "Recent" "qualifier value"))
+    (or (clinical_finding (snomed_concept "Common cold" "disorder") (qualifier (snomed_concept "Recent" "qualifier value")))
         (and (active_condition (snomed_concept "Fever" "finding"))
              (active_condition (snomed_concept "Generalized aches and pains" "finding"))
         )

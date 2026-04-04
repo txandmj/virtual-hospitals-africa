@@ -2441,6 +2441,7 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
         'attributes': [
           {
             'atom': 'attribute',
+            'root_snomed_concept': { 'atom': 'snomed_concept', 'name': 'Attribute', 'category': 'attribute' },
             'specific_snomed_concept': {
               'atom': 'snomed_concept',
               'name': 'Finding site',
@@ -2473,6 +2474,7 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
         'attributes': [
           {
             'atom': 'attribute',
+            'root_snomed_concept': { 'atom': 'snomed_concept', 'name': 'Attribute', 'category': 'attribute' },
             'specific_snomed_concept': {
               'atom': 'snomed_concept',
               'name': 'Finding site',
@@ -2860,6 +2862,7 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
         'attributes': [
           {
             'atom': 'attribute',
+            'root_snomed_concept': { 'atom': 'snomed_concept', 'name': 'Attribute', 'category': 'attribute' },
             'specific_snomed_concept': {
               'atom': 'snomed_concept',
               'name': 'Finding site',
@@ -2901,6 +2904,7 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
         'attributes': [
           {
             'atom': 'attribute',
+            'root_snomed_concept': { 'atom': 'snomed_concept', 'name': 'Attribute', 'category': 'attribute' },
             'specific_snomed_concept': {
               'atom': 'snomed_concept',
               'name': 'Finding site',

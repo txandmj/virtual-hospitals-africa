@@ -327,7 +327,9 @@ function buildDisplays(
   }
 
   const attributes_to_include_in_display = (record.attributes || [])
-    .filter((attribute) => ATTRIBUTES_TO_INCLUDE_IN_DISPLAY.has(attribute.specific_snomed_concept_name) || attribute.root_snomed_concept_name !== ATTRIBUTE.name)
+    .filter((attribute) =>
+      ATTRIBUTES_TO_INCLUDE_IN_DISPLAY.has(attribute.specific_snomed_concept_name) || attribute.root_snomed_concept_name !== ATTRIBUTE.name
+    )
     .map((attribute) => `(${exists(attribute.displays.value)})`)
 
   const qualifier_is_postfix = postfix || qualifierIsPostfix(qualifiers[0])
