@@ -43,6 +43,7 @@ const PRIORITY_DIR = 's_expression/system_priority_evaluations/apc-adult'
 const DIAGNOSIS_DIR = 's_expression/system_diagnosis_rules/apc-adult'
 const THUMBNAILS_DIR = 'static/medical-resources/za/primary-care/adult/thumbnails/full-size'
 const TEST_RESULTS_DIR = 'apc-test-results'
+const RED_BOXES_DIR = 'red_boxes/apc-adult'
 
 // ---- Notion API helpers ----
 
@@ -130,6 +131,22 @@ function heading2Block(text: string): NotionBlock {
   }
 }
 
+// Notion rich_text content max is 2000 chars; split across multiple paragraph blocks if needed.
+function paragraphBlocks(content: string): NotionBlock[] {
+  const MAX = 2000
+  const blocks: NotionBlock[] = []
+  let remaining = content
+  while (remaining.length > 0) {
+    const chunk = remaining.slice(0, MAX)
+    remaining = remaining.slice(MAX)
+    blocks.push({
+      type: 'paragraph',
+      paragraph: { rich_text: [{ type: 'text', text: { content: chunk } }] },
+    })
+  }
+  return blocks
+}
+
 // Notion rich_text content max is 2000 chars; split across multiple segments if needed.
 function codeBlock(content: string, language = 'lisp'): NotionBlock {
   const MAX = 2000
@@ -151,6 +168,37 @@ async function appendBlocks(pageId: string, blocks: NotionBlock[]): Promise<void
       body: JSON.stringify({ children: blocks.slice(i, i + 100) }),
     })
   }
+}
+
+// ---- Red box helpers ----
+
+function slugToTitle(slug: string): string {
+  return slug
+    .split('-')
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ')
+}
+
+interface RedBoxFile {
+  slug: string
+  path: string
+}
+
+async function readRedBoxFiles(page_number: number): Promise<RedBoxFile[]> {
+  const files: RedBoxFile[] = []
+  try {
+    for await (const entry of Deno.readDir(RED_BOXES_DIR)) {
+      if (!entry.isFile || !entry.name.endsWith('.txt')) continue
+      const m = entry.name.match(/^(\d+)-(.+)\.txt$/)
+      if (m && parseInt(m[1]) === page_number) {
+        files.push({ slug: m[2], path: `${RED_BOXES_DIR}/${entry.name}` })
+      }
+    }
+  } catch {
+    // directory missing — skip
+  }
+  files.sort((a, b) => a.slug.localeCompare(b.slug))
+  return files
 }
 
 // ---- Lisp file discovery ----
@@ -327,21 +375,29 @@ async function buildAndAppendContent(pageId: string, entry: PageEntry): Promise<
     }
   }
 
-  // 3. Tasks lisp
+  // 3. Red boxes
+  const red_box_files = await readRedBoxFiles(entry.page_number)
+  for (const rbf of red_box_files) {
+    blocks.push(heading2Block(`Red Box: ${slugToTitle(rbf.slug)}`))
+    const content = await Deno.readTextFile(rbf.path)
+    blocks.push(...paragraphBlocks(content))
+  }
+
+  // 4. Tasks lisp
   const task_lisp = `${TASKS_DIR}/${entry.title}.lisp`
   if (await fileExists(task_lisp)) {
     blocks.push(heading2Block('Tasks'))
     blocks.push(codeBlock(await Deno.readTextFile(task_lisp)))
   }
 
-  // 4. Priority evaluations lisp
+  // 5. Priority evaluations lisp
   const priority_lisp = `${PRIORITY_DIR}/${entry.title}.lisp`
   if (await fileExists(priority_lisp)) {
     blocks.push(heading2Block('Priority Evaluations'))
     blocks.push(codeBlock(await Deno.readTextFile(priority_lisp)))
   }
 
-  // 5. Diagnosis rules lisp
+  // 6. Diagnosis rules lisp
   const diagnosis_lisp = `${DIAGNOSIS_DIR}/${entry.title}.lisp`
   if (await fileExists(diagnosis_lisp)) {
     blocks.push(heading2Block('Diagnosis Rules'))
