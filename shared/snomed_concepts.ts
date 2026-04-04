@@ -659,3 +659,13 @@ export const CLINICAL_COURSE = asConcept({
   name: 'Clinical course',
   category: 'attribute' as const,
 })
+export const FINDING_CONTEXT = asConcept({
+  id: '408729009',
+  name: 'Finding context',
+  category: 'attribute' as const,
+})
+export const KNOWN_ABSENT = asConcept({
+  id: '410516002',
+  name: 'Known absent',
+  category: 'qualifier value' as const,
+})

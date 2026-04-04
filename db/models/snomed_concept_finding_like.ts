@@ -3,7 +3,7 @@ import { IdSelectable, TrxOrDbOrQueryCreator } from '../../types.ts'
 import { base, identity } from './_base.ts'
 import { SnomedCategory } from '../../db.d.ts'
 import { idSelection } from '../helpers.ts'
-import { CHRONIC, CLINICAL_COURSE } from '../../shared/snomed_concepts.ts'
+import { CHRONIC, CLINICAL_COURSE, FINDING_CONTEXT, KNOWN_ABSENT } from '../../shared/snomed_concepts.ts'
 
 type SearchTerms = {
   snomed_concept_id?: IdSelectable
@@ -67,6 +67,14 @@ function baseQuery(trx: TrxOrDbOrQueryCreator, terms: SearchTerms) {
           : join.on(sql<boolean>`false`),
     )
     .where('preferred_category_of_same_name.id', 'is', null)
+    .where((eb) =>
+      eb.not(eb.exists(
+        eb.selectFrom('snomed_relationship')
+          .whereRef('source_id', '=', 'snomed_inferred_canonical_name_and_category.id')
+          .where('snomed_relationship.type_id', '=', FINDING_CONTEXT.id)
+          .where('snomed_relationship.destination_id', '=', KNOWN_ABSENT.id),
+      ))
+    )
     .select([
       'snomed_inferred_canonical_name_and_category.id',
       'snomed_inferred_canonical_name_and_category.name',
