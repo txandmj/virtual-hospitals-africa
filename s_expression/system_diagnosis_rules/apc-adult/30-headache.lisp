@@ -1,43 +1,31 @@
-;; Page 30 - Headache: Meningitis likely with stiff neck and fever
+;; Page 30 – Headache
 (system_diagnosis_rule
-  "Diagnose probable meningitis"
+  "Diagnose Sinusitis likely"
   (diagnosis
-    (snomed_concept "Meningitis" "disorder")
-    probable
+    (snomed_concept "Sinusitis" "disorder")
+    probable 
   )
   adult
   (and
     (clinical_finding (snomed_concept "Headache" "finding"))
-    (or
-      (clinical_finding (snomed_concept "Stiff neck" "finding"))
-      (clinical_finding (snomed_concept "Purpuric rash" "disorder"))
-      (clinical_finding (snomed_concept "Clouded consciousness" "finding"))
+    (or (clinical_finding (snomed_concept "Common cold" "disorder") (qualifier "Recent" "qualifier value"))
+        (and (active_condition (snomed_concept "Fever" "finding"))
+             (active_condition (snomed_concept "Generalized aches and pains" "finding"))
+        )
     )
-  )
-)
-;; Page 30 - Headache: Hypertensive urgency likely with severe headache and high BP
-(system_diagnosis_rule
-  "Diagnose probable hypertensive urgency"
-  (diagnosis
-    (snomed_concept "Hypertensive disorder, systemic arterial" "disorder")
-    probable
-  )
-  adult
-  (and
-    (clinical_finding (snomed_concept "Headache" "finding") (qualifier (snomed_concept "Severe (severity modifier)" "qualifier value")))
-    (>= (measurement (snomed_concept "Systolic blood pressure" "observable entity") mmHg) 180)
-  )
-)
-;; Page 30 - Headache: Chronic headache disorder
-(system_diagnosis_rule
-  "Diagnose probable chronic headache disorder"
-  (diagnosis
-    (snomed_concept "Chronic headache disorder" "disorder")
-    probable
-  )
-  adult
-  (and
-    (clinical_finding (snomed_concept "Frequent headache" "finding"))
-    (clinical_finding (snomed_concept "Chronic headache disorder" "disorder"))
+    (or (clinical_finding (snomed_concept "Headache" "finding") (attribute (snomed_concept "Worse" "qualifier value") (snomed_concept "Forward bending" "observable entity")))
+        (clinical_finding (snomed_concept "Nasal discharge" "finding") (qualifier (snomed_concept "Thick" "qualifier value")))
+        (clinical_finding (snomed_concept "Posterior rhinorrhea" "disorder") (qualifier (snomed_concept "Thick" "qualifier value")))
+        (clinical_finding 
+          (snomed_concept "Pain" "finding") 
+          (finding_site (snomed_concept "Cheek structure" "body structure")) 
+          (attribute (snomed_concept "Aggravated by" "attribute") (snomed_concept "Pressure - physical agent" "physical force"))
+        )
+        (clinical_finding 
+          (snomed_concept "Pain" "finding") 
+          (finding_site (snomed_concept "Forehead structure" "body structure")) 
+          (attribute (snomed_concept "Aggravated by" "attribute") (snomed_concept "Pressure - physical agent" "physical force"))
+        )
+    )
   )
 )

@@ -478,19 +478,14 @@ export const EXPRESSION_BUILDERS = {
   attribute(
     trx,
     { patient_id, patient_encounter_id },
-    { specific_snomed_concept, value },
+    { root_snomed_concept, specific_snomed_concept, value },
   ) {
     const matches_attr = baseQuery(trx, {
       patient_id,
       patient_encounter_id,
+      root_snomed_concept,
       specific_snomed_concept,
       value_snomed_concept: value.atom === 'event' ? undefined : value,
-      root_snomed_concept: {
-        atom: 'snomed_concept',
-        ...(
-          value.atom === 'event' ? EVENT : ATTRIBUTE
-        ),
-      },
     })
       .innerJoin(
         'patient_record_qualifiers',

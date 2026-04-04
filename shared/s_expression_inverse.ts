@@ -2,7 +2,7 @@ import { assert } from 'std/assert/assert.ts'
 import compact from '../util/compact.ts'
 import { AnyNode, EventValue, Lang } from './s_expression_schemas.ts'
 import { AgeDetermination } from '../types.ts'
-import { ALLERGIC_CONDITION, PATIENT_MANAGEMENT_PROCEDURE, PROCEDURE } from './snomed_concepts.ts'
+import { ALLERGIC_CONDITION, ATTRIBUTE, PATIENT_MANAGEMENT_PROCEDURE, PROCEDURE } from './snomed_concepts.ts'
 import assertLength from '../util/assertLength.ts'
 
 // TODO: come back to this idea maybe.
@@ -62,18 +62,18 @@ export function inverseSExpression(node: AnyNode): string {
 
     case 'attribute': {
       const { value } = node
+      assert(value)
       // Event-type attribute
-      if (value && isEventValue(value)) {
+      if (isEventValue(value)) {
         return `(event ${snomedConceptToString(node.specific_snomed_concept)} "${value.datetime}")`
       }
       // Regular attribute
-      const parts: string[] = [
-        'attribute',
-        snomedConceptToString(node.specific_snomed_concept),
-      ]
-      if (value) {
-        parts.push(snomedConceptToString(value))
+      const parts: string[] = ['attribute']
+      if (node.root_snomed_concept.name !== ATTRIBUTE.name) {
+        parts.push(snomedConceptToString(node.root_snomed_concept))
       }
+      parts.push(snomedConceptToString(node.specific_snomed_concept))
+      parts.push(snomedConceptToString(value))
       return `(${parts.join(' ')})`
     }
 

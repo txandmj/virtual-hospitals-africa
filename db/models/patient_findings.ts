@@ -13,7 +13,6 @@ import { InsertableFindingBase, Lang, MeasurementComparison } from '../../shared
 import { asNode } from '../../shared/s_expression.ts'
 import { formatRecord } from '../../shared/patient_records.ts'
 import {
-  ATTRIBUTE,
   DUE_TO,
   EVALUATION_ACTION,
   EVENT,
@@ -264,7 +263,10 @@ export const patient_findings = base({
             id: attribute_id,
             patient_id,
             patient_encounter_id,
-            root_snomed_concept_id: ATTRIBUTE.id,
+            root_snomed_concept_id: snomedConceptBase(
+              trx,
+              attribute.root_snomed_concept,
+            ),
             specific_snomed_concept_id: snomedConceptBase(
               trx,
               attribute.specific_snomed_concept,
@@ -568,7 +570,10 @@ export const patient_findings = base({
               id: attribute_id,
               patient_id,
               patient_encounter_id,
-              root_snomed_concept_id: ATTRIBUTE.id,
+              root_snomed_concept_id: snomedConceptBase(
+                trx,
+                attribute.root_snomed_concept,
+              ),
               specific_snomed_concept_id: snomedConceptBase(
                 trx,
                 attribute.specific_snomed_concept,
