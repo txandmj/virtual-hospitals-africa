@@ -1,3 +1,18 @@
+;; Page 30 - Headache: Emergency signs
+(system_priority_evaluation
+  "Emergency: headache with emergency signs"
+  adult
+  Emergency
+  (and
+    (clinical_finding (snomed_concept "Headache" "finding"))
+    (or
+      (clinical_finding (snomed_concept "Decreased level of consciousness" "finding"))
+      (clinical_finding (snomed_concept "Seizure" "finding"))
+      (clinical_finding (snomed_concept "Purpuric rash" "disorder"))
+      (clinical_finding (snomed_concept "Headache" "finding") (qualifier (snomed_concept "Sudden onset" "qualifier value")) (qualifier (snomed_concept "Severe (severity modifier)" "qualifier value")))
+    )
+  )
+)
 ;; Page 30 - Headache: Urgent for other danger signs
 (system_priority_evaluation
   "Urgent: headache with meningism, hypertensive or neurological signs"
