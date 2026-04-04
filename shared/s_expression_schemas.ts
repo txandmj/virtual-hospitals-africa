@@ -11,9 +11,11 @@ import { snomed_category } from '../util/validators.ts'
 import { SnomedCategory, WarningSignPriority } from '../db.d.ts'
 import {
   ALLERGIC_CONDITION,
+  ATTRIBUTE,
   CAUSATIVE_AGENT,
   CLINICAL_FINDING,
   EVALUATION_FOR_SIGNS_AND_SYMPTOMS_OF_PHYSICAL_HEALTH_PROBLEMS,
+  EVENT,
   MEASUREMENT_PROCEDURE,
   PATIENT_MANAGEMENT_PROCEDURE,
   PROCEDURE,
@@ -129,6 +131,7 @@ type QueryableSingleBaseLang =
       attributes: Lang['attribute'][]
     }
     attribute: {
+      root_snomed_concept: Lang['snomed_concept']
       specific_snomed_concept: Lang['snomed_concept']
       value: Lang['snomed_concept'] | EventValue
     }
@@ -595,14 +598,30 @@ export const evaluation: z.ZodType<Lang['evaluation']> = z.lazy(() =>
 const attribute_base: z.ZodType<Lang['attribute']> = z.lazy(() =>
   z.object({
     atom: z.literal('attribute'),
-    args: z.tuple([snomed_concept, snomed_concept]),
+    args: z.tuple([snomed_concept, snomed_concept, snomed_concept.optional()]),
   }).transform((
-    { atom, args: [specific_snomed_concept, value] },
-  ) => ({
-    atom,
-    specific_snomed_concept,
-    value,
-  }))
+    { atom, args: [root_snomed_concept, specific_snomed_concept, value] },
+  ) => {
+    // If only 2 concepts are provided these are the specific/value snomed concepts so we shift
+    if (!value) {
+      return {
+        atom,
+        root_snomed_concept: {
+          atom: 'snomed_concept' as const,
+          name: ATTRIBUTE.name,
+          category: ATTRIBUTE.category,
+        },
+        specific_snomed_concept: root_snomed_concept,
+        value: specific_snomed_concept,
+      }
+    }
+    return {
+      atom,
+      root_snomed_concept,
+      specific_snomed_concept,
+      value,
+    }
+  })
 ).describe('attribute_base')
 
 const excluding: z.ZodType<Lang['excluding']> = z.lazy(() =>
@@ -625,6 +644,11 @@ const finding_site: z.ZodType<Lang['attribute']> = z.lazy(() =>
     { args: [value] },
   ) => ({
     atom: 'attribute' as const,
+    root_snomed_concept: {
+      atom: 'snomed_concept' as const,
+      name: ATTRIBUTE.name,
+      category: ATTRIBUTE.category,
+    },
     specific_snomed_concept: {
       atom: 'snomed_concept' as const,
       name: 'Finding site',
@@ -640,6 +664,11 @@ export const event: z.ZodType<Lang['attribute']> = z.lazy(() =>
     args: z.tuple([snomed_concept, z.string()]),
   }).transform(({ args: [specific_snomed_concept, datetime] }) => ({
     atom: 'attribute' as const,
+    root_snomed_concept: {
+      atom: 'snomed_concept' as const,
+      name: EVENT.name,
+      category: EVENT.category,
+    },
     specific_snomed_concept,
     value: { atom: 'event' as const, datetime, location: null },
   }))
@@ -693,6 +722,11 @@ export const allergy: z.ZodType<InsertableFindingBase & { history: true }> = z.l
       attributes: snomed_concept
         ? [{
           atom: 'attribute' as const,
+          root_snomed_concept: {
+            atom: 'snomed_concept' as const,
+            name: ATTRIBUTE.name,
+            category: ATTRIBUTE.category,
+          },
           specific_snomed_concept: {
             atom: 'snomed_concept' as const,
             name: CAUSATIVE_AGENT.name,

@@ -7,7 +7,7 @@ import { isAtom, parseWithSchema } from '../../shared/s_expression.ts'
 import { deduplicate } from '../helpers.ts'
 import { any_query_single, Lang, MeasurementComparison, QueryableSingleNode } from '../../shared/s_expression_schemas.ts'
 import { inverseSExpressions } from '../../shared/s_expression_inverse.ts'
-import { ATTRIBUTE, DUE_TO, EVENT, MEASUREMENT_FINDING, QUALIFIER_VALUE, RELATIONSHIP } from '../../shared/snomed_concepts.ts'
+import { DUE_TO, MEASUREMENT_FINDING, QUALIFIER_VALUE, RELATIONSHIP } from '../../shared/snomed_concepts.ts'
 import isKeyOf from '../../util/isKeyOf.ts'
 import isObjectLike from '../../util/isObjectLike.ts'
 import { diagnosisToEvaluation } from '../../shared/diagnosis.ts'
@@ -478,19 +478,14 @@ export const EXPRESSION_BUILDERS = {
   attribute(
     trx,
     { patient_id, patient_encounter_id },
-    { specific_snomed_concept, value },
+    { root_snomed_concept, specific_snomed_concept, value },
   ) {
     const matches_attr = baseQuery(trx, {
       patient_id,
       patient_encounter_id,
+      root_snomed_concept,
       specific_snomed_concept,
       value_snomed_concept: value.atom === 'event' ? undefined : value,
-      root_snomed_concept: {
-        atom: 'snomed_concept',
-        ...(
-          value.atom === 'event' ? EVENT : ATTRIBUTE
-        ),
-      },
     })
       .innerJoin(
         'patient_record_qualifiers',

@@ -22,7 +22,7 @@ import { inverseSExpression } from './s_expression_inverse.ts'
 import { Lang, ToBeDone } from './s_expression_schemas.ts'
 import capitalize from '../util/capitalize.ts'
 import isString from '../util/isString.ts'
-import { CAUSATIVE_AGENT, FINDING_SITE, MEASUREMENT_FINDING } from './snomed_concepts.ts'
+import { ATTRIBUTE, CAUSATIVE_AGENT, FINDING_SITE, MEASUREMENT_FINDING } from './snomed_concepts.ts'
 import { SnomedCategory } from '../db.d.ts'
 import last from '../util/last.ts'
 import words from '../util/words.ts'
@@ -116,8 +116,8 @@ function attributeToDisplayableRecord(
     created_at: '',
     patient_encounter_id: '',
     root_snomed_concept_id: '',
-    root_snomed_concept_name: 'Attribute',
-    root_snomed_concept_category: 'attribute' as const,
+    root_snomed_concept_name: attribute.root_snomed_concept.name,
+    root_snomed_concept_category: attribute.root_snomed_concept.category,
     specific_snomed_concept_id: '',
     specific_snomed_concept_name: attribute.specific_snomed_concept.name,
     specific_snomed_concept_category: attribute.specific_snomed_concept.category,
@@ -327,7 +327,9 @@ function buildDisplays(
   }
 
   const attributes_to_include_in_display = (record.attributes || [])
-    .filter((attribute) => ATTRIBUTES_TO_INCLUDE_IN_DISPLAY.has(attribute.specific_snomed_concept_name))
+    .filter((attribute) =>
+      ATTRIBUTES_TO_INCLUDE_IN_DISPLAY.has(attribute.specific_snomed_concept_name) || attribute.root_snomed_concept_name !== ATTRIBUTE.name
+    )
     .map((attribute) => `(${exists(attribute.displays.value)})`)
 
   const qualifier_is_postfix = postfix || qualifierIsPostfix(qualifiers[0])
@@ -478,6 +480,11 @@ export function asNormalFormSExpression<Rest>(
       const value = attr.value as { type: 'event'; datetime: Date | string }
       return {
         atom: 'attribute',
+        root_snomed_concept: {
+          atom: 'snomed_concept',
+          name: attr.root_snomed_concept_name,
+          category: attr.root_snomed_concept_category,
+        },
         specific_snomed_concept: {
           atom: 'snomed_concept',
           name: attr.specific_snomed_concept_name,
@@ -493,6 +500,11 @@ export function asNormalFormSExpression<Rest>(
     // Regular attribute (snomed concept value or null)
     return {
       atom: 'attribute',
+      root_snomed_concept: {
+        atom: 'snomed_concept',
+        name: attr.root_snomed_concept_name,
+        category: attr.root_snomed_concept_category,
+      },
       specific_snomed_concept: {
         atom: 'snomed_concept',
         name: attr.specific_snomed_concept_name,
