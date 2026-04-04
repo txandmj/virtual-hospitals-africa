@@ -1,4 +1,19 @@
-;; Page 29 - Dizziness
+;; Page 29 - Dizziness: Emergency signs
+(system_priority_evaluation
+  "Emergency: dizziness with stroke signs"
+  adult
+  Emergency
+  (and
+    (clinical_finding (snomed_concept "Dizziness" "finding"))
+    (or
+      (clinical_finding (snomed_concept "Difficulty talking" "finding"))
+      (clinical_finding (snomed_concept "Visual disturbance" "disorder"))
+      (clinical_finding (snomed_concept "Numbness of limbs" "finding"))
+      (clinical_finding (snomed_concept "Decreased level of consciousness" "finding"))
+    )
+  )
+)
+;; Page 29 - Dizziness: Urgent signs
 (system_priority_evaluation
   "Urgent: dizziness with cardiac or neurological signs"
   adult
