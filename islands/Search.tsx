@@ -72,7 +72,7 @@ type SearchOptionsProps<T> = {
 export type SearchPropsSingular<
   T extends OptionLike,
 > = {
-  multi?: never
+  multi?: never | false
   value?: Maybe<T>
   signal?: Signal<Maybe<T>>
 }
@@ -140,6 +140,7 @@ export default function Search<
     assert(!include_hidden_input_fields)
   }
 
+  console.log({ value })
   // deno-lint-ignore react-rules-of-hooks
   const selected_singular = multi ? undefined : (signal || useSignal<T | null>(
     hasId(value) ? value : null,

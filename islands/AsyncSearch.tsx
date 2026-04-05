@@ -32,7 +32,7 @@ export type AsyncSearchProps<
 export type AsyncSearchPropsSingular<
   T extends OptionLike = OptionLike,
 > = AsyncSearchProps<T> & {
-  multi?: never
+  multi?: never | false
 }
 
 export default function AsyncSearch<

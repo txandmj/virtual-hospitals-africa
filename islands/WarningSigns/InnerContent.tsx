@@ -2,7 +2,7 @@ import { computed, Signal, useSignal } from '@preact/signals'
 import { assert } from 'std/assert/assert.ts'
 import { EmptyState } from '../../components/library/EmptyState.tsx'
 import { MagnifyingGlassCircleIcon } from '../../components/library/icons/heroicons/mini.tsx'
-import { AsyncSearchHookResult, SnomedWarningSignSearchResult, WarningSignWithMaybeRecord } from '../../types.ts'
+import { AsyncSearchHookResult, Maybe, SnomedWarningSignSearchResult, WarningSignWithMaybeRecord } from '../../types.ts'
 import compactMap from '../../util/compactMap.ts'
 import { groupBy } from '../../util/groupBy.ts'
 import { uniqBy } from '../../util/uniqBy.ts'
@@ -11,7 +11,7 @@ import Search from '../Search.tsx'
 import { SelectedChips } from '../SelectedRecordChip.tsx'
 import { WarningSignsHiddenInputs } from './HiddenInputs.tsx'
 import { WarningSignsPriorityTable } from './PriorityTable.tsx'
-import { CATEGORIES, CheckedWarningSign, FindingDetails, SelectedWarningSign, uniqueIdentifier } from './shared.ts'
+import { AugmentedSign, CATEGORIES, CheckedWarningSign, SelectedWarningSign, uniqueIdentifier } from './shared.ts'
 
 export default function WarningSignsInnerContent({
   search_results,
@@ -45,8 +45,8 @@ export default function WarningSignsInnerContent({
 
   const signs_to_send_to_server = computed(() =>
     uniqBy([
-      ...table_signs_with_checked.value,
       ...selected_signs.value,
+      ...table_signs_with_checked.value,
     ], uniqueIdentifier)
   )
 
@@ -71,8 +71,11 @@ export default function WarningSignsInnerContent({
     active_modal_sign.value = sign
   }
 
-  function onSaveDetails(sign: SelectedWarningSign, details: FindingDetails) {
-    selected_signs.value = selected_signs.value.map((s) => uniqueIdentifier(s) === uniqueIdentifier(sign) ? { ...s, details } : s)
+  function onSaveDetails(sign: SelectedWarningSign, augmented_sign: Maybe<AugmentedSign>) {
+    console.log('onSaveDetails', sign, augmented_sign, selected_signs.value)
+    selected_signs.value = selected_signs.value.map((s) =>
+      uniqueIdentifier(s) === uniqueIdentifier(sign) ? { ...s, augmented: augmented_sign ?? undefined } : s
+    )
   }
 
   return (

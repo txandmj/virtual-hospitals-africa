@@ -1,6 +1,7 @@
 import { Duration } from '../../types.ts'
 import { assert } from 'std/assert/assert.ts'
 import { NumberInput } from '../form/inputs/number.tsx'
+import { NoLabelButSpaceAsPlaceholder } from '../form/inputs/labelled.tsx'
 import { SelectWithOptions } from '../form/inputs/select_with_options.tsx'
 
 export function DurationInput(
@@ -16,7 +17,7 @@ export function DurationInput(
         label='Duration'
         min={0}
         max={999}
-        className='w-24'
+        inputClassName='w-20'
         value={value.duration}
         onInput={(e) => {
           onChange({
@@ -27,9 +28,10 @@ export function DurationInput(
       />
       <SelectWithOptions
         name={null}
-        label=' '
+        label={NoLabelButSpaceAsPlaceholder}
         value={value.duration_unit}
-        className='w-24'
+        className='max-w-20'
+        selectClassName='!pr-2'
         options={[
           {
             value: 'days',

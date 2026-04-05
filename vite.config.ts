@@ -19,6 +19,15 @@ export default defineConfig({
   },
   server: {
     port: parseInt(PORT, 10),
+    // // Tell Vite's HMR client to connect through the HTTPS proxy rather than
+    // // directly to the Vite HTTP server. Without this, HMR module updates use
+    // // raw `fresh-island::` specifiers that the browser can't resolve.
+    // origin: `https://localhost:${HTTPS_PROXY_SERVER_PORT}`,
+    // hmr: {
+    //   protocol: 'wss',
+    //   host: 'localhost',
+    //   clientPort: HTTPS_PROXY_SERVER_PORT,
+    // },
   },
   clearScreen: false,
 })

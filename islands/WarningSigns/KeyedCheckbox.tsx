@@ -1,22 +1,28 @@
-// import { Button } from '../../components/library/Button.tsx'
-// import { PlusIcon } from '../../components/library/icons/heroicons/mini.tsx'
 import cls from '../../util/cls.ts'
 import { CheckedWarningSign, OnToggle, SelectedWarningSign, uniqueIdentifier } from './shared.ts'
 
 export function KeyedWarningSignCheckbox(
-  { sign, onCheck, onUncheck /*, onOpenDetails*/ }: {
+  { sign, onCheck, onUncheck, onOpenDetails }: {
     sign: CheckedWarningSign
     onCheck: OnToggle
     onUncheck: OnToggle
     onOpenDetails?(sign: SelectedWarningSign): void
   },
 ) {
+  const span_class = 'text-[8pt] 2xl:text-xs text-gray-500 leading-3 2xl:leading-4'
+
   return (
     <label
       className={cls(
         'flex gap-1.5 2xl:gap-3 items-start cursor-pointer flex-1 p-1 min-w-0',
-        sign.category === 'Common Symptoms' ? 'py-1.5 2xl:py-2' : ' py-2 2xl:py-3',
+        sign.category === 'Common Symptoms' ? 'py-1.5 2xl:py-2' : 'py-2 2xl:py-3',
       )}
+      onClick={(e) => {
+        if (!sign.checked) return
+        if (e.target && 'tagName' in e.target && e.target.tagName === 'INPUT') return
+        e.preventDefault()
+        onOpenDetails?.(sign as SelectedWarningSign)
+      }}
     >
       <div className='pt-0.5'>
         <input
@@ -31,29 +37,25 @@ export function KeyedWarningSignCheckbox(
         <span className='text-xs 2xl:text-sm font-medium text-gray-600 leading-4 2xl:leading-5'>
           {sign.name}
         </span>
-        {
-          /*sign.checked
+        {sign.checked
           ? (
-            <Button
-              variant='tertiary'
-              size='sm'
-              type='button'
-              className='!h-auto !px-1.5 !py-0.5 !text-[8pt] 2xl:!text-xs self-start'
-              left_icon={<PlusIcon className='h-2.5 w-2.5 2xl:h-3 2xl:w-3' />}
+            <span
+              role='button'
+              className={cls(span_class, 'text-indigo-700')}
               onClick={(e) => {
                 e.preventDefault()
                 onOpenDetails?.(sign as SelectedWarningSign)
               }}
             >
-              add details
-            </Button>
-          )
-          : */ sign.description && (
-            <span className='text-[8pt] 2xl:text-xs text-gray-500 leading-3 2xl:leading-4'>
-              {sign.description}
+              + Add details
             </span>
           )
-        }
+          : (
+            // Include even if no description so layout doesn't shift
+            <span className={span_class}>
+              {sign.description || ' '}
+            </span>
+          )}
       </div>
     </label>
   )

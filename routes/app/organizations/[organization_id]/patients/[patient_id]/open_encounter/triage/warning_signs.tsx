@@ -307,7 +307,7 @@ function* signsMatchedWithPriorRecords(
   }
 }
 
-function x(
+function getBriefHistory(
   { state: { trx, patient_id, encounter, health_worker_id } }: OpenEncounterWorkflowContext,
 ) {
   return brief_history.renderedMostRecentRecords(
@@ -331,7 +331,7 @@ export async function TriageWarningSignsPage(
   } = await promiseProps({
     prior_findings: getAllFindingsReportedPreviouslyOnThisPage(ctx),
     warning_signs_for_patient: getWarningSignsForPatient(ctx.state.trx, ctx.state.patient_id, ctx.state.patient_age_determination),
-    brief_history: x(ctx),
+    brief_history: getBriefHistory(ctx),
   })
 
   const warning_signs = signsMatchedWithPriorRecords(
