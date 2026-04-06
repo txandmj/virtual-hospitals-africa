@@ -19,9 +19,7 @@ function SingularFindingSiteSearch({ initial_value, onChange }: {
     <AsyncSearch<RenderedSnomedConcept>
       search_route={`${base_search_route}?${params}`}
       value={initial_value}
-      onSelect={(v) => {
-        onChange(v ? [v] : [])
-      }}
+      onSelect={(value) => onChange(value ? [value] : [])}
       placeholder='Search for a body structure...'
       skip_blank_search
     />

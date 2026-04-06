@@ -7,6 +7,7 @@ import type { DB } from '../db.d.ts'
 import { debugReplaceAll } from './helpers.ts'
 import { monkeyPatchConsole } from '../util/monkey-patch-console.ts'
 import { NO_EXTERNAL_CONNECT } from '../util/env.ts'
+import { logJSONToFileIfOnServer } from '../util/logJSONToFileIfOnServer.ts'
 
 monkeyPatchConsole()
 
@@ -54,7 +55,7 @@ export const opts = uri ? parseConnectionString(uri) : null
 
 const LOG_ALL_QUERIES = Deno.env.has('LOG_ALL_QUERIES')
 const LOG_POOL_EVENTS = Deno.env.has('LOG_POOL_EVENTS')
-const SLOW_QUERY_THRESHOLD_MS = parseInt(Deno.env.get('SLOW_QUERY_THRESHOLD_MS')!, 10) || Infinity
+const SLOW_QUERY_THRESHOLD_MS = parseInt(Deno.env.get('SLOW_QUERY_THRESHOLD_MS')!, 10) || 2000
 
 // Create pool separately so we can attach event listeners
 const pool = NO_EXTERNAL_CONNECT ? null : new Pool(opts || {})
@@ -104,7 +105,9 @@ const db = (NO_EXTERNAL_CONNECT ? undefined : new Kysely<DB>({
           event.query.parameters,
         ))
       } else if (event.queryDurationMillis >= SLOW_QUERY_THRESHOLD_MS) {
-        console.warn(`[SLOW QUERY] ${Math.round(event.queryDurationMillis)}ms\n${debugReplaceAll(event.query.sql, event.query.parameters)}`)
+        const slow_query = debugReplaceAll(event.query.sql, event.query.parameters)
+        console.warn(`[SLOW QUERY] ${Math.round(event.queryDurationMillis)}ms\n${slow_query}`)
+        logJSONToFileIfOnServer(slow_query, '/slow_queries')
       }
       return
     }

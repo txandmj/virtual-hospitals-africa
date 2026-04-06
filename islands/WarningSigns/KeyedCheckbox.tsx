@@ -53,7 +53,7 @@ export function KeyedWarningSignCheckbox(
           : (
             // Include even if no description so layout doesn't shift
             <span className={span_class}>
-              {sign.description || ' '}
+              {sign.description || ''}
             </span>
           )}
       </div>
