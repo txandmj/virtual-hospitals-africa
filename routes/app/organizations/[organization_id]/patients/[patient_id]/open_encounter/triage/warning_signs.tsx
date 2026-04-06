@@ -94,12 +94,13 @@ export const handler = postHandler(
         just_submitted,
         `It is expected that the frontend resubmit previously submitted records. Missing: ${humanReadableJson(previous_finding)}`,
       )
-      const client_said_was_altered = !!just_submitted.existing_record?.altered
-      const was_indeed_altered = just_submitted.existence !== previous_finding.existence
-      assertOr409(
-        client_said_was_altered === was_indeed_altered,
-        `It is expected that the frontend keep track of whether the previously submitted record was altered. Detected a mismatch for ${previous_finding.id} which had existence: ${previous_finding.existence}, but just_submitted.existence: ${just_submitted?.existence}`,
-      )
+      // TODO: More than just existence now, we also can alter a recored by adding a finding site
+      // const client_said_was_altered = !!just_submitted.existing_record?.altered
+      // const was_indeed_altered = just_submitted.existence !== previous_finding.existence
+      // assertOr409(
+      //   client_said_was_altered === was_indeed_altered,
+      //   `It is expected that the frontend keep track of whether the previously submitted record was altered. Detected a mismatch for ${previous_finding.id} which had existence: ${previous_finding.existence}, but just_submitted.existence: ${just_submitted?.existence}`,
+      // )
     }
 
     await dispatchEvent(inserted)
@@ -253,6 +254,8 @@ function* signsMatchedWithPriorRecords(
   warning_signs_for_patient: WarningSign[],
   common_symptoms: CommonSymptom[],
 ): Generator<WarningSignWithMaybeRecord> {
+  // console.log({prior_findings})
+  // logJSONToFileIfOnServer(prior_findings)
   const prior_findings_remaining = new Set(prior_findings)
   const prior_findings_map = new Map<string, SearchResult<typeof patient_findings>>()
   // Findings may add qualifiers or attributes. So we look for any subset of them when looking for matches
@@ -269,12 +272,15 @@ function* signsMatchedWithPriorRecords(
           ...prior_finding,
           modifiers: modifier_subset,
           attributes: attribute_subset,
+          existence: 'Yes',
           value: null,
         })
         prior_findings_map.set(normal_form_s_expression, prior_finding)
       }
     }
   }
+
+  console.log({ prior_findings_map })
 
   const warning_signs_and_common_symptoms: Array<WarningSign | CommonSymptom> = [
     ...warning_signs_for_patient,
@@ -289,6 +295,7 @@ function* signsMatchedWithPriorRecords(
     // TODO: move to a test?
     assert(sign.clinical_finding_s_expression === normalForm(sign.clinical_finding_s_expression), 'Comparing concepts requires they be in normal form')
     const matching_prior_finding = prior_findings_map.get(sign.clinical_finding_s_expression)
+    console.log({ matching_prior_finding })
 
     if (matching_prior_finding) {
       existing_record = {

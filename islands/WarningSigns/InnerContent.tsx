@@ -31,8 +31,6 @@ export default function WarningSignsInnerContent({
       }),
   )
 
-  console.log({ selected_signs })
-
   const active_modal_sign = useSignal<SelectedWarningSign | null>(null)
 
   const table_signs_to_display = computed(() => search_results.value || warning_signs)
@@ -72,12 +70,10 @@ export default function WarningSignsInnerContent({
   }
 
   function onOpenDetails(sign: SelectedWarningSign) {
-    console.log('onOpenDetails', { sign })
     active_modal_sign.value = sign
   }
 
   function onSaveDetails(sign: SelectedWarningSign, augmented_sign: Maybe<AugmentedSign>) {
-    console.log('onSaveDetails', sign, augmented_sign, selected_signs.value)
     selected_signs.value = selected_signs.value.map((s) =>
       uniqueIdentifier(s) === uniqueIdentifier(sign) ? { ...s, augmented: augmented_sign ?? undefined } : s
     )
