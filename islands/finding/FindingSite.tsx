@@ -6,50 +6,50 @@ import { Maybe, RenderedSnomedConcept } from '../../types.ts'
 
 const base_search_route = '/app/snomed/body-structure'
 
-function SingularFindingSiteSearch({ initial_value, onChange }: {
-  initial_value: RenderedSnomedConcept
-  onChange(body_structures: RenderedSnomedConcept[]): void
-}) {
-  const params = new URLSearchParams({
-    descendant_of_snomed_concept_name: initial_value.name,
-    descendant_of_snomed_concept_category: initial_value.category,
-  })
+// function SingularFindingSiteSearch({ initial_value, onChange }: {
+//   initial_value: RenderedSnomedConcept
+//   onChange(body_structures: RenderedSnomedConcept[]): void
+// }) {
+//   const params = new URLSearchParams({
+//     descendant_of_snomed_concept_name: initial_value.name,
+//     descendant_of_snomed_concept_category: initial_value.category,
+//   })
 
-  return (
-    <AsyncSearch<RenderedSnomedConcept>
-      search_route={`${base_search_route}?${params}`}
-      value={initial_value}
-      onSelect={(v) => {
-        onChange(v ? [v] : [])
-      }}
-      placeholder='Search for a body structure...'
-      skip_blank_search
-    />
-  )
-}
+//   return (
+//     <AsyncSearch<RenderedSnomedConcept>
+//       search_route={`${base_search_route}?${params}`}
+//       value={initial_value}
+//       onSelect={(v) => {
+//         onChange(v ? [v] : [])
+//       }}
+//       placeholder='Search for a body structure...'
+//       skip_blank_search
+//     />
+//   )
+// }
 
-function MultiFindingSiteSearch({ initial_value, onChange }: {
-  initial_value: RenderedSnomedConcept[]
-  onChange(body_structures: RenderedSnomedConcept[]): void
-}) {
-  const signal = useSignal<RenderedSnomedConcept[]>(initial_value)
-  const mounted = useRef(false)
-  useSignalEffect(() => {
-    const value = signal.value
-    if (mounted.current) return onChange(value)
-    mounted.current = true
-  })
+// function MultiFindingSiteSearch({ initial_value, onChange }: {
+//   initial_value: RenderedSnomedConcept[]
+//   onChange(body_structures: RenderedSnomedConcept[]): void
+// }) {
+//   const signal = useSignal<RenderedSnomedConcept[]>(initial_value)
+//   const mounted = useRef(false)
+//   useSignalEffect(() => {
+//     const value = signal.value
+//     if (mounted.current) return onChange(value)
+//     mounted.current = true
+//   })
 
-  return (
-    <AsyncSearch<RenderedSnomedConcept>
-      multi
-      search_route={base_search_route}
-      signal={signal}
-      placeholder='Search for a body structure...'
-      skip_blank_search
-    />
-  )
-}
+//   return (
+//     <AsyncSearch<RenderedSnomedConcept>
+//       multi
+//       search_route={base_search_route}
+//       signal={signal}
+//       placeholder='Search for a body structure...'
+//       skip_blank_search
+//     />
+//   )
+// }
 
 export function FindingSite({
   search_within,

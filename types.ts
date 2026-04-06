@@ -2532,7 +2532,7 @@ export type RecordDisplays = {
 }
 
 export type RenderedSnomedConcept = {
-  id: string
+  snomed_concept_id: string
   name: string
   category: SnomedCategory
 }
@@ -2764,10 +2764,16 @@ export type WarningSign = Omit<WarningSignDef<'Urgent' | 'Very urgent' | 'Emerge
 
 export type CommonSymptom = SignShared<'Common Symptoms'>
 
+export type AugmentedSign = {
+  s_expression: string
+  full_display: string
+}
+
 export type WarningSignWithMaybeRecord = (WarningSign | CommonSymptom | SignShared<'Search Results' | 'Prior record'>) & {
   existing_record?: {
     id: string
     existence: Existence
+    augmented?: AugmentedSign
   }
 }
 

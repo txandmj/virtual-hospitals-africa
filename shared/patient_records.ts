@@ -1,4 +1,5 @@
 import {
+  HasStringId,
   IntermediateBaseRecord,
   Maybe,
   RecordDisplays,
@@ -83,9 +84,10 @@ function toRenderedSnomedConcept(
     name: string
     category: SnomedCategory
   },
-): RenderedSnomedConcept {
+): HasStringId<RenderedSnomedConcept> {
   return {
     id: '@@toRenderedSnomedConcept@@',
+    snomed_concept_id: '@@toRenderedSnomedConcept@@',
     name: snomed_concept.name,
     category: snomed_concept.category,
   }

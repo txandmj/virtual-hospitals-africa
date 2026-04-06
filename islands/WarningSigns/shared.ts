@@ -1,4 +1,4 @@
-import { WarningSignWithMaybeRecord } from '../../types.ts'
+import { AugmentedSign, WarningSignWithMaybeRecord } from '../../types.ts'
 import compact from '../../util/compact.ts'
 import { hyphenate } from '../../util/hyphenate.ts'
 import memoize from '../../util/memoize.ts'
@@ -35,11 +35,6 @@ export const EMERGENCY_SUBCATEGORY_ORDER = [
 ] as const
 
 export type CategoryConfig = typeof CATEGORIES[number]
-
-export type AugmentedSign = {
-  s_expression: string
-  full_display: string
-}
 
 export type CheckedWarningSign = WarningSignWithMaybeRecord & {
   checked: boolean

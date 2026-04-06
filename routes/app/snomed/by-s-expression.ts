@@ -1,4 +1,3 @@
-import { assertEquals } from 'std/assert/assert_equals.ts'
 import { parseWithSchema } from '../../../shared/s_expression.ts'
 import { insertable_finding_base, Lang } from '../../../shared/s_expression_schemas.ts'
 import { nameAndCategorySnomedConceptBase } from '../../../db/models/s_expression.ts'

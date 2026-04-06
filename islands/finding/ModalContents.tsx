@@ -3,8 +3,8 @@ import { useSignal } from '@preact/signals'
 import { useEffect } from 'preact/hooks'
 import { Button } from '../../components/library/Button.tsx'
 import { PaperAirplaneIcon, XMarkIcon } from '../../components/library/icons/heroicons/outline.tsx'
-import { AugmentedSign, SelectedWarningSign } from '../WarningSigns/shared.ts'
-import { BySExpressionResult, Maybe } from '../../types.ts'
+import { SelectedWarningSign } from '../WarningSigns/shared.ts'
+import { AugmentedSign, BySExpressionResult, Maybe } from '../../types.ts'
 import { FindingModalInnerContents } from './ModalInnerContents.tsx'
 
 export function FindingModalContents(
@@ -14,12 +14,9 @@ export function FindingModalContents(
     onClose: () => void
   },
 ) {
-  // const selected_attributes = useSignal<Record<string, string[]>>({})
-  // const qualifier = useSignal(finding.details?.qualifier ?? '')
+  console.log('vvlkwelkwekllwe', finding)
   const original_node = useSignal<BySExpressionResult | null>(null)
   const augmented_node = useSignal<BySExpressionResult | null>(null)
-  // const original_s_expression = useSignal(finding.clinical_finding_s_expression)
-  // const augmented_s_expression = useSignal(finding.augmented?.s_expression)
   const augmented = useSignal<Maybe<AugmentedSign>>(finding.augmented)
   const loading_count = useSignal(1 + (finding.augmented ? 1 : 0))
 
@@ -75,8 +72,6 @@ export function FindingModalContents(
       </div>
       {original_node.value && !loading_count.value && (
         <FindingModalInnerContents
-          original_s_expression={finding.clinical_finding_s_expression}
-          augmented_s_expression={augmented.value?.s_expression}
           original_node={original_node.value}
           augmented_node={augmented_node.value}
           onChange={(value) => augmented.value = value}

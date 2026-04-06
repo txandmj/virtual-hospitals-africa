@@ -1,20 +1,15 @@
 import { useSignal } from '@preact/signals'
-import { BySExpressionResult, Maybe, NonEmptyArray, RenderedSnomedConcept } from '../../types.ts'
+import { AugmentedSign, BySExpressionResult, Maybe, NonEmptyArray, RenderedSnomedConcept } from '../../types.ts'
 import { FindingSite } from './FindingSite.tsx'
 import { groupBy } from '../../util/groupBy.ts'
 import { ATTRIBUTE, FINDING_SITE } from '../../shared/snomed_concepts.ts'
-import { AugmentedSign } from '../WarningSigns/shared.ts'
 import { Lang, SnomedConceptAttribute } from '../../shared/s_expression_schemas.ts'
 import { assert } from 'std/assert/assert.ts'
 import { findingToDisplayableRecord, formatRecord } from '../../shared/patient_records.ts'
 import { inverseSExpression } from '../../shared/s_expression_inverse.ts'
 
-
-function allAttributes(snomed_data: BySExpressionResult) {
-  return groupBy([
-    ...snomed_data.attributes,
-    ...snomed_data.predefined_attributes,
-  ], (attr) => attr.specific_snomed_concept.name)
+function groupAttributes(attributes: Lang['attribute'][]) {
+  return groupBy(attributes, (attr) => attr.specific_snomed_concept.name)
 }
 
 function isSnomedConceptAttribute(attr: Lang['attribute']): attr is SnomedConceptAttribute {
@@ -37,22 +32,25 @@ export function FindingModalInnerContents({
   augmented_node: Maybe<BySExpressionResult>
   onChange(augmented: Maybe<AugmentedSign>): void
 }) {
-  const all_original_attributes = allAttributes(original_node)
+  const all_original_attributes = groupAttributes([
+    ...original_node.attributes,
+    ...original_node.predefined_attributes,
+  ])
   const search_within_finding_site = getPredefinedFindingSite(all_original_attributes)
-  const all_augmented_attributes = augmented_node ? allAttributes(augmented_node) : new Map<string, NonEmptyArray<Lang['attribute']>>()
+  console.log({ augmented_node })
+  const all_augmented_attributes = augmented_node ? groupAttributes(augmented_node.attributes) : new Map<string, NonEmptyArray<Lang['attribute']>>()
 
   // const onset = useSignal<{ start_date: string; end_date: string | null } | null>(null)
   let initial_finding_sites = all_augmented_attributes.get(FINDING_SITE.name) || []
   if (!initial_finding_sites.length && search_within_finding_site) {
-    initial_finding_sites=[search_within_finding_site]
+    initial_finding_sites = [search_within_finding_site]
   }
-  console.log({original_node, all_original_attributes, initial_finding_sites, search_within_finding_site})
-  const finding_sites = useSignal<RenderedSnomedConcept[]>(initial_finding_sites.map(s => {
+  const finding_sites = useSignal<RenderedSnomedConcept[]>(initial_finding_sites.map((s) => {
     assert(s.value.atom === 'snomed_concept')
-    return { id: '@@triggersearch', ...s.value }
+    return { id: '@@triggersearch', snomed_concept_id: '@@triggersearch', ...s.value }
   }))
 
-  console.log('xxxx', finding_sites.value)
+  console.log({ original_node, augmented_node, all_original_attributes, initial_finding_sites, search_within_finding_site, zzz: finding_sites.value })
 
   function runOnChange() {
     console.log('runOnChange')
@@ -67,7 +65,7 @@ export function FindingModalInnerContents({
 
     const new_node = structuredClone(original_node)
 
-    const new_finding_sites = finding_sites.value.filter(finding_site => {
+    const new_finding_sites = finding_sites.value.filter((finding_site) => {
       assert(finding_site.category === 'body structure')
       const identical_finding_site_already_existed = (all_original_attributes.get(FINDING_SITE.name) || []).some((attribute) => {
         assert(attribute.value.atom === 'snomed_concept')
@@ -105,24 +103,25 @@ export function FindingModalInnerContents({
 
     const s_expression = inverseSExpression(new_node)
     const full_display = formatRecord(findingToDisplayableRecord(new_node)).displays.full
-    console.log({new_node, s_expression, full_display})
+    console.log({ new_node, s_expression, full_display })
     onChange({
       s_expression,
       full_display,
     })
-    
   }
 
   return (
     <>
       <div className='overflow-y-auto flex-1 px-6 pb-4 flex flex-col gap-5'>
-        {/* <OnsetRow
+        {
+          /* <OnsetRow
           today={new Date().toISOString().slice(0, 10)}
           onChange={(value) => {
             onset.value = value
             runOnChange()
           }}
-        /> */}
+        /> */
+        }
         <FindingSite
           search_within={search_within_finding_site}
           value={finding_sites.value}
