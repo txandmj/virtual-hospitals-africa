@@ -200,6 +200,8 @@ export type ToBeDoneProcedureProcedure = ToBeDone & { value: Lang['snomed_concep
 export type ToBeDoneProcedureCheckFor = ToBeDone & { value: Lang['finding'][] }
 export type ToBeDoneProcedureMeasurements = ToBeDone & { value: Lang['measurement'][] }
 
+export type SnomedConceptAttribute = Lang['attribute'] & { value: { atom: 'snomed_concept' } }
+
 const snomed_concept: z.ZodType<Lang['snomed_concept']> = z
   .object({
     atom: z.literal('snomed_concept'),
@@ -487,7 +489,7 @@ export const time_ago: z.ZodType<Lang['time_ago']> = z.lazy(() =>
   }).transform(({ atom, args: [value, units] }) => ({ atom, value, units }))
 ).describe('time_ago')
 
-export const insertable_finding_base: z.ZodType<InsertableFindingBase> = finding
+export const insertable_finding_base: z.ZodType<InsertableFindingBase> = z.lazy(() => finding.or(no_finding))
   .refine(
     (finding) => finding.root_snomed_concept != null,
     {

@@ -29,6 +29,7 @@ http_server_pid=""
 # On CI, write logs to a known directory for artifact upload
 # Otherwise, use temp files
 mkdir -p ./logs
+mkdir -p ./logs/slow_queries
 if [[ "${CI:-}" == "true" ]]; then
   logs_dir="./logs"
 else
@@ -67,6 +68,7 @@ ensure_test_servers_not_already_running() {
 print_server_log_info() {
   echo "Proxy output available at $test_https_proxy_server_output"
   echo "Server output available at $test_http_server_output"
+  echo "Events output available at $test_events_processor_output"
 }
 
 # shellcheck disable=SC2329

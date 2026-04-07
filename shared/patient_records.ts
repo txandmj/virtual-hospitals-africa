@@ -1,4 +1,5 @@
 import {
+  HasStringId,
   IntermediateBaseRecord,
   Maybe,
   RecordDisplays,
@@ -77,14 +78,16 @@ function formatEventDatetime(datetime: Date | string): string {
   return `${time_str} SAST | ${date_str}`
 }
 
+// To satisfy typechecker where needed
 function toRenderedSnomedConcept(
   snomed_concept: Lang['snomed_concept'] | {
     name: string
     category: SnomedCategory
   },
-): RenderedSnomedConcept {
+): HasStringId<RenderedSnomedConcept> {
   return {
-    snomed_concept_id: '',
+    id: '@@toRenderedSnomedConcept@@',
+    snomed_concept_id: '@@toRenderedSnomedConcept@@',
     name: snomed_concept.name,
     category: snomed_concept.category,
   }
@@ -94,7 +97,7 @@ function qualifierToDisplayableRecord(
   qualifier: Lang['qualifier'],
 ): DisplayableRecord {
   return {
-    id: '',
+    id: '@@qualifierToDisplayableRecord@@',
     created_at: '',
     patient_encounter_id: '',
     root_snomed_concept_id: '',
@@ -112,7 +115,7 @@ function attributeToDisplayableRecord(
   attribute: Lang['attribute'],
 ): DisplayableRecord {
   return {
-    id: '',
+    id: '@@attributeToDisplayableRecord@@',
     created_at: '',
     patient_encounter_id: '',
     root_snomed_concept_id: '',
@@ -134,14 +137,14 @@ function attributeToDisplayableRecord(
   }
 }
 
-function findingToDisplayableRecord(
+export function findingToDisplayableRecord(
   finding: Lang['finding'],
 ): FormattableRecord {
   assert(finding.root_snomed_concept, 'Expected root_snomed_concept')
   assert(finding.specific_snomed_concept, 'Expected specific_snomed_concept')
 
   return {
-    id: '',
+    id: '@@findingToDisplayableRecord@@',
     created_at: '',
     patient_encounter_id: '',
     root_snomed_concept_id: '',
@@ -169,7 +172,7 @@ function measurementToDisplayableRecord(
   measurement: Lang['measurement'],
 ): FormattableRecord {
   return {
-    id: '',
+    id: '@@measurementToDisplayableRecord@@',
     created_at: '',
     patient_encounter_id: '',
     root_snomed_concept_id: MEASUREMENT_FINDING.id,
@@ -192,7 +195,7 @@ function procedureToDisplayableRecord(
   assert(isObjectLike(procedure.value))
   assert(procedure.value.atom === 'snomed_concept')
   return {
-    id: '',
+    id: '@@procedureToDisplayableRecord@@',
     created_at: '',
     patient_encounter_id: '',
     root_snomed_concept_id: '',

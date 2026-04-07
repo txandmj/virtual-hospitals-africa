@@ -34,6 +34,7 @@ import sortBy from '../../../../../../../../util/sortBy.ts'
 import { insertable_finding_base } from '../../../../../../../../shared/s_expression_schemas.ts'
 import { brief_history } from '../../../../../../../../db/models/brief_history.ts'
 import { COMMON_CONDITIONS } from '../../../../../../../../shared/brief_history.ts'
+import { subsets } from '../../../../../../../../util/subsets.ts'
 
 export const TriageWarningSignSchema = z.object({
   s_expression: sExpressionZodValidator(insertable_finding_base),
@@ -93,12 +94,13 @@ export const handler = postHandler(
         just_submitted,
         `It is expected that the frontend resubmit previously submitted records. Missing: ${humanReadableJson(previous_finding)}`,
       )
-      const client_said_was_altered = !!just_submitted.existing_record?.altered
-      const was_indeed_altered = just_submitted.existence !== previous_finding.existence
-      assertOr409(
-        client_said_was_altered === was_indeed_altered,
-        `It is expected that the frontend keep track of whether the previously submitted record was altered. Detected a mismatch for ${previous_finding.id} which had existence: ${previous_finding.existence}, but just_submitted.existence: ${just_submitted?.existence}`,
-      )
+      // TODO: More than just existence now, we also can alter a recored by adding a finding site
+      // const client_said_was_altered = !!just_submitted.existing_record?.altered
+      // const was_indeed_altered = just_submitted.existence !== previous_finding.existence
+      // assertOr409(
+      //   client_said_was_altered === was_indeed_altered,
+      //   `It is expected that the frontend keep track of whether the previously submitted record was altered. Detected a mismatch for ${previous_finding.id} which had existence: ${previous_finding.existence}, but just_submitted.existence: ${just_submitted?.existence}`,
+      // )
     }
 
     await dispatchEvent(inserted)
@@ -252,23 +254,31 @@ function* signsMatchedWithPriorRecords(
   warning_signs_for_patient: WarningSign[],
   common_symptoms: CommonSymptom[],
 ): Generator<WarningSignWithMaybeRecord> {
-  const findings_set = new Set(prior_findings.map((finding) => {
-    // We don't use the value when calculating the normal form
-    // of the s_expression here so that negative findings match.
-    // That is if a previous submission found no chest pain,
-    // then that should match and be the finding corresponding to
-    // the chest pain warning sign.
-    const normal_form_s_expression = asNormalFormSExpression({
-      ...finding,
-      value: null,
-    })
-    const existing_record = {
-      id: finding.id,
-      existence: finding.existence,
+  // console.log({prior_findings})
+  // logJSONToFileIfOnServer(prior_findings)
+  const prior_findings_remaining = new Set(prior_findings)
+  const prior_findings_map = new Map<string, SearchResult<typeof patient_findings>>()
+  // Findings may add qualifiers or attributes. So we look for any subset of them when looking for matches
+  // With a modest size of these, this should not get out of hand
+  for (const prior_finding of prior_findings) {
+    for (const modifier_subset of subsets(prior_finding.modifiers)) {
+      for (const attribute_subset of subsets(prior_finding.attributes)) {
+        // We don't use the value when calculating the normal form
+        // of the s_expression here so that negative findings match.
+        // That is if a previous submission found no chest pain,
+        // then that should match and be the finding corresponding to
+        // the chest pain warning sign.
+        const normal_form_s_expression = asNormalFormSExpression({
+          ...prior_finding,
+          modifiers: modifier_subset,
+          attributes: attribute_subset,
+          existence: 'Yes',
+          value: null,
+        })
+        prior_findings_map.set(normal_form_s_expression, prior_finding)
+      }
     }
-
-    return { ...finding, normal_form_s_expression, existing_record }
-  }))
+  }
 
   const warning_signs_and_common_symptoms: Array<WarningSign | CommonSymptom> = [
     ...warning_signs_for_patient,
@@ -280,34 +290,55 @@ function* signsMatchedWithPriorRecords(
   // over we send as well (these were the result of search)
   for (const sign of warning_signs_and_common_symptoms) {
     let existing_record: WarningSignWithMaybeRecord['existing_record']
+    // Normalize the sign's s_expression (WARNING_SIGNS use 'clinical_finding' atom,
+    // map keys use 'finding' atom from asNormalFormSExpression)
+    const normalized_sign_s_expression = normalForm(sign.clinical_finding_s_expression)
+    const matching_prior_finding = prior_findings_map.get(normalized_sign_s_expression)
 
-    for (const finding of findings_set) {
-      assert(sign.clinical_finding_s_expression === normalForm(sign.clinical_finding_s_expression), 'Comparing concepts requires they be in normal form')
-      const is_same_concept = finding.normal_form_s_expression === sign.clinical_finding_s_expression
-
-      if (is_same_concept) {
-        existing_record = finding.existing_record
-        findings_set.delete(finding)
-        break
+    if (matching_prior_finding) {
+      existing_record = {
+        id: matching_prior_finding.id,
+        existence: matching_prior_finding.existence,
       }
+      if (matching_prior_finding.existence === 'Yes') {
+        const canonical_normal_form = asNormalFormSExpression({
+          ...matching_prior_finding,
+          value: null,
+        })
+        if (canonical_normal_form !== normalized_sign_s_expression) {
+          existing_record!.augmented = {
+            s_expression: canonical_normal_form,
+            full_display: matching_prior_finding.displays.full,
+          }
+        }
+      }
+      prior_findings_remaining.delete(matching_prior_finding)
     }
-
-    yield { ...sign, existing_record }
+    yield {
+      ...sign,
+      existing_record,
+    }
   }
 
-  for (const finding of findings_set) {
+  for (const finding of prior_findings_remaining) {
     yield {
       priority: finding.priority,
-      clinical_finding_s_expression: finding.normal_form_s_expression,
+      clinical_finding_s_expression: asNormalFormSExpression({
+        ...finding,
+        value: null,
+      }),
       name: finding.specific_snomed_concept_name,
       description: finding.specific_snomed_concept_category,
-      existing_record: finding.existing_record,
+      existing_record: {
+        id: finding.id,
+        existence: finding.existence,
+      },
       category: 'Prior record' as const,
     }
   }
 }
 
-function x(
+function getBriefHistory(
   { state: { trx, patient_id, encounter, health_worker_id } }: OpenEncounterWorkflowContext,
 ) {
   return brief_history.renderedMostRecentRecords(
@@ -331,7 +362,7 @@ export async function TriageWarningSignsPage(
   } = await promiseProps({
     prior_findings: getAllFindingsReportedPreviouslyOnThisPage(ctx),
     warning_signs_for_patient: getWarningSignsForPatient(ctx.state.trx, ctx.state.patient_id, ctx.state.patient_age_determination),
-    brief_history: x(ctx),
+    brief_history: getBriefHistory(ctx),
   })
 
   const warning_signs = signsMatchedWithPriorRecords(

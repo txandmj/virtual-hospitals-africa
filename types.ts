@@ -34,7 +34,7 @@ import type { CommonConditionKey } from './shared/brief_history.ts'
 import type { VitalAssessment, VitalMeasurement } from './shared/vitals.ts'
 import type { WarningSignKey } from './shared/warning_signs.ts'
 import type { Decimal } from './util/decimal.ts'
-import type { Lang, QueryableEvidenceNode } from './shared/s_expression_schemas.ts'
+import type { InsertableFindingBase, Lang, QueryableEvidenceNode } from './shared/s_expression_schemas.ts'
 import type { PrescriptionFrequency } from './shared/prescription.ts'
 import { SEXED_RELATION_SNOMED_CONCEPT_IDS } from './shared/family.ts'
 export { type Department } from './shared/departments.ts'
@@ -2764,10 +2764,16 @@ export type WarningSign = Omit<WarningSignDef<'Urgent' | 'Very urgent' | 'Emerge
 
 export type CommonSymptom = SignShared<'Common Symptoms'>
 
+export type AugmentedSign = {
+  s_expression: string
+  full_display: string
+}
+
 export type WarningSignWithMaybeRecord = (WarningSign | CommonSymptom | SignShared<'Search Results' | 'Prior record'>) & {
   existing_record?: {
     id: string
     existence: Existence
+    augmented?: AugmentedSign
   }
 }
 
@@ -3124,3 +3130,7 @@ export type OpenEncounterContext<T = Record<never, never>> = LoggedInHealthWorke
 export type OpenEncounterWorkflowContext<T = Record<never, never>> = LoggedInHealthWorkerContext<
   OpenEncounterWorkflowState & T
 >
+
+export type BySExpressionResult = InsertableFindingBase & {
+  predefined_attributes: Lang['attribute'][]
+}

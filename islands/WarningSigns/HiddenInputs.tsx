@@ -11,14 +11,15 @@ export function WarningSignsHiddenInputs({ signs_to_send_to_server }: { signs_to
         name={`warning_signs.${key}`}
         value={{
           existence,
-          s_expression: sign.clinical_finding_s_expression,
+          s_expression: sign.augmented?.s_expression || sign.clinical_finding_s_expression,
           warning_sign_key: sign.key,
           priority_level: sign.priority,
           existing_record: sign.existing_record && {
             id: sign.existing_record.id,
-            altered: sign.existing_record.existence !== existence,
+            altered: sign.existing_record.existence !== existence || (
+              (sign.existing_record.augmented?.s_expression ?? undefined) !== (sign.augmented?.s_expression ?? undefined)
+            ),
           },
-          details: sign.details,
         }}
       />
     )

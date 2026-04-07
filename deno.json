@@ -133,7 +133,7 @@
     "tailwind-merge": "npm:tailwind-merge@2.6.0",
     "tiny-lru": "npm:tiny-lru@11.4.5",
     "zod": "npm:zod@4.2.1",
-    "fresh": "jsr:@fresh/core@^2.2.0",
+    "fresh": "jsr:@fresh/core@^2.2.1",
     "@fresh/plugin-vite": "jsr:@fresh/plugin-vite@^1.0.8",
     "s-expression": "npm:s-expression@3.1.1",
     "vite": "npm:vite@^7.1.3",
