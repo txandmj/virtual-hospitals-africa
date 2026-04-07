@@ -30,7 +30,7 @@ ensure_no_process_on_port "$HTTP_SERVER_PORT"
 ensure_no_process_on_port "$HTTPS_PROXY_SERVER_PORT"
 
 logs_dir="./logs/$START_TIME"
-mkdir -p "$logs_dir"
+mkdir -p "$logs_dir/slow_queries"
 
 events_processor_output="$logs_dir/events.log"
 http_server_output="$logs_dir/server.log"

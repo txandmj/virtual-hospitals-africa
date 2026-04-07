@@ -280,8 +280,6 @@ function* signsMatchedWithPriorRecords(
     }
   }
 
-  console.log({ prior_findings_map })
-
   const warning_signs_and_common_symptoms: Array<WarningSign | CommonSymptom> = [
     ...warning_signs_for_patient,
     ...common_symptoms,
@@ -292,10 +290,10 @@ function* signsMatchedWithPriorRecords(
   // over we send as well (these were the result of search)
   for (const sign of warning_signs_and_common_symptoms) {
     let existing_record: WarningSignWithMaybeRecord['existing_record']
-    // TODO: move to a test?
-    assert(sign.clinical_finding_s_expression === normalForm(sign.clinical_finding_s_expression), 'Comparing concepts requires they be in normal form')
-    const matching_prior_finding = prior_findings_map.get(sign.clinical_finding_s_expression)
-    console.log({ matching_prior_finding })
+    // Normalize the sign's s_expression (WARNING_SIGNS use 'clinical_finding' atom,
+    // map keys use 'finding' atom from asNormalFormSExpression)
+    const normalized_sign_s_expression = normalForm(sign.clinical_finding_s_expression)
+    const matching_prior_finding = prior_findings_map.get(normalized_sign_s_expression)
 
     if (matching_prior_finding) {
       existing_record = {
@@ -307,7 +305,7 @@ function* signsMatchedWithPriorRecords(
           ...matching_prior_finding,
           value: null,
         })
-        if (canonical_normal_form !== sign.clinical_finding_s_expression) {
+        if (canonical_normal_form !== normalized_sign_s_expression) {
           existing_record!.augmented = {
             s_expression: canonical_normal_form,
             full_display: matching_prior_finding.displays.full,
