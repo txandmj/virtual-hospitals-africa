@@ -111,7 +111,8 @@ export const rules = base({
 
     const by_measurements_query = trx.selectFrom('rules')
       .innerJoin('rule_due_to_measurements', 'rules.id', 'rule_due_to_measurements.rule_id')
-      .innerJoin('patient_records', 'patient_records.specific_snomed_concept_id', 'rule_due_to_measurements.specific_snomed_concept_id')
+      .innerJoin('due_to_measurements', 'due_to_measurements.id', 'rule_due_to_measurements.due_to_measurement_id')
+      .innerJoin('patient_records', 'patient_records.specific_snomed_concept_id', 'due_to_measurements.specific_snomed_concept_id')
       .innerJoin('patient_records_still_valid', 'patient_records_still_valid.id', 'patient_records.id')
       .innerJoin('patient_measurements', 'patient_records.id', 'patient_measurements.id')
       .where('rules.age_determinations', '@>', sql<AgeDetermination[]>`ARRAY[${patient_age_determination}]::age_determination[]`)
@@ -119,20 +120,20 @@ export const rules = base({
       .where((eb) =>
         eb.or([
           eb.and([
-            eb('rule_due_to_measurements.comparator', '=', '>'),
-            eb('patient_measurements.value', '>', eb.ref('rule_due_to_measurements.value')),
+            eb('due_to_measurements.comparator', '=', '>'),
+            eb('patient_measurements.value', '>', eb.ref('due_to_measurements.value')),
           ]),
           eb.and([
-            eb('rule_due_to_measurements.comparator', '=', '>='),
-            eb('patient_measurements.value', '>=', eb.ref('rule_due_to_measurements.value')),
+            eb('due_to_measurements.comparator', '=', '>='),
+            eb('patient_measurements.value', '>=', eb.ref('due_to_measurements.value')),
           ]),
           eb.and([
-            eb('rule_due_to_measurements.comparator', '=', '<'),
-            eb('patient_measurements.value', '<', eb.ref('rule_due_to_measurements.value')),
+            eb('due_to_measurements.comparator', '=', '<'),
+            eb('patient_measurements.value', '<', eb.ref('due_to_measurements.value')),
           ]),
           eb.and([
-            eb('rule_due_to_measurements.comparator', '=', '<='),
-            eb('patient_measurements.value', '<=', eb.ref('rule_due_to_measurements.value')),
+            eb('due_to_measurements.comparator', '=', '<='),
+            eb('patient_measurements.value', '<=', eb.ref('due_to_measurements.value')),
           ]),
         ])
       )

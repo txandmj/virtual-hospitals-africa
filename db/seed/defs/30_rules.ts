@@ -16,6 +16,7 @@ import { SYSTEM_PRIORITY_EVALUATIONS_PARSED } from '../../models/system_priority
 type DueToInsert =
   | ({
     type: 'finding'
+    s_expression: string
     root_snomed_concept: null | Lang['snomed_concept']
     specific_snomed_concept: Lang['snomed_concept']
     value_snomed_concept: null | Lang['snomed_concept']
@@ -23,11 +24,13 @@ type DueToInsert =
   } & Lang['finding' | 'evaluation'])
   | {
     type: 'finding_site'
+    s_expression: string
     value_snomed_concept: Lang['snomed_concept']
     always_applies_if_present: boolean
   }
   | {
     type: 'measurement'
+    s_expression: string
     specific_snomed_concept: Lang['snomed_concept']
     always_applies_if_present: boolean
     value: string
@@ -46,6 +49,7 @@ function dueToInsert(due_to: QueryableEvidenceNode): DueToInsert[] {
         assert(due_to.attributes[0].value.atom === 'snomed_concept')
         return [{
           type: 'finding_site',
+          s_expression: inverseSExpression(due_to),
           value_snomed_concept: due_to.attributes[0].value,
           always_applies_if_present: true,
         }]
@@ -55,6 +59,7 @@ function dueToInsert(due_to: QueryableEvidenceNode): DueToInsert[] {
       return [{
         ...due_to,
         type: 'finding',
+        s_expression: inverseSExpression(due_to),
         root_snomed_concept: due_to.root_snomed_concept,
         specific_snomed_concept: due_to.specific_snomed_concept,
         value_snomed_concept: due_to.value_snomed_concept,
@@ -70,6 +75,7 @@ function dueToInsert(due_to: QueryableEvidenceNode): DueToInsert[] {
       return [{
         ...due_to,
         type: 'finding',
+        s_expression: inverseSExpression(due_to),
         root_snomed_concept: due_to.root_snomed_concept,
         specific_snomed_concept: due_to.specific_snomed_concept,
         value_snomed_concept: due_to.value_snomed_concept,
@@ -87,6 +93,7 @@ function dueToInsert(due_to: QueryableEvidenceNode): DueToInsert[] {
       assert(due_to.type === 'measurement', 'Only measurement comparators supported in due_to')
       return [{
         type: 'measurement',
+        s_expression: inverseSExpression(due_to),
         specific_snomed_concept: due_to.measurement.snomed_concept,
         comparator: due_to.atom,
         value: due_to.value.toString(),
@@ -162,17 +169,29 @@ async function insertRule(
   const rule_due_to_measurement_ids: string[] = []
 
   if (findings.length) {
-    const due_to_finding_ids = await pMap(findings, (finding) =>
-      trx.insertInto('due_to_findings')
+    const due_to_finding_ids = await pMap(findings, async (finding) => {
+      const { id } = await trx.insertInto('due_to')
+        .values({ s_expression: finding.s_expression })
+        .onConflict((oc) => oc.column('s_expression').doUpdateSet({ s_expression: (eb) => eb.ref('excluded.s_expression') }))
+        .returning('id')
+        .executeTakeFirstOrThrow()
+      return trx.insertInto('due_to_findings')
         .values({
-          s_expression: inverseSExpression(finding),
+          id,
           root_snomed_concept_id: finding.root_snomed_concept ? snomedConceptId(finding.root_snomed_concept) : null,
           specific_snomed_concept_id: snomedConceptId(finding.specific_snomed_concept),
           value_snomed_concept_id: finding.value_snomed_concept ? snomedConceptId(finding.value_snomed_concept) : null,
         })
-        .onConflict((oc) => oc.column('s_expression').doUpdateSet({ s_expression: (eb) => eb.ref('excluded.s_expression') }))
+        .onConflict((oc) =>
+          oc.column('id').doUpdateSet({
+            root_snomed_concept_id: (eb) => eb.ref('excluded.root_snomed_concept_id'),
+            specific_snomed_concept_id: (eb) => eb.ref('excluded.specific_snomed_concept_id'),
+            value_snomed_concept_id: (eb) => eb.ref('excluded.value_snomed_concept_id'),
+          })
+        )
         .returning('id')
-        .executeTakeFirstOrThrow(), { concurrency: 1 })
+        .executeTakeFirstOrThrow()
+    }, { concurrency: 1 })
 
     const rows = await trx.insertInto('rule_due_to_findings')
       .values(findings.map((finding, i) => ({
@@ -186,6 +205,27 @@ async function insertRule(
   }
 
   if (finding_sites.length) {
+    await pMap(finding_sites, async (finding_site) => {
+      const { id } = await trx.insertInto('due_to')
+        .values({ s_expression: finding_site.s_expression })
+        .onConflict((oc) => oc.column('s_expression').doUpdateSet({ s_expression: (eb) => eb.ref('excluded.s_expression') }))
+        .returning('id')
+        .executeTakeFirstOrThrow()
+      await trx.insertInto('due_to_finding_sites')
+        .values({
+          id,
+          s_expression: finding_site.s_expression,
+          value_snomed_concept_id: snomedConceptId(finding_site.value_snomed_concept),
+        })
+        .onConflict((oc) =>
+          oc.column('id').doUpdateSet({
+            s_expression: (eb) => eb.ref('excluded.s_expression'),
+            value_snomed_concept_id: (eb) => eb.ref('excluded.value_snomed_concept_id'),
+          })
+        )
+        .execute()
+    }, { concurrency: 1 })
+
     const rows = await trx.insertInto('rule_due_to_finding_sites')
       .values(finding_sites.map((finding_site) => ({
         rule_id,
@@ -198,12 +238,35 @@ async function insertRule(
   }
 
   if (measurements.length) {
+    const due_to_measurement_ids = await pMap(measurements, async (measurement) => {
+      const { id } = await trx.insertInto('due_to')
+        .values({ s_expression: measurement.s_expression })
+        .onConflict((oc) => oc.column('s_expression').doUpdateSet({ s_expression: (eb) => eb.ref('excluded.s_expression') }))
+        .returning('id')
+        .executeTakeFirstOrThrow()
+      return trx.insertInto('due_to_measurements')
+        .values({
+          id,
+          root_snomed_concept_id: null,
+          specific_snomed_concept_id: snomedConceptId(measurement.specific_snomed_concept),
+          comparator: measurement.comparator,
+          value: measurement.value,
+        })
+        .onConflict((oc) =>
+          oc.column('id').doUpdateSet({
+            specific_snomed_concept_id: (eb) => eb.ref('excluded.specific_snomed_concept_id'),
+            comparator: (eb) => eb.ref('excluded.comparator'),
+            value: (eb) => eb.ref('excluded.value'),
+          })
+        )
+        .returning('id')
+        .executeTakeFirstOrThrow()
+    }, { concurrency: 1 })
+
     const rows = await trx.insertInto('rule_due_to_measurements')
-      .values(measurements.map((measurement) => ({
+      .values(measurements.map((measurement, i) => ({
         rule_id,
-        specific_snomed_concept_id: snomedConceptId(measurement.specific_snomed_concept),
-        comparator: measurement.comparator,
-        value: measurement.value,
+        due_to_measurement_id: due_to_measurement_ids[i].id,
         always_applies_if_present: measurement.always_applies_if_present,
       })))
       .returning('id')
@@ -216,7 +279,10 @@ async function insertRule(
 
 export default define([
   'rules',
+  'due_to',
   'due_to_findings',
+  'due_to_finding_sites',
+  'due_to_measurements',
   'rule_due_to_findings',
   'rule_due_to_finding_sites',
   'rule_due_to_measurements',

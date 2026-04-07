@@ -1,4 +1,4 @@
-import { assert } from 'node:console'
+import { assert } from 'std/assert/assert.ts'
 import { humanReadableJson } from './humanReadableJson.ts'
 import generateUUID from './uuid.ts'
 
