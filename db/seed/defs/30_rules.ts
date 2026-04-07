@@ -130,9 +130,7 @@ function dueToInsert(due_to: QueryableEvidenceNode): DueToInsert[] {
 
 type InsertedJunctionIds = {
   due_to_ids: string[]
-  rule_due_to_finding_ids: string[]
-  rule_due_to_finding_site_ids: string[]
-  rule_due_to_measurement_ids: string[]
+  rule_due_to_ids: string[]
 }
 
 async function insertRule(
@@ -172,9 +170,7 @@ async function insertRule(
   const measurements = due_to_insert.filter((d): d is Extract<DueToInsert, { type: 'measurement' }> => d.type === 'measurement')
 
   const due_to_ids: string[] = []
-  const rule_due_to_finding_ids: string[] = []
-  const rule_due_to_finding_site_ids: string[] = []
-  const rule_due_to_measurement_ids: string[] = []
+  const rule_due_to_ids: string[] = []
 
   if (findings.length) {
     const due_to_finding_ids = await pMap(findings, async (finding) => {
@@ -206,16 +202,16 @@ async function insertRule(
         .executeTakeFirstOrThrow()
     }, { concurrency: 1 })
 
-    const rows = await trx.insertInto('rule_due_to_findings')
+    const rows = await trx.insertInto('rule_due_to')
       .values(findings.map((finding, i) => ({
         rule_id,
-        due_to_finding_id: due_to_finding_ids[i].id,
+        due_to: due_to_finding_ids[i].id,
         always_applies_if_present: finding.always_applies_if_present,
       })))
       .returning('id')
       .execute()
     due_to_ids.push(...due_to_finding_ids.map((r) => r.id))
-    rule_due_to_finding_ids.push(...rows.map((r) => r.id))
+    rule_due_to_ids.push(...rows.map((r) => r.id))
   }
 
   if (finding_sites.length) {
@@ -246,15 +242,15 @@ async function insertRule(
     }, { concurrency: 1 })
     due_to_ids.push(...due_to_finding_site_ids)
 
-    const rows = await trx.insertInto('rule_due_to_finding_sites')
+    const rows = await trx.insertInto('rule_due_to')
       .values(finding_sites.map((finding_site, i) => ({
         rule_id,
-        due_to_finding_site_id: due_to_finding_site_ids[i],
+        due_to: due_to_finding_site_ids[i],
         always_applies_if_present: finding_site.always_applies_if_present,
       })))
       .returning('id')
       .execute()
-    rule_due_to_finding_site_ids.push(...rows.map((r) => r.id))
+    rule_due_to_ids.push(...rows.map((r) => r.id))
   }
 
   if (measurements.length) {
@@ -287,19 +283,19 @@ async function insertRule(
         .executeTakeFirstOrThrow()
     }, { concurrency: 1 })
 
-    const rows = await trx.insertInto('rule_due_to_measurements')
+    const rows = await trx.insertInto('rule_due_to')
       .values(measurements.map((measurement, i) => ({
         rule_id,
-        due_to_measurement_id: due_to_measurement_ids[i].id,
+        due_to: due_to_measurement_ids[i].id,
         always_applies_if_present: measurement.always_applies_if_present,
       })))
       .returning('id')
       .execute()
     due_to_ids.push(...due_to_measurement_ids.map((r) => r.id))
-    rule_due_to_measurement_ids.push(...rows.map((r) => r.id))
+    rule_due_to_ids.push(...rows.map((r) => r.id))
   }
 
-  return { due_to_ids, rule_due_to_finding_ids, rule_due_to_finding_site_ids, rule_due_to_measurement_ids }
+  return { due_to_ids, rule_due_to_ids }
 }
 
 export default define([
@@ -308,26 +304,20 @@ export default define([
   'due_to_findings',
   'due_to_finding_sites',
   'due_to_measurements',
-  'rule_due_to_findings',
-  'rule_due_to_finding_sites',
-  'rule_due_to_measurements',
+  'rule_due_to',
   'tasks',
   'system_diagnosis_rules',
   'system_priority_evaluations',
 ], async (trx) => {
   const due_to_ids: string[] = []
   const rule_ids: string[] = []
-  const rule_due_to_finding_ids: string[] = []
-  const rule_due_to_finding_site_ids: string[] = []
-  const rule_due_to_measurement_ids: string[] = []
+  const rule_due_to_ids: string[] = []
 
   await forEach(TASKS, async (task) => {
     const junction_ids = await insertRule(trx, task)
     due_to_ids.push(...junction_ids.due_to_ids)
     rule_ids.push(task.description)
-    rule_due_to_finding_ids.push(...junction_ids.rule_due_to_finding_ids)
-    rule_due_to_finding_site_ids.push(...junction_ids.rule_due_to_finding_site_ids)
-    rule_due_to_measurement_ids.push(...junction_ids.rule_due_to_measurement_ids)
+    rule_due_to_ids.push(...junction_ids.rule_due_to_ids)
 
     await trx.insertInto('tasks')
       .values({
@@ -347,9 +337,7 @@ export default define([
     const junction_ids = await insertRule(trx, system_priority_evaluation)
     due_to_ids.push(...junction_ids.due_to_ids)
     rule_ids.push(system_priority_evaluation.description)
-    rule_due_to_finding_ids.push(...junction_ids.rule_due_to_finding_ids)
-    rule_due_to_finding_site_ids.push(...junction_ids.rule_due_to_finding_site_ids)
-    rule_due_to_measurement_ids.push(...junction_ids.rule_due_to_measurement_ids)
+    rule_due_to_ids.push(...junction_ids.rule_due_to_ids)
 
     await trx.insertInto('system_priority_evaluations')
       .values({
@@ -369,9 +357,7 @@ export default define([
     const junction_ids = await insertRule(trx, system_diagnosis_rule)
     due_to_ids.push(...junction_ids.due_to_ids)
     rule_ids.push(system_diagnosis_rule.description)
-    rule_due_to_finding_ids.push(...junction_ids.rule_due_to_finding_ids)
-    rule_due_to_finding_site_ids.push(...junction_ids.rule_due_to_finding_site_ids)
-    rule_due_to_measurement_ids.push(...junction_ids.rule_due_to_measurement_ids)
+    rule_due_to_ids.push(...junction_ids.rule_due_to_ids)
 
     await trx.insertInto('system_diagnosis_rules')
       .values({
@@ -390,17 +376,11 @@ export default define([
   })
 
   // Clean up any rows that were not part of this run
+  await trx.deleteFrom('rule_due_to')
+    .where('id', 'not in', rule_due_to_ids)
+    .execute()
   await trx.deleteFrom('due_to')
     .where('id', 'not in', due_to_ids)
-    .execute()
-  await trx.deleteFrom('rule_due_to_findings')
-    .where('id', 'not in', rule_due_to_finding_ids)
-    .execute()
-  await trx.deleteFrom('rule_due_to_finding_sites')
-    .where('id', 'not in', rule_due_to_finding_site_ids)
-    .execute()
-  await trx.deleteFrom('rule_due_to_measurements')
-    .where('id', 'not in', rule_due_to_measurement_ids)
     .execute()
   await trx.deleteFrom('rules')
     .where('id', 'not in', rule_ids)

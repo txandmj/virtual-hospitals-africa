@@ -1413,28 +1413,10 @@ export interface RegulatoryAgencies {
   updated_at: Generated<Timestamp>
 }
 
-export interface RuleDueToFindings {
+export interface RuleDueTo {
   always_applies_if_present: boolean
   created_at: Generated<Timestamp>
-  due_to_finding_id: string | null
-  id: Generated<string>
-  rule_id: string
-  updated_at: Generated<Timestamp>
-}
-
-export interface RuleDueToFindingSites {
-  always_applies_if_present: boolean
-  created_at: Generated<Timestamp>
-  due_to_finding_site_id: string
-  id: Generated<string>
-  rule_id: string
-  updated_at: Generated<Timestamp>
-}
-
-export interface RuleDueToMeasurements {
-  always_applies_if_present: boolean
-  created_at: Generated<Timestamp>
-  due_to_measurement_id: string
+  due_to: string
   id: Generated<string>
   rule_id: string
   updated_at: Generated<Timestamp>
@@ -1973,9 +1955,7 @@ export interface DB {
   procurers: Procurers
   regulators: Regulators
   regulatory_agencies: RegulatoryAgencies
-  rule_due_to_finding_sites: RuleDueToFindingSites
-  rule_due_to_findings: RuleDueToFindings
-  rule_due_to_measurements: RuleDueToMeasurements
+  rule_due_to: RuleDueTo
   rules: Rules
   sats_priority_levels: SatsPriorityLevels
   sats_triage_assessment_options: SatsTriageAssessmentOptions

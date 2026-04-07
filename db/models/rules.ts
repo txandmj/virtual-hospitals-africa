@@ -19,129 +19,25 @@ export const rules = base({
   baseQuery(trx: TrxOrDbOrQueryCreator, {
     // patient_id,
     patient_age_determination,
-    positive_record_ids,
+    positive_records_satisfying_some_due_to,
     type,
   }: {
     patient_id: string
     patient_age_determination: AgeDetermination
-    positive_record_ids: string[]
+    positive_records_satisfying_some_due_to: RecordsSatisfyingDueToIds[]
     type?: 'task' | 'system_priority_evaluation' | 'system_diagnosis_rule'
   }) {
-    assert(positive_record_ids.length)
-    const by_findings_query = trx.selectFrom('rules')
-      .innerJoin('rule_due_to_findings', 'rules.id', 'rule_due_to_findings.rule_id')
-      .innerJoin('due_to_findings', 'due_to_findings.id', 'rule_due_to_findings.due_to_finding_id')
-      .innerJoin(
-        'snomed_concept_active_descendants_realized as specific_descendants',
-        'specific_descendants.ancestor_id',
-        'due_to_findings.specific_snomed_concept_id',
-      )
-      .innerJoin('patient_records', 'patient_records.specific_snomed_concept_id', 'specific_descendants.descendant_id')
-      .innerJoin('patient_records_still_valid', 'patient_records_still_valid.id', 'patient_records.id')
-      .whereRef('patient_records.root_snomed_concept_id', '=', 'due_to_findings.root_snomed_concept_id')
-      .where('rules.age_determinations', '@>', sql<AgeDetermination[]>`ARRAY[${patient_age_determination}]::age_determination[]`)
-      .where('patient_records.id', 'in', positive_record_ids)
-      .where((eb) =>
-        eb.or([
-          eb('due_to_findings.value_snomed_concept_id', 'is', null),
-          eb.exists(
-            eb.selectFrom('snomed_concept_active_descendants_realized as value_descendants')
-              .whereRef('value_descendants.ancestor_id', '=', 'due_to_findings.value_snomed_concept_id')
-              .whereRef('value_descendants.descendant_id', '=', 'patient_records.value_snomed_concept_id'),
-          ),
-        ])
-      )
-      .select([
-        'patient_records.id as finding_id',
-        'rule_due_to_findings.rule_id',
-        'due_to_s_expression',
-        'rule_due_to_findings.always_applies_if_present',
-      ])
+    assert(positive_records_satisfying_some_due_to.length)
 
-    const by_finding_sites_query = trx.selectFrom('rules')
-      .innerJoin('rule_due_to_finding_sites', 'rules.id', 'rule_due_to_finding_sites.rule_id')
-      .innerJoin('patient_records', (join) => join.onTrue())
-      .innerJoin('patient_records_still_valid', 'patient_records_still_valid.id', 'patient_records.id')
+    return trx.selectFrom('rules')
+      .innerJoin('rule_due_to', 'rules.id', 'rule_due_to.rule_id')
       .where('rules.age_determinations', '@>', sql<AgeDetermination[]>`ARRAY[${patient_age_determination}]::age_determination[]`)
       .where('patient_records.id', 'in', positive_record_ids)
-      .where((eb) =>
-        eb.or([
-          eb.exists(
-            trx.selectFrom('patient_records as finding_sites')
-              .innerJoin('patient_record_qualifiers', 'finding_sites.id', 'patient_record_qualifiers.id')
-              .innerJoin(
-                'snomed_concept_active_descendants_realized as dest_descendants',
-                (join) =>
-                  join
-                    .onRef('dest_descendants.descendant_id', '=', 'finding_sites.value_snomed_concept_id')
-                    .on('dest_descendants.ancestor_id', '=', eb.ref('rule_due_to_finding_sites.value_snomed_concept_id')),
-              )
-              .where('patient_record_qualifiers.qualifies_record_id', '=', eb.ref('patient_records.id'))
-              .where('finding_sites.specific_snomed_concept_id', '=', FINDING_SITE.id),
-          ),
-          eb.exists(
-            trx.selectFrom('snomed_relationship')
-              .where('snomed_relationship.active', '=', true)
-              .where(
-                'snomed_relationship.type_id',
-                '=',
-                FINDING_SITE.id,
-              )
-              .where(
-                'snomed_relationship.source_id',
-                '=',
-                eb.ref('patient_records.specific_snomed_concept_id'),
-              )
-              .innerJoin(
-                'snomed_concept_active_descendants_realized as dest_descendants',
-                (join) =>
-                  join
-                    .onRef('dest_descendants.descendant_id', '=', 'snomed_relationship.destination_id')
-                    .on('dest_descendants.ancestor_id', '=', eb.ref('rule_due_to_finding_sites.value_snomed_concept_id')),
-              ),
-          ),
-        ])
-      )
       .select([
         'patient_records.id as finding_id',
         'rule_due_to_finding_sites.rule_id',
         'due_to_s_expression',
         'rule_due_to_finding_sites.always_applies_if_present',
-      ])
-
-    const by_measurements_query = trx.selectFrom('rules')
-      .innerJoin('rule_due_to_measurements', 'rules.id', 'rule_due_to_measurements.rule_id')
-      .innerJoin('due_to_measurements', 'due_to_measurements.id', 'rule_due_to_measurements.due_to_measurement_id')
-      .innerJoin('patient_records', 'patient_records.specific_snomed_concept_id', 'due_to_measurements.specific_snomed_concept_id')
-      .innerJoin('patient_records_still_valid', 'patient_records_still_valid.id', 'patient_records.id')
-      .innerJoin('patient_measurements', 'patient_records.id', 'patient_measurements.id')
-      .where('rules.age_determinations', '@>', sql<AgeDetermination[]>`ARRAY[${patient_age_determination}]::age_determination[]`)
-      .where('patient_records.id', 'in', positive_record_ids)
-      .where((eb) =>
-        eb.or([
-          eb.and([
-            eb('due_to_measurements.comparator', '=', '>'),
-            eb('patient_measurements.value', '>', eb.ref('due_to_measurements.value')),
-          ]),
-          eb.and([
-            eb('due_to_measurements.comparator', '=', '>='),
-            eb('patient_measurements.value', '>=', eb.ref('due_to_measurements.value')),
-          ]),
-          eb.and([
-            eb('due_to_measurements.comparator', '=', '<'),
-            eb('patient_measurements.value', '<', eb.ref('due_to_measurements.value')),
-          ]),
-          eb.and([
-            eb('due_to_measurements.comparator', '=', '<='),
-            eb('patient_measurements.value', '<=', eb.ref('due_to_measurements.value')),
-          ]),
-        ])
-      )
-      .select([
-        'patient_records.id as finding_id',
-        'rule_due_to_measurements.rule_id',
-        'due_to_s_expression',
-        'rule_due_to_measurements.always_applies_if_present',
       ])
 
     return trx.with('matching_rule_findings', () =>
@@ -194,23 +90,23 @@ export const rules = base({
     type?: 'task' | 'system_priority_evaluation' | 'system_diagnosis_rule',
   ): Promise<string | ApplicableRule[]> {
 
-    const positive_record_ids_satisfying_some_due_to = records
+    const positive_records_satisfying_some_due_to = records
       .filter((r) => r.existence === 'Yes')
       .filter((r) => !!r.satisfying_due_to_ids.length)
-      .map((r) => r.id)
+      
 
-    if (arrayIsEmpty(positive_record_ids_satisfying_some_due_to)) return 'Skipped: no positive findings to check'
+    if (arrayIsEmpty(positive_records_satisfying_some_due_to)) return 'Skipped: no positive findings satisfying some due_to'
 
     const rules_matching_some_finding = await rules.findAll(trx, {
       patient_id,
       patient_age_determination,
-      positive_record_ids,
+      positive_records_satisfying_some_due_to,
       type,
     })
 
-    const all_tasks = groupBy(rules_matching_some_finding, 'rule_id').values().toArray()
+    const all_rules = groupBy(rules_matching_some_finding, 'rule_id').values().toArray()
 
-    const parsed = all_tasks.map((findings) => ({
+    const parsed = all_rules.map((findings) => ({
       findings,
       // TODO The uniq could be removed probably if upstream we enforce uniqueness
       matching_finding_ids: uniq(findings.map((finding) => finding.finding_id)),

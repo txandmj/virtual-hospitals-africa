@@ -3031,13 +3031,15 @@ export type NewRecordsToConsider = {
   }[]
 }
 
-export type NewRecordsToConsiderWithSatisfyingDueToIds = Omit<NewRecordsToConsider, 'records'> & {
-  patient_age_determination: AgeDetermination
-  records: {
+export type RecordsSatisfyingDueToIds = {
     id: string
     existence: 'Yes' | 'No' | 'Unknown'
     satisfying_due_to_ids: string[]
   }[]
+
+export type NewRecordsToConsiderWithSatisfyingDueToIds = Omit<NewRecordsToConsider, 'records'> & {
+  patient_age_determination: AgeDetermination
+  records: RecordsSatisfyingDueToIds
 }
 
 export type ApplicableRuleEffectTask = {
