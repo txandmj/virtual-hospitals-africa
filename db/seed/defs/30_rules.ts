@@ -3,6 +3,7 @@ import { TASKS } from '../../../shared/tasks.ts'
 
 import type { Lang, QueryableEvidenceNode } from '../../../shared/s_expression_schemas.ts'
 import { assert } from 'std/assert/assert.ts'
+import { sql } from 'kysely'
 import { Comparator } from '../../../db.d.ts'
 import { activeConditionAsOr } from '../../../shared/s_expression_active_condition_as_or.ts'
 import { diagnosisToEvaluation } from '../../../shared/diagnosis.ts'
@@ -20,18 +21,21 @@ type DueToInsert =
     root_snomed_concept: null | Lang['snomed_concept']
     specific_snomed_concept: Lang['snomed_concept']
     value_snomed_concept: null | Lang['snomed_concept']
+    is_somehow_qualified: boolean
     always_applies_if_present: boolean
   } & Lang['finding' | 'evaluation'])
   | {
     type: 'finding_site'
     s_expression: string
     value_snomed_concept: Lang['snomed_concept']
+    is_somehow_qualified?: never
     always_applies_if_present: boolean
   }
   | {
     type: 'measurement'
     s_expression: string
     specific_snomed_concept: Lang['snomed_concept']
+    is_somehow_qualified?: never
     always_applies_if_present: boolean
     value: string
     comparator: Comparator
@@ -55,7 +59,7 @@ function dueToInsert(due_to: QueryableEvidenceNode): DueToInsert[] {
         }]
       }
       assert(due_to.specific_snomed_concept, `Must have a specific_snomed_concept\n${inverseSExpression(due_to)}`)
-      const always_applies_if_present = !due_to.attributes.length && !due_to.qualifiers.length && !due_to.excluding.length
+      const is_somehow_qualified = !!(due_to.attributes.length || due_to.qualifiers.length || due_to.excluding.length)
       return [{
         ...due_to,
         type: 'finding',
@@ -63,7 +67,8 @@ function dueToInsert(due_to: QueryableEvidenceNode): DueToInsert[] {
         root_snomed_concept: due_to.root_snomed_concept,
         specific_snomed_concept: due_to.specific_snomed_concept,
         value_snomed_concept: due_to.value_snomed_concept,
-        always_applies_if_present,
+        is_somehow_qualified,
+        always_applies_if_present: !is_somehow_qualified,
       }]
     }
     case 'active_condition': {
@@ -71,7 +76,7 @@ function dueToInsert(due_to: QueryableEvidenceNode): DueToInsert[] {
     }
     case 'evaluation': {
       assert(due_to.specific_snomed_concept, `Must have a specific_snomed_concept\n${inverseSExpression(due_to)}`)
-      const always_applies_if_present = !due_to.evaluates && !due_to.attributes.length && !due_to.qualifiers.length
+      const is_somehow_qualified = !!due_to.evaluates || !!due_to.attributes.length || !!due_to.qualifiers.length
       return [{
         ...due_to,
         type: 'finding',
@@ -79,7 +84,8 @@ function dueToInsert(due_to: QueryableEvidenceNode): DueToInsert[] {
         root_snomed_concept: due_to.root_snomed_concept,
         specific_snomed_concept: due_to.specific_snomed_concept,
         value_snomed_concept: due_to.value_snomed_concept,
-        always_applies_if_present,
+        is_somehow_qualified,
+        always_applies_if_present: !is_somehow_qualified,
       }]
     }
     case 'diagnosis': {
@@ -123,6 +129,7 @@ function dueToInsert(due_to: QueryableEvidenceNode): DueToInsert[] {
 }
 
 type InsertedJunctionIds = {
+  due_to_ids: string[]
   rule_due_to_finding_ids: string[]
   rule_due_to_finding_site_ids: string[]
   rule_due_to_measurement_ids: string[]
@@ -164,6 +171,7 @@ async function insertRule(
   const finding_sites = due_to_insert.filter((d): d is Extract<DueToInsert, { type: 'finding_site' }> => d.type === 'finding_site')
   const measurements = due_to_insert.filter((d): d is Extract<DueToInsert, { type: 'measurement' }> => d.type === 'measurement')
 
+  const due_to_ids: string[] = []
   const rule_due_to_finding_ids: string[] = []
   const rule_due_to_finding_site_ids: string[] = []
   const rule_due_to_measurement_ids: string[] = []
@@ -171,8 +179,12 @@ async function insertRule(
   if (findings.length) {
     const due_to_finding_ids = await pMap(findings, async (finding) => {
       const { id } = await trx.insertInto('due_to')
-        .values({ s_expression: finding.s_expression })
-        .onConflict((oc) => oc.column('s_expression').doUpdateSet({ s_expression: (eb) => eb.ref('excluded.s_expression') }))
+        .values({ s_expression: finding.s_expression, age_determinations: rule.ages })
+        .onConflict((oc) =>
+          oc.column('s_expression').doUpdateSet({
+            age_determinations: sql`array(SELECT DISTINCT unnest(excluded.age_determinations || due_to.age_determinations))::age_determination[]`,
+          })
+        )
         .returning('id')
         .executeTakeFirstOrThrow()
       return trx.insertInto('due_to_findings')
@@ -181,6 +193,7 @@ async function insertRule(
           root_snomed_concept_id: finding.root_snomed_concept ? snomedConceptId(finding.root_snomed_concept) : null,
           specific_snomed_concept_id: snomedConceptId(finding.specific_snomed_concept),
           value_snomed_concept_id: finding.value_snomed_concept ? snomedConceptId(finding.value_snomed_concept) : null,
+          is_somehow_qualified: finding.is_somehow_qualified,
         })
         .onConflict((oc) =>
           oc.column('id').doUpdateSet({
@@ -201,14 +214,19 @@ async function insertRule(
       })))
       .returning('id')
       .execute()
+    due_to_ids.push(...due_to_finding_ids.map((r) => r.id))
     rule_due_to_finding_ids.push(...rows.map((r) => r.id))
   }
 
   if (finding_sites.length) {
-    await pMap(finding_sites, async (finding_site) => {
+    const due_to_finding_site_ids = await pMap(finding_sites, async (finding_site) => {
       const { id } = await trx.insertInto('due_to')
-        .values({ s_expression: finding_site.s_expression })
-        .onConflict((oc) => oc.column('s_expression').doUpdateSet({ s_expression: (eb) => eb.ref('excluded.s_expression') }))
+        .values({ s_expression: finding_site.s_expression, age_determinations: rule.ages })
+        .onConflict((oc) =>
+          oc.column('s_expression').doUpdateSet({
+            age_determinations: sql`array(SELECT DISTINCT unnest(excluded.age_determinations || due_to.age_determinations))::age_determination[]`,
+          })
+        )
         .returning('id')
         .executeTakeFirstOrThrow()
       await trx.insertInto('due_to_finding_sites')
@@ -224,12 +242,14 @@ async function insertRule(
           })
         )
         .execute()
+      return id
     }, { concurrency: 1 })
+    due_to_ids.push(...due_to_finding_site_ids)
 
     const rows = await trx.insertInto('rule_due_to_finding_sites')
-      .values(finding_sites.map((finding_site) => ({
+      .values(finding_sites.map((finding_site, i) => ({
         rule_id,
-        value_snomed_concept_id: snomedConceptId(finding_site.value_snomed_concept),
+        due_to_finding_site_id: due_to_finding_site_ids[i],
         always_applies_if_present: finding_site.always_applies_if_present,
       })))
       .returning('id')
@@ -240,8 +260,12 @@ async function insertRule(
   if (measurements.length) {
     const due_to_measurement_ids = await pMap(measurements, async (measurement) => {
       const { id } = await trx.insertInto('due_to')
-        .values({ s_expression: measurement.s_expression })
-        .onConflict((oc) => oc.column('s_expression').doUpdateSet({ s_expression: (eb) => eb.ref('excluded.s_expression') }))
+        .values({ s_expression: measurement.s_expression, age_determinations: rule.ages })
+        .onConflict((oc) =>
+          oc.column('s_expression').doUpdateSet({
+            age_determinations: sql`array(SELECT DISTINCT unnest(excluded.age_determinations || due_to.age_determinations))::age_determination[]`,
+          })
+        )
         .returning('id')
         .executeTakeFirstOrThrow()
       return trx.insertInto('due_to_measurements')
@@ -271,10 +295,11 @@ async function insertRule(
       })))
       .returning('id')
       .execute()
+    due_to_ids.push(...due_to_measurement_ids.map((r) => r.id))
     rule_due_to_measurement_ids.push(...rows.map((r) => r.id))
   }
 
-  return { rule_due_to_finding_ids, rule_due_to_finding_site_ids, rule_due_to_measurement_ids }
+  return { due_to_ids, rule_due_to_finding_ids, rule_due_to_finding_site_ids, rule_due_to_measurement_ids }
 }
 
 export default define([
@@ -290,6 +315,7 @@ export default define([
   'system_diagnosis_rules',
   'system_priority_evaluations',
 ], async (trx) => {
+  const due_to_ids: string[] = []
   const rule_ids: string[] = []
   const rule_due_to_finding_ids: string[] = []
   const rule_due_to_finding_site_ids: string[] = []
@@ -297,6 +323,7 @@ export default define([
 
   await forEach(TASKS, async (task) => {
     const junction_ids = await insertRule(trx, task)
+    due_to_ids.push(...junction_ids.due_to_ids)
     rule_ids.push(task.description)
     rule_due_to_finding_ids.push(...junction_ids.rule_due_to_finding_ids)
     rule_due_to_finding_site_ids.push(...junction_ids.rule_due_to_finding_site_ids)
@@ -318,6 +345,7 @@ export default define([
 
   await forEach(SYSTEM_PRIORITY_EVALUATIONS_PARSED, async (system_priority_evaluation) => {
     const junction_ids = await insertRule(trx, system_priority_evaluation)
+    due_to_ids.push(...junction_ids.due_to_ids)
     rule_ids.push(system_priority_evaluation.description)
     rule_due_to_finding_ids.push(...junction_ids.rule_due_to_finding_ids)
     rule_due_to_finding_site_ids.push(...junction_ids.rule_due_to_finding_site_ids)
@@ -339,6 +367,7 @@ export default define([
 
   await forEach(SYSTEM_DIAGNOSIS_RULES_PARSED, async (system_diagnosis_rule) => {
     const junction_ids = await insertRule(trx, system_diagnosis_rule)
+    due_to_ids.push(...junction_ids.due_to_ids)
     rule_ids.push(system_diagnosis_rule.description)
     rule_due_to_finding_ids.push(...junction_ids.rule_due_to_finding_ids)
     rule_due_to_finding_site_ids.push(...junction_ids.rule_due_to_finding_site_ids)
@@ -361,6 +390,9 @@ export default define([
   })
 
   // Clean up any rows that were not part of this run
+  await trx.deleteFrom('due_to')
+    .where('id', 'not in', due_to_ids)
+    .execute()
   await trx.deleteFrom('rule_due_to_findings')
     .where('id', 'not in', rule_due_to_finding_ids)
     .execute()

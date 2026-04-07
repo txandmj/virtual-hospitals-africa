@@ -1904,7 +1904,7 @@ describeParallel('triage/measure_vitals', () => {
       DEFAULT_MEASUREMENTS['younger child'],
       { ...DEFAULT_ASSESSMENTS['younger child'], trauma_presence: 'No' },
       baseScoresYoungerChild({ 'Trauma score': 0 }),
-      { expected_task_groups: [] }
+      { expected_task_groups: [] },
     )
 
     testCase(

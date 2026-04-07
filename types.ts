@@ -3019,13 +3019,24 @@ export type SidebarProps = {
 }
 
 export type NewRecordsToConsider = {
+  // workflow: Workflow
+  // step: string
+  // procedure_id: string
   patient_id: string
   patient_encounter_id: string
-  // procedure_id: string
   patient_age_determination: AgeDetermination | null
   records: {
     id: string
     existence: 'Yes' | 'No' | 'Unknown'
+  }[]
+}
+
+export type NewRecordsToConsiderWithSatisfyingDueToIds = Omit<NewRecordsToConsider, 'records'> & {
+  patient_age_determination: AgeDetermination
+  records: {
+    id: string
+    existence: 'Yes' | 'No' | 'Unknown'
+    satisfying_due_to_ids: string[]
   }[]
 }
 
@@ -3061,16 +3072,9 @@ export type ApplicableRule = {
   rule_effect: ApplicableRuleEffect
 }
 
-export type RuleRunnerInput = {
+export type RuleRunnerInput = NewRecordsToConsiderWithSatisfyingDueToIds & {
   listener_id: string
   listener_name: string
-  patient_id: string
-  patient_encounter_id: string
-  patient_age_determination: AgeDetermination | null
-  records: {
-    id: string
-    existence: 'Yes' | 'No' | 'Unknown'
-  }[]
 }
 
 export type EncounterEmployeePresence = {

@@ -351,6 +351,7 @@ export interface Devices {
 }
 
 export interface DueTo {
+  age_determinations: ArrayType<AgeDetermination>
   created_at: Generated<Timestamp>
   id: Generated<string>
   s_expression: string
@@ -359,6 +360,7 @@ export interface DueTo {
 
 export interface DueToFindings {
   id: string
+  is_somehow_qualified: boolean
   root_snomed_concept_id: Int8 | null
   specific_snomed_concept_id: Int8
   value_snomed_concept_id: Int8 | null
@@ -1192,6 +1194,14 @@ export interface PatientRecordsAggregated {
   value: Json | null
 }
 
+export interface PatientRecordSatisfyingDueTos {
+  created_at: Generated<Timestamp>
+  due_to_id: string
+  id: Generated<string>
+  patient_record_id: string
+  updated_at: Generated<Timestamp>
+}
+
 export interface PatientRecordSExpressions {
   id: string
   s_expression: string
@@ -1415,10 +1425,10 @@ export interface RuleDueToFindings {
 export interface RuleDueToFindingSites {
   always_applies_if_present: boolean
   created_at: Generated<Timestamp>
+  due_to_finding_site_id: string
   id: Generated<string>
   rule_id: string
   updated_at: Generated<Timestamp>
-  value_snomed_concept_id: Int8
 }
 
 export interface RuleDueToMeasurements {
@@ -1941,6 +1951,7 @@ export interface DB {
   patient_record_qualifiers: PatientRecordQualifiers
   patient_record_relations: PatientRecordRelations
   patient_record_s_expressions: PatientRecordSExpressions
+  patient_record_satisfying_due_tos: PatientRecordSatisfyingDueTos
   patient_record_tasks: PatientRecordTasks
   patient_records: PatientRecords
   patient_records_aggregated: PatientRecordsAggregated

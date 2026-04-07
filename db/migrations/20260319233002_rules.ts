@@ -39,13 +39,15 @@ export async function up(db: Kysely<DB>) {
 
   await createStandardTable(db, 'due_to', (qb) =>
     qb
-      .addColumn('s_expression', 'text', (col) => col.notNull().unique()))
+      .addColumn('s_expression', 'text', (col) => col.notNull().unique())
+      .addColumn('age_determinations', sql`age_determination[]`, (col) => col.notNull()))
 
   await createPointerTable(db, 'due_to_findings', { references: 'due_to', primary_key_type: 'uuid' }, (qb) =>
     qb
       .addColumn('root_snomed_concept_id', 'bigint', (col) => col.references('snomed_concept.id').onDelete('cascade'))
       .addColumn('specific_snomed_concept_id', 'bigint', (col) => col.notNull().references('snomed_concept.id').onDelete('cascade'))
-      .addColumn('value_snomed_concept_id', 'bigint', (col) => col.references('snomed_concept.id').onDelete('cascade')))
+      .addColumn('value_snomed_concept_id', 'bigint', (col) => col.references('snomed_concept.id').onDelete('cascade'))
+      .addColumn('is_somehow_qualified', 'boolean', (col) => col.notNull()))
 
   await db.schema.createIndex('due_to_findings_specific_snomed_concept_id_idx')
     .on('due_to_findings')
@@ -66,7 +68,7 @@ export async function up(db: Kysely<DB>) {
   await createStandardTable(db, 'rule_due_to_finding_sites', (qb) =>
     qb
       .addColumn('rule_id', 'varchar(255)', (col) => col.notNull().references('rules.id').onDelete('cascade'))
-      .addColumn('value_snomed_concept_id', 'bigint', (col) => col.notNull().references('snomed_concept.id').onDelete('cascade'))
+      .addColumn('due_to_finding_site_id', 'uuid', (col) => col.notNull().references('due_to_finding_sites.id').onDelete('cascade'))
       .addColumn('always_applies_if_present', 'boolean', (col) => col.notNull()))
 
   await db.schema.createIndex('rule_due_to_finding_sites_value_snomed_concept_id_idx')

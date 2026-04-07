@@ -1,5 +1,5 @@
 import { sql } from 'kysely'
-import { AgeDetermination, ApplicableRule, NewRecordsToConsider, TrxOrDbOrQueryCreator } from '../../types.ts'
+import { AgeDetermination, ApplicableRule, NewRecordsToConsider, NewRecordsToConsiderWithSatisfyingDueToIds, TrxOrDbOrQueryCreator } from '../../types.ts'
 import { asText, jsonBuildObject, literalString } from '../helpers.ts'
 import { groupBy } from '../../util/groupBy.ts'
 import { FINDING_SITE } from '../../shared/snomed_concepts.ts'
@@ -190,25 +190,25 @@ export const rules = base({
 
   async getApplicableBasedOnNewRecords(
     trx: TrxOrDbOrQueryCreator,
-    { patient_id, patient_age_determination, /*procedure_id, */ records: findings }: NewRecordsToConsider,
+    { patient_id, patient_age_determination, /*procedure_id, */ records }: NewRecordsToConsiderWithSatisfyingDueToIds,
     type?: 'task' | 'system_priority_evaluation' | 'system_diagnosis_rule',
   ): Promise<string | ApplicableRule[]> {
-    if (!patient_age_determination) return 'Skipped: patient age determination is unknown'
 
-    const positive_record_ids = findings
-      .filter((f) => f.existence === 'Yes')
-      .map((f) => f.id)
+    const positive_record_ids_satisfying_some_due_to = records
+      .filter((r) => r.existence === 'Yes')
+      .filter((r) => !!r.satisfying_due_to_ids.length)
+      .map((r) => r.id)
 
-    if (arrayIsEmpty(positive_record_ids)) return 'Skipped: no positive findings to check'
+    if (arrayIsEmpty(positive_record_ids_satisfying_some_due_to)) return 'Skipped: no positive findings to check'
 
-    const tasks_matching_some_finding = await rules.findAll(trx, {
+    const rules_matching_some_finding = await rules.findAll(trx, {
       patient_id,
       patient_age_determination,
       positive_record_ids,
       type,
     })
 
-    const all_tasks = groupBy(tasks_matching_some_finding, 'rule_id').values().toArray()
+    const all_tasks = groupBy(rules_matching_some_finding, 'rule_id').values().toArray()
 
     const parsed = all_tasks.map((findings) => ({
       findings,
