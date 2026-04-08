@@ -57,6 +57,7 @@ import { patient_findings } from '../../../../../../../db/models/patient_finding
 import { patient_record_providers } from '../../../../../../../db/models/patient_record_providers.ts'
 import { buildPriorityRecord } from '../../../../../../../db/models/priority.ts'
 import { patient_evaluation_scores } from '../../../../../../../db/models/patient_evaluation_scores.ts'
+import { logToFileIfOnServer } from '../../../../../../../util/logToFileIfOnServer.ts'
 
 export function completeLastStep(
   { state: { trx, workflow, step, workflow_status } }: OpenEncounterWorkflowContext,
@@ -157,6 +158,9 @@ function workflowStepFromUrl(
     ).split('/'),
   )
   assert(isWorkflow(workflow), `Invalid workflow: ${workflow}`)
+  logToFileIfOnServer(ctx.state.encounter, {
+    file_prefix: 'encounter',
+  })
   assertOrRedirect(
     step,
     `/app/organizations/${ctx.state.encounter.organization_id}/patients/${ctx.state.encounter.patient.id}/open_encounter/${ctx.state.encounter.status.patient_presence.current_workflow}/${

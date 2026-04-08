@@ -6,12 +6,14 @@ type LogOpts = {
   subdirectory?: string
   extension?: string
   filename?: string
+  file_prefix?: string
 }
 
 // deno-lint-ignore no-explicit-any
 export function logToFileIfOnServer(to_log: any, opts?: LogOpts) {
   const subdirectory = opts?.subdirectory || ''
-  const filename = opts?.filename || generateUUID()
+  const file_prefix = opts?.file_prefix || ''
+  const filename = opts?.filename || file_prefix + generateUUID()
   const extension = opts?.extension || filename.includes('.') ? '' : '.json'
   if (globalThis.Deno) {
     if (subdirectory) assert(subdirectory.startsWith('/'))
