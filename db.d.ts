@@ -353,6 +353,7 @@ export interface Devices {
 export interface DueTo {
   age_determinations: ArrayType<AgeDetermination>
   created_at: Generated<Timestamp>
+  history: boolean
   id: Generated<string>
   s_expression: string
   updated_at: Generated<Timestamp>
@@ -368,7 +369,6 @@ export interface DueToFindings {
 
 export interface DueToFindingSites {
   id: string
-  s_expression: string
   value_snomed_concept_id: Int8
 }
 
@@ -1416,7 +1416,7 @@ export interface RegulatoryAgencies {
 export interface RuleDueTo {
   always_applies_if_present: boolean
   created_at: Generated<Timestamp>
-  due_to: string
+  due_to_id: string
   id: Generated<string>
   rule_id: string
   updated_at: Generated<Timestamp>

@@ -70,44 +70,45 @@ export const EVENTS = {
     }),
     {},
   ),
-  SystemDiagnosisCreated: defineEvent(
-    z.object({
-      patient_id: z.string().uuid(),
-      patient_encounter_id: z.string().uuid(),
-      patient_age_determination: z.enum(['adult', 'older child', 'younger child']),
-      evaluation_id: z.string().uuid(),
-    }),
-    {
-      insertTasksIfNotAlreadyIdentified(trx, payload) {
-        return additional_tasks.insertTasksIfNotAlreadyIdentified(
-          trx,
-          {
-            ...payload.data,
-            // listener_id: payload.listener_id,
-            // listener_name: payload.listener_name,
-            records: [{
-              id: payload.data.evaluation_id,
-              existence: 'Yes' as const,
-            }],
-          },
-        )
-      },
-      insertSystemPriorityEvaluationsIfNotAlreadyIdentified(trx, payload) {
-        return system_priority_evaluations.insertSystemPriorityEvaluationsIfNotAlreadyIdentified(
-          trx,
-          {
-            ...payload.data,
-            listener_id: payload.listener_id,
-            listener_name: payload.listener_name,
-            records: [{
-              id: payload.data.evaluation_id,
-              existence: 'Yes' as const,
-            }],
-          },
-        )
-      },
-    },
-  ),
+  // TODO Obviously
+  // SystemDiagnosisCreated: defineEvent(
+  //   z.object({
+  //     patient_id: z.string().uuid(),
+  //     patient_encounter_id: z.string().uuid(),
+  //     patient_age_determination: z.enum(['adult', 'older child', 'younger child']),
+  //     evaluation_id: z.string().uuid(),
+  //   }),
+  //   {
+  //     insertTasksIfNotAlreadyIdentified(trx, payload) {
+  //       return additional_tasks.insertTasksIfNotAlreadyIdentified(
+  //         trx,
+  //         {
+  //           ...payload.data,
+  //           // listener_id: payload.listener_id,
+  //           // listener_name: payload.listener_name,
+  //           records: [{
+  //             id: payload.data.evaluation_id,
+  //             existence: 'Yes' as const,
+  //           }],
+  //         },
+  //       )
+  //     },
+  //     insertSystemPriorityEvaluationsIfNotAlreadyIdentified(trx, payload) {
+  //       return system_priority_evaluations.insertSystemPriorityEvaluationsIfNotAlreadyIdentified(
+  //         trx,
+  //         {
+  //           ...payload.data,
+  //           listener_id: payload.listener_id,
+  //           listener_name: payload.listener_name,
+  //           records: [{
+  //             id: payload.data.evaluation_id,
+  //             existence: 'Yes' as const,
+  //           }],
+  //         },
+  //       )
+  //     },
+  //   },
+  // ),
   ProcedureCompleted: defineEvent(
     z.object({
       workflow: z.enum(WORKFLOWS),
