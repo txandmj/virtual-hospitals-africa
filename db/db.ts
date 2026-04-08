@@ -107,7 +107,10 @@ const db = (NO_EXTERNAL_CONNECT ? undefined : new Kysely<DB>({
       } else if (event.queryDurationMillis >= SLOW_QUERY_THRESHOLD_MS) {
         const slow_query = debugReplaceAll(event.query.sql, event.query.parameters)
         console.warn(`[SLOW QUERY] ${Math.round(event.queryDurationMillis)}ms\n${slow_query}`)
-        logToFileIfOnServer(slow_query, '/slow_queries', '.sql')
+        logToFileIfOnServer(slow_query, {
+          subdirectory: '/slow_queries', 
+          extension: '.sql',
+        })
       }
       return
     }
