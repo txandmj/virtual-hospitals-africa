@@ -82,7 +82,7 @@ describeParallel('triage/warning_signs', () => {
         }
 
         logToFileIfOnServer($.html(), {
-          filename: 'page.html'
+          filename: 'page.html',
         })
 
         assertEquals($('.priority-table').length, Object.keys(expected).length)
