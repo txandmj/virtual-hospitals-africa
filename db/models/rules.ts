@@ -10,9 +10,12 @@ import { base, identity } from './_base.ts'
 import { jsonArrayFrom } from '../helpers.ts'
 import { arrayIsEmpty } from '../../util/arraySize.ts'
 import { assert } from 'std/assert/assert.ts'
-import { getRuleByDescription } from '../../shared/rules.ts'
+
 import { activeConditionAsOr } from '../../shared/s_expression_active_condition_as_or.ts'
 import { inverseSExpression } from '../../shared/s_expression_inverse.ts'
+import { diagnosisToEvaluation } from '../../shared/diagnosis.ts'
+import { logToFileIfOnServer } from '../../util/logToFileIfOnServer.ts'
+import { getRuleByDescription } from '../../shared/rules.ts'
 
 export const rules = base({
   top_level_table: 'rules',
@@ -60,7 +63,7 @@ export const rules = base({
           eb.selectFrom('patient_record_satisfying_due_tos')
             .innerJoin('due_to', 'patient_record_satisfying_due_tos.due_to_id', 'due_to.id')
             .innerJoin('rule_due_to', 'rule_due_to.due_to_id', 'due_to.id')
-            .innerJoin('matching_rules', 'matching_rules.id', 'rule_due_to.rule_id')
+            .where('rule_due_to.rule_id', '=', eb.ref('rules.id'))
             .innerJoin('patient_records_aggregated', 'patient_record_satisfying_due_tos.patient_record_id', 'patient_records_aggregated.id')
             .where('patient_records_aggregated.patient_id', '=', patient_id)
             .where((eb2) =>
@@ -69,6 +72,7 @@ export const rules = base({
                 eb2('patient_records_aggregated.patient_encounter_id', '=', patient_encounter_id),
               ])
             )
+            .distinct()
             .select([
               'patient_record_id',
               's_expression',
@@ -133,6 +137,17 @@ export const rules = base({
       certainly_applies: rule.evidence.some((record) => record.always_applies_if_present),
     }))
 
+    logToFileIfOnServer({ parsed_rules })
+
+    logToFileIfOnServer(compactMap(parsed_rules, (rule) => {
+      // rule.certainly_applies
+      const result = evaluateEvidence(rule.due_to, rule.evidence)
+      return result.satisfies && {
+        ...rule,
+        matching_finding_ids: result.contributing_records,
+      }
+    }))
+
     // const [certain, uncertain] = partition(parsed, (t) => t.certainly_applies)
 
     // As it stands, history just means we don't consider patient_encounter_id
@@ -186,7 +201,8 @@ type Result =
   | { satisfies: true; contributing_records: string[] }
   | { satisfies: false }
 
-function evaluateEvidence(due_to: QueryableEvidenceNode, evidence: Evidence): Result {
+export function evaluateEvidence(due_to: QueryableEvidenceNode, evidence: Evidence): Result {
+  console.log({ due_to })
   switch (due_to.atom) {
     case 'or': {
       const contributing_records: string[] = []
@@ -228,8 +244,10 @@ function evaluateEvidence(due_to: QueryableEvidenceNode, evidence: Evidence): Re
 
     case 'finding':
     case 'evaluation':
-    case 'diagnosis':
       return evaluateSingle(due_to, evidence)
+
+    case 'diagnosis':
+      return evaluateSingle(diagnosisToEvaluation(due_to), evidence)
 
     case 'active_condition':
       return evaluateEvidence(activeConditionAsOr(due_to), evidence)
@@ -249,8 +267,9 @@ function evaluateEvidence(due_to: QueryableEvidenceNode, evidence: Evidence): Re
   }
 }
 
-function evaluateSingle(due_to: EvidenceNode, evidence: Evidence): Result {
+export function evaluateSingle(due_to: EvidenceNode, evidence: Evidence): Result {
   const due_to_s_expression = inverseSExpression(due_to)
+  console.log({ due_to_s_expression })
   const contributing_records = evidence
     .filter((record) => record.s_expression === due_to_s_expression)
     .map((record) => record.patient_record_id)

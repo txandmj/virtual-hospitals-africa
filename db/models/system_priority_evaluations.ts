@@ -1,7 +1,4 @@
 import { RuleRunnerInput, TrxOrDb } from '../../types.ts'
-import { parseWithSchema } from '../../shared/s_expression.ts'
-import { system_priority_evaluation } from '../../shared/s_expression_schemas.ts'
-import { SYSTEM_PRIORITY_EVALUATIONS_LISP } from '../../s_expression/system_priority_evaluations.ts'
 import { patient_triage } from './patient_triage.ts'
 import { ORDERED_PRIORITIES, Priority } from '../../shared/priorities.ts'
 import { pMap } from '../../util/inParallel.ts'
@@ -12,8 +9,6 @@ import { assert } from 'std/assert/assert.ts'
 import uniq from '../../util/uniq.ts'
 import { priorityQuery } from './patient_records.ts'
 import { humanReadableJson } from '../../util/humanReadableJson.ts'
-
-export const SYSTEM_PRIORITY_EVALUATIONS_PARSED = SYSTEM_PRIORITY_EVALUATIONS_LISP.map((d) => parseWithSchema(d, system_priority_evaluation))
 
 export const system_priority_evaluations = {
   async insertSystemPriorityEvaluationsIfNotAlreadyIdentified(

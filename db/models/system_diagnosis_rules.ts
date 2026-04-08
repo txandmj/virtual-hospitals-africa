@@ -4,9 +4,9 @@ import { buildExpression, EXPRESSION_BUILDERS } from './s_expression.ts'
 import { ApplicableRule, ApplicableRuleEffectSystemSystemDiagnosisRule, RecordValueTask, RuleRunnerInput, TrxOrDb } from '../../types.ts'
 import { blankSelection, success_true } from '../helpers.ts'
 import { DONE, EVIDENCE_OF_CONTEXTUAL_QUALIFIER, RELATIONSHIP, TO_BE_DONE } from '../../shared/snomed_concepts.ts'
-import { parseWithSchema } from '../../shared/s_expression.ts'
-import { Lang, system_diagnosis_rule } from '../../shared/s_expression_schemas.ts'
-import { SYSTEM_DIAGNOSIS_RULES_LISP } from '../../s_expression/system_diagnosis_rules.ts'
+
+import { Lang } from '../../shared/s_expression_schemas.ts'
+
 import generateUUID from '../../util/uuid.ts'
 import isObjectLike from '../../util/isObjectLike.ts'
 import isKeyOf from '../../util/isKeyOf.ts'
@@ -25,8 +25,6 @@ import { getTaskById } from '../../shared/tasks.ts'
 import { s_expression_evidence } from './s_expression_evidence.ts'
 
 import partition from '../../util/partition.ts'
-
-export const SYSTEM_DIAGNOSIS_RULES_PARSED = SYSTEM_DIAGNOSIS_RULES_LISP.map((d) => parseWithSchema(d, system_diagnosis_rule))
 
 const concept_to_certainty_qualifier_map = Object.fromEntries(
   Object.entries(CERTAINTY_QUALIFIER_TO_CONCEPT).map(([certainty, concept]) => [concept.name, certainty]),

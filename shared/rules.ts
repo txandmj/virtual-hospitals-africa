@@ -1,14 +1,15 @@
 import { assert } from 'std/assert/assert.ts'
 import { AgeDetermination, Comparator } from '../db.d.ts'
-import { SYSTEM_DIAGNOSIS_RULES_PARSED } from '../db/models/system_diagnosis_rules.ts'
-import { SYSTEM_PRIORITY_EVALUATIONS_PARSED } from '../db/models/system_priority_evaluations.ts'
+
 import { diagnosisToEvaluation } from './diagnosis.ts'
 import { activeConditionAsOr } from './s_expression_active_condition_as_or.ts'
 import { inverseSExpression } from './s_expression_inverse.ts'
 import { Lang, QueryableEvidenceNode } from './s_expression_schemas.ts'
-import { TASKS } from './tasks.ts'
-import memoize from '../util/memoize.ts'
 import findMatching from '../util/findMatching.ts'
+import memoize from '../util/memoize.ts'
+import { SYSTEM_PRIORITY_EVALUATIONS_PARSED } from './system_priority_evaluations.ts'
+import { TASKS } from './tasks.ts'
+import { SYSTEM_DIAGNOSIS_RULES_PARSED } from './system_diagnosis_rules.ts'
 
 export type DueToInsert =
   | ({
@@ -130,7 +131,6 @@ export function dueToInsert(due_to: QueryableEvidenceNode): DueToInsert[] {
       throw new Error(`Not supported ${due_to.atom}`)
   }
 }
-
 export type AnyRule = (
   | typeof TASKS
   | typeof SYSTEM_PRIORITY_EVALUATIONS_PARSED

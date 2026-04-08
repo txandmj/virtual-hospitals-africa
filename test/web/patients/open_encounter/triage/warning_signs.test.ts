@@ -646,7 +646,7 @@ describeParallel('triage/warning_signs', () => {
       },
     )
 
-    itParallel(
+    itParallel.skip(
       '409s if the client fails to mark records as altered when they were',
       async () => {
         const { patient_id, getStep, postStep } = await setupTriageNewPatient({

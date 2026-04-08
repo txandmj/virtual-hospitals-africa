@@ -145,7 +145,7 @@ export const EVENTS = {
     z.object({
       // workflow: z.enum(WORKFLOWS),
       // step: z.string(),
-      // procedure_id: z.string().uuid(),
+      procedure_id: z.string().uuid().optional(),
       patient_id: z.string().uuid(),
       patient_age_determination: z.enum(['adult', 'older child', 'younger child']),
       patient_encounter_id: z.string().uuid(),

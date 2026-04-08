@@ -55,6 +55,9 @@ jobs:
 
       - uses: ./.github/actions/write-test-env
 
+      - name: Init logs directory
+        run: mkdir -p logs/slow_queries
+
       - name: Build
         run: ${{ inputs.build }}
 

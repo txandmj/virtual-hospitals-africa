@@ -7,7 +7,7 @@ import type { DB } from '../db.d.ts'
 import { debugReplaceAll } from './helpers.ts'
 import { monkeyPatchConsole } from '../util/monkey-patch-console.ts'
 import { NO_EXTERNAL_CONNECT } from '../util/env.ts'
-import { logJSONToFileIfOnServer } from '../util/logJSONToFileIfOnServer.ts'
+import { logToFileIfOnServer } from '../util/logToFileIfOnServer.ts'
 
 monkeyPatchConsole()
 
@@ -107,7 +107,7 @@ const db = (NO_EXTERNAL_CONNECT ? undefined : new Kysely<DB>({
       } else if (event.queryDurationMillis >= SLOW_QUERY_THRESHOLD_MS) {
         const slow_query = debugReplaceAll(event.query.sql, event.query.parameters)
         console.warn(`[SLOW QUERY] ${Math.round(event.queryDurationMillis)}ms\n${slow_query}`)
-        logJSONToFileIfOnServer(slow_query, '/slow_queries')
+        logToFileIfOnServer(slow_query, '/slow_queries', '.sql')
       }
       return
     }

@@ -226,7 +226,25 @@ export const due_to = base({
   ): Promise<string> {
     const new_records_with_satisfying_due_to_ids = await due_to.determineFromNewRecords(trx, new_records)
 
-    if (isString(new_records_with_satisfying_due_to_ids)) return new_records_with_satisfying_due_to_ids
+    if (isString(new_records_with_satisfying_due_to_ids)) {
+      // Even when no positive findings matched due_tos, if we have a procedure_id we still
+      // need to emit RecordDueTosTagged so insertImprobableDiagnoses can run and downgrade
+      // any possible diagnoses whose check_for tasks are now all answered "No".
+      const { procedure_id, patient_id, patient_encounter_id, patient_age_determination, records } = new_records
+      if (procedure_id && patient_age_determination) {
+        await events.insert(trx, {
+          type: 'RecordDueTosTagged',
+          data: {
+            procedure_id,
+            patient_id,
+            patient_encounter_id,
+            patient_age_determination,
+            records: records.map((r) => ({ ...r, satisfying_due_to_ids: [] })),
+          },
+        })
+      }
+      return new_records_with_satisfying_due_to_ids
+    }
 
     await events.insert(trx, {
       type: 'RecordDueTosTagged',

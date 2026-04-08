@@ -5,10 +5,10 @@ import { sql } from 'kysely'
 import { snomedConceptId } from '../../models/s_expression_snomed_concepts.ts'
 import { inverseSExpression } from '../../../shared/s_expression_inverse.ts'
 import { TrxOrDb } from '../../../types.ts'
-import { SYSTEM_DIAGNOSIS_RULES_PARSED } from '../../models/system_diagnosis_rules.ts'
-import { SYSTEM_PRIORITY_EVALUATIONS_PARSED } from '../../models/system_priority_evaluations.ts'
 import { assertEquals } from 'std/assert/assert_equals.ts'
 import { ALL_RULES, DueToEntry, DueToInsert, dueToInsert } from '../../../shared/rules.ts'
+import { SYSTEM_DIAGNOSIS_RULES_PARSED } from '../../../shared/system_diagnosis_rules.ts'
+import { SYSTEM_PRIORITY_EVALUATIONS_PARSED } from '../../../shared/system_priority_evaluations.ts'
 
 export default define([
   'rules',

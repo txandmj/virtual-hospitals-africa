@@ -3021,7 +3021,7 @@ export type SidebarProps = {
 export type NewRecordsToConsider = {
   // workflow: Workflow
   // step: string
-  // procedure_id: string
+  procedure_id?: string
   patient_id: string
   patient_encounter_id: string
   patient_age_determination: AgeDetermination | null

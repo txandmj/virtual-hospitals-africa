@@ -9,7 +9,7 @@ import { insertPatientSeekingTreatmentWithEmployeeAndCompleteRegistrationForTest
 import { parseWithSchema } from '../../shared/s_expression.ts'
 import { measurement_comparator } from '../../shared/s_expression_schemas.ts'
 import { assertEquals } from 'std/assert/assert_equals.ts'
-import { SYSTEM_DIAGNOSIS_RULES_PARSED } from '../../db/models/system_diagnosis_rules.ts'
+import { SYSTEM_DIAGNOSIS_RULES_PARSED } from '../../shared/system_diagnosis_rules.ts'
 import findMatching from '../../util/findMatching.ts'
 
 describeParallel('db/models/s_expression_evidence.ts', () => {
