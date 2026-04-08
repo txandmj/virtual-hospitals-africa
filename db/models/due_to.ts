@@ -1,5 +1,5 @@
 import { sql } from 'kysely'
-import { AgeDetermination, NewRecordsToConsider, TrxOrDbOrQueryCreator } from '../../types.ts'
+import { AgeDetermination, NewRecordsToConsider, NewRecordsToConsiderWithSatisfyingDueToIds, TrxOrDbOrQueryCreator } from '../../types.ts'
 import { literalBoolean, literalString } from '../helpers.ts'
 import { FINDING_SITE } from '../../shared/snomed_concepts.ts'
 import { parseWithSchema } from '../../shared/s_expression.ts'
@@ -13,6 +13,7 @@ import { pMap } from '../../util/inParallel.ts'
 import { buildExpression } from './s_expression.ts'
 import compact from '../../util/compact.ts'
 import { events } from './events.ts'
+import isString from '../../util/isString.ts'
 
 export const due_to = base({
   top_level_table: 'due_to',
@@ -153,10 +154,10 @@ export const due_to = base({
 
   formatResult: identity,
 
-  async addFromNewRecords(
+  async determineFromNewRecords(
     trx: TrxOrDbOrQueryCreator,
     new_records: NewRecordsToConsider,
-  ): Promise<string> {
+  ): Promise<string | NewRecordsToConsiderWithSatisfyingDueToIds> {
     const { patient_id, patient_encounter_id, patient_age_determination, records } = new_records
     if (!patient_age_determination) return 'Skipped: patient age determination is unknown'
 
@@ -216,11 +217,22 @@ export const due_to = base({
       return { ...record, satisfying_due_to_ids }
     })
 
+    return { ...new_records, patient_age_determination, records: records_with_satisfying_due_to_ids }
+  },
+
+  async addFromNewRecords(
+    trx: TrxOrDbOrQueryCreator,
+    new_records: NewRecordsToConsider,
+  ): Promise<string> {
+    const new_records_with_satisfying_due_to_ids = await due_to.determineFromNewRecords(trx, new_records)
+
+    if (isString(new_records_with_satisfying_due_to_ids)) return new_records_with_satisfying_due_to_ids
+
     await events.insert(trx, {
       type: 'RecordDueTosTagged',
-      data: { ...new_records, patient_age_determination, records: records_with_satisfying_due_to_ids },
+      data: new_records_with_satisfying_due_to_ids,
     })
 
-    return `Inserted ${inserted.map((item) => item.patient_record_satisfying_due_to_id)}`
+    return `Inserted ${new_records_with_satisfying_due_to_ids.records.flatMap((item) => item.satisfying_due_to_ids)}`
   },
 })
