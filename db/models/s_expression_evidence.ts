@@ -5,9 +5,9 @@ import { literalString } from '../helpers.ts'
 import { inverseSExpression } from '../../shared/s_expression_inverse.ts'
 import { Lang, MeasurementComparison, QueryableEvidenceNode } from '../../shared/s_expression_schemas.ts'
 
-export type Evidence = Lang['finding' | 'evaluation' | 'diagnosis' | 'active_condition'] | MeasurementComparison
+export type EvidenceNode = Lang['finding' | 'evaluation' | 'diagnosis' | 'active_condition'] | MeasurementComparison
 
-export function* allEvidenceToLookFor(node: QueryableEvidenceNode): Generator<Evidence> {
+export function* allEvidenceToLookFor(node: QueryableEvidenceNode): Generator<EvidenceNode> {
   switch (node.atom) {
     case 'finding':
     case 'evaluation':
@@ -47,7 +47,7 @@ export const s_expression_evidence = {
     nodes: QueryableEvidenceNode[],
   ): Promise<Map<QueryableEvidenceNode, Result>> {
     // Collect all leaf evidence nodes across every node, keyed by object identity
-    const evidence_to_s_expr = new Map<Evidence, string>()
+    const evidence_to_s_expr = new Map<EvidenceNode, string>()
     for (const node of nodes) {
       for (const evidence of allEvidenceToLookFor(node)) {
         evidence_to_s_expr.set(evidence, inverseSExpression(evidence))
@@ -55,7 +55,7 @@ export const s_expression_evidence = {
     }
 
     // Deduplicate by s-expression string
-    const unique_evidence = new Map<string, Evidence>()
+    const unique_evidence = new Map<string, EvidenceNode>()
     for (const [evidence, s_expr] of evidence_to_s_expr) {
       if (!unique_evidence.has(s_expr)) unique_evidence.set(s_expr, evidence)
     }
@@ -146,7 +146,7 @@ export const s_expression_evidence = {
       }
     }
 
-    function evaluateSingle(evidence: Evidence): Result {
+    function evaluateSingle(evidence: EvidenceNode): Result {
       const s_expr = evidence_to_s_expr.get(evidence)
       assert(s_expr != null)
       const record_ids = findings_map.get(s_expr) ?? []
@@ -164,13 +164,13 @@ export const s_expression_evidence = {
     // Collect all leaf evidence nodes, mapping each to its canonical s-expression string.
     // We key by object identity so that evaluateSingle can look up the right s_expr
     // when it recurses back through the same tree nodes.
-    const evidence_to_s_expr = new Map<Evidence, string>()
+    const evidence_to_s_expr = new Map<EvidenceNode, string>()
     for (const evidence of allEvidenceToLookFor(node)) {
       evidence_to_s_expr.set(evidence, inverseSExpression(evidence))
     }
 
     // Deduplicate by s-expression string, keeping one Evidence per unique s_expr
-    const unique_evidence = new Map<string, Evidence>()
+    const unique_evidence = new Map<string, EvidenceNode>()
     for (const [evidence, s_expr] of evidence_to_s_expr) {
       if (!unique_evidence.has(s_expr)) unique_evidence.set(s_expr, evidence)
     }
@@ -258,7 +258,7 @@ export const s_expression_evidence = {
       }
     }
 
-    function evaluateSingle(evidence: Evidence): Result {
+    function evaluateSingle(evidence: EvidenceNode): Result {
       const s_expr = evidence_to_s_expr.get(evidence)
       assert(s_expr != null)
       const record_ids = findings_map.get(s_expr) ?? []

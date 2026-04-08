@@ -63,6 +63,7 @@ function baseQuery(
     qualifiers = [],
     attributes = [],
     excluding = [],
+    history,
     exact = false,
   }: PatientIdentifiers & {
     root_snomed_concept?: Maybe<Lang['snomed_concept']>
@@ -79,6 +80,7 @@ function baseQuery(
     >
     existence?: Existence | 'Any'
     exact?: boolean
+    history: boolean
     include_negative?: boolean
   },
 ) {
@@ -90,7 +92,7 @@ function baseQuery(
     .innerJoin('patient_records_still_valid', 'patient_records_aggregated.id', 'patient_records_still_valid.id')
     .where('patient_records_aggregated.patient_id', '=', patient_id)
     .$if(
-      !!patient_encounter_id,
+      !!patient_encounter_id && !history,
       (qb) => qb.where('patient_records_aggregated.patient_encounter_id', '=', patient_encounter_id!),
     )
     .$if(
@@ -271,7 +273,7 @@ export const satisfyingSExpression = deduplicate(
 function measurement(
   trx: TrxOrDbOrQueryCreator,
   patient: PatientIdentifiers,
-  { snomed_concept, units }: Lang['measurement'],
+  { snomed_concept, units, history }: Lang['measurement'],
 ) {
   return baseQuery(trx, {
     ...patient,
@@ -280,6 +282,7 @@ function measurement(
       name: MEASUREMENT_FINDING.name,
       category: MEASUREMENT_FINDING.category,
     },
+    history,
   })
     .innerJoin(
       'patient_findings',
@@ -309,6 +312,7 @@ function evaluation(
     evaluates,
     qualifiers,
     /* attributes */
+    history,
   }: Lang['evaluation'],
 ) {
   return baseQuery(trx, {
@@ -318,6 +322,7 @@ function evaluation(
     specific_snomed_concept,
     value_snomed_concept,
     qualifiers,
+    history,
   })
     .innerJoin(
       'patient_evaluations',
@@ -390,7 +395,8 @@ export const EXPRESSION_BUILDERS = {
       exact,
       existence,
       // For historical findings, look for findings at any point in the patient's history
-      patient_encounter_id: history ? null : patient_encounter_id,
+      patient_encounter_id,
+      history,
     })
       .innerJoin(
         'patient_findings',
@@ -410,6 +416,7 @@ export const EXPRESSION_BUILDERS = {
       specific_snomed_concept,
       // value_snomed_concept,
       qualifiers, /* attributes */
+      history,
       value,
     },
   ) {
@@ -419,6 +426,7 @@ export const EXPRESSION_BUILDERS = {
       // root_snomed_concept,
       specific_snomed_concept,
       qualifiers,
+      history,
     })
       .innerJoin(
         'patient_procedures',
@@ -468,6 +476,9 @@ export const EXPRESSION_BUILDERS = {
       },
       specific_snomed_concept,
       qualifiers,
+      // TODO revisit this, but I think in practice since these are qualifying an existing record
+      // We don't want to exclude historical qualifiers for new records ()
+      history: true,
     })
       .innerJoin(
         'patient_record_qualifiers',
@@ -486,6 +497,9 @@ export const EXPRESSION_BUILDERS = {
       root_snomed_concept,
       specific_snomed_concept,
       value_snomed_concept: value.atom === 'event' ? undefined : value,
+      // TODO revisit this, but I think in practice since these are qualifying an existing record
+      // We don't want to exclude historical qualifiers for new records ()
+      history: true,
     })
       .innerJoin(
         'patient_record_qualifiers',
@@ -520,7 +534,9 @@ export const EXPRESSION_BUILDERS = {
   //   )
   // },
   or(trx, { patient_id, patient_encounter_id }, { expressions }) {
-    return baseQuery(trx, { patient_id, patient_encounter_id })
+    // TODO, the history marker is just to not restrict at this stage
+    // These queries feature some clearly redundant components that we might be able to clean up
+    return baseQuery(trx, { patient_id, patient_encounter_id, history: true })
       .where(
         (eb) =>
           eb.or(expressions.map((expression) => (
@@ -538,7 +554,9 @@ export const EXPRESSION_BUILDERS = {
       )
   },
   and(trx, { patient_id, patient_encounter_id }, { expressions }) {
-    return baseQuery(trx, { patient_id, patient_encounter_id })
+    // TODO, the history marker is just to not restrict at this stage
+    // These queries feature some clearly redundant components that we might be able to clean up
+    return baseQuery(trx, { patient_id, patient_encounter_id, history: true })
       .where(
         (eb) =>
           eb.and(expressions.map((expression) => (
@@ -560,9 +578,9 @@ export const EXPRESSION_BUILDERS = {
   },
   measurement,
   // TODO: this is not quite right as this would pull historical findings
-  active_condition(trx, { patient_id }, node) {
+  active_condition(trx, { patient_id, patient_encounter_id }, node) {
     const active_condition_as_or = activeConditionAsOr(node)
-    return baseQuery(trx, { patient_id })
+    return baseQuery(trx, { patient_id, patient_encounter_id, history: true })
       .where(
         (eb) =>
           eb.or(active_condition_as_or.expressions.map((expression) => (
@@ -572,7 +590,7 @@ export const EXPRESSION_BUILDERS = {
                 'in',
                 buildExpression(
                   trx,
-                  { patient_id },
+                  { patient_id, patient_encounter_id },
                   expression,
                 ),
               )

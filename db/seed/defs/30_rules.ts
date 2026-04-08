@@ -1,151 +1,14 @@
 import { define } from '../define.ts'
 import { TASKS } from '../../../shared/tasks.ts'
-
-import type { Lang, QueryableEvidenceNode } from '../../../shared/s_expression_schemas.ts'
 import { assert } from 'std/assert/assert.ts'
 import { sql } from 'kysely'
-import { Comparator } from '../../../db.d.ts'
-import { activeConditionAsOr } from '../../../shared/s_expression_active_condition_as_or.ts'
-import { diagnosisToEvaluation } from '../../../shared/diagnosis.ts'
 import { snomedConceptId } from '../../models/s_expression_snomed_concepts.ts'
 import { inverseSExpression } from '../../../shared/s_expression_inverse.ts'
 import { TrxOrDb } from '../../../types.ts'
 import { SYSTEM_DIAGNOSIS_RULES_PARSED } from '../../models/system_diagnosis_rules.ts'
 import { SYSTEM_PRIORITY_EVALUATIONS_PARSED } from '../../models/system_priority_evaluations.ts'
-import { AgeDetermination } from '../../../types.ts'
-
-type DueToInsert =
-  | ({
-    type: 'finding'
-    s_expression: string
-    root_snomed_concept: null | Lang['snomed_concept']
-    specific_snomed_concept: Lang['snomed_concept']
-    value_snomed_concept: null | Lang['snomed_concept']
-    is_somehow_qualified: boolean
-    always_applies_if_present: boolean
-    history: boolean
-  } & Lang['finding' | 'evaluation'])
-  | {
-    type: 'finding_site'
-    s_expression: string
-    value_snomed_concept: Lang['snomed_concept']
-    is_somehow_qualified?: never
-    always_applies_if_present: boolean
-    history: boolean
-  }
-  | {
-    type: 'measurement'
-    s_expression: string
-    specific_snomed_concept: Lang['snomed_concept']
-    is_somehow_qualified?: never
-    always_applies_if_present: boolean
-    value: string
-    comparator: Comparator
-    history: false
-  }
-
-function dueToInsert(due_to: QueryableEvidenceNode): DueToInsert[] {
-  switch (due_to.atom) {
-    case 'finding': {
-      assert(!due_to.exact, 'exact not supported')
-      if (!due_to.specific_snomed_concept) {
-        assert(due_to.root_snomed_concept?.name === 'Clinical finding')
-        assert(!due_to.qualifiers.length)
-        assert(due_to.attributes.length === 1)
-        assert(due_to.attributes[0].specific_snomed_concept.name === 'Finding site')
-        assert(due_to.attributes[0].value.atom === 'snomed_concept')
-        return [{
-          type: 'finding_site',
-          s_expression: inverseSExpression(due_to),
-          value_snomed_concept: due_to.attributes[0].value,
-          always_applies_if_present: true,
-          history: due_to.history,
-        }]
-      }
-      assert(due_to.specific_snomed_concept, `Must have a specific_snomed_concept\n${inverseSExpression(due_to)}`)
-      const is_somehow_qualified = !!(due_to.attributes.length || due_to.qualifiers.length || due_to.excluding.length)
-      return [{
-        ...due_to,
-        type: 'finding',
-        s_expression: inverseSExpression(due_to),
-        root_snomed_concept: due_to.root_snomed_concept,
-        specific_snomed_concept: due_to.specific_snomed_concept,
-        value_snomed_concept: due_to.value_snomed_concept,
-        is_somehow_qualified,
-        always_applies_if_present: !is_somehow_qualified,
-        history: due_to.history,
-      }]
-    }
-    case 'active_condition': {
-      return dueToInsert(activeConditionAsOr(due_to))
-    }
-    case 'evaluation': {
-      assert(due_to.specific_snomed_concept, `Must have a specific_snomed_concept\n${inverseSExpression(due_to)}`)
-      const is_somehow_qualified = !!due_to.evaluates || !!due_to.attributes.length || !!due_to.qualifiers.length
-      return [{
-        ...due_to,
-        type: 'finding',
-        s_expression: inverseSExpression(due_to),
-        root_snomed_concept: due_to.root_snomed_concept,
-        specific_snomed_concept: due_to.specific_snomed_concept,
-        value_snomed_concept: due_to.value_snomed_concept,
-        is_somehow_qualified,
-        always_applies_if_present: !is_somehow_qualified,
-        history: false,
-      }]
-    }
-    case 'diagnosis': {
-      return dueToInsert(diagnosisToEvaluation(due_to))
-    }
-    case '<':
-    case '<=':
-    case '=':
-    case '>':
-    case '>=': {
-      assert(due_to.type === 'measurement', 'Only measurement comparators supported in due_to')
-      return [{
-        type: 'measurement',
-        s_expression: inverseSExpression(due_to),
-        specific_snomed_concept: due_to.measurement.snomed_concept,
-        comparator: due_to.atom,
-        value: due_to.value.toString(),
-        always_applies_if_present: true,
-        history: false,
-      }]
-    }
-    case 'or': {
-      const all_to_insert = due_to.expressions.flatMap(dueToInsert)
-      const all_always_apply = all_to_insert.every((to_insert) => to_insert.always_applies_if_present)
-      if (all_always_apply) return all_to_insert
-      return all_to_insert.map((to_insert) => ({
-        ...to_insert,
-        always_applies_if_present: false,
-      }))
-    }
-    case 'and':
-    case 'any2':
-      return due_to.expressions.flatMap(dueToInsert).map((to_insert) => ({
-        ...to_insert,
-        always_applies_if_present: false,
-      }))
-    case 'not':
-      return []
-    default:
-      throw new Error(`Not supported ${due_to.atom}`)
-  }
-}
-
-type AnyRule = (
-  | typeof TASKS
-  | typeof SYSTEM_PRIORITY_EVALUATIONS_PARSED
-  | typeof SYSTEM_DIAGNOSIS_RULES_PARSED
-)[number]
-
-type DueToEntry = {
-  s_expression: string
-  age_determinations: AgeDetermination[]
-  insert: DueToInsert
-}
+import { assertEquals } from 'std/assert/assert_equals.ts'
+import { ALL_RULES, DueToEntry, DueToInsert, dueToInsert } from '../../../shared/rules.ts'
 
 export default define([
   'rules',
@@ -158,16 +21,10 @@ export default define([
   'system_diagnosis_rules',
   'system_priority_evaluations',
 ], async (trx: TrxOrDb) => {
-  const all_rules: AnyRule[] = [
-    ...TASKS,
-    ...SYSTEM_PRIORITY_EVALUATIONS_PARSED,
-    ...SYSTEM_DIAGNOSIS_RULES_PARSED,
-  ]
-
   // Step 1: Collect all due_to inserts keyed by s_expression, merging age_determinations
   const due_to_map = new Map<string, DueToEntry>()
 
-  for (const rule of all_rules) {
+  for (const rule of ALL_RULES) {
     const inserts = dueToInsert(rule.due_to)
     assert(inserts.length, `Rule "${rule.description}" produced no due_to inserts`)
     for (const insert of inserts) {
@@ -190,8 +47,12 @@ export default define([
 
   const due_to_entries = [...due_to_map.values()]
   const due_to_findings = due_to_entries.filter((e): e is DueToEntry & { insert: Extract<DueToInsert, { type: 'finding' }> } => e.insert.type === 'finding')
-  const due_to_finding_sites = due_to_entries.filter((e): e is DueToEntry & { insert: Extract<DueToInsert, { type: 'finding_site' }> } => e.insert.type === 'finding_site')
-  const due_to_measurements = due_to_entries.filter((e): e is DueToEntry & { insert: Extract<DueToInsert, { type: 'measurement' }> } => e.insert.type === 'measurement')
+  const due_to_finding_sites = due_to_entries.filter((e): e is DueToEntry & { insert: Extract<DueToInsert, { type: 'finding_site' }> } =>
+    e.insert.type === 'finding_site'
+  )
+  const due_to_measurements = due_to_entries.filter((e): e is DueToEntry & { insert: Extract<DueToInsert, { type: 'measurement' }> } =>
+    e.insert.type === 'measurement'
+  )
 
   // Step 2: Upsert all due_to rows, letting the DB generate/return ids
   const inserted_due_tos = await trx.insertInto('due_to')
@@ -398,22 +259,23 @@ export default define([
     }
   }
 
-  // Deduplicate rule_due_to rows — same (rule_id, due_to_id) can appear multiple times
-  // when dueToInsert expands an expression into items that share an s_expression.
-  // false wins over true (more conservative: if any branch requires it, it's not guaranteed).
-  const rule_due_to_deduped_map = new Map<string, typeof rule_due_to_rows[number]>()
+  // Insert all rule_due_to rows (deduplicate by rule_id + due_to_id)
+  const rule_due_to_rows_by_key = new Map<string, typeof rule_due_to_rows[number]>()
   for (const row of rule_due_to_rows) {
-    const key = `${row.rule_id}::${row.due_to_id}`
-    const existing = rule_due_to_deduped_map.get(key)
-    if (!existing || (existing.always_applies_if_present && !row.always_applies_if_present)) {
-      rule_due_to_deduped_map.set(key, row)
+    const key = `${row.rule_id}:${row.due_to_id}`
+    const existing = rule_due_to_rows_by_key.get(key)
+    if (!existing) {
+      rule_due_to_rows_by_key.set(key, row)
+      continue
     }
+    assertEquals(
+      existing.always_applies_if_present,
+      row.always_applies_if_present,
+      `Conflicting always_applies_if_present for rule_id=${row.rule_id} due_to_id=${row.due_to_id}`,
+    )
   }
-  const deduped_rule_due_to_rows = [...rule_due_to_deduped_map.values()]
-
-  // Insert all rule_due_to rows
   const inserted_rule_due_to = await trx.insertInto('rule_due_to')
-    .values(deduped_rule_due_to_rows)
+    .values([...rule_due_to_rows_by_key.values()])
     .onConflict((oc) =>
       oc.columns(['rule_id', 'due_to_id']).doUpdateSet({
         always_applies_if_present: (eb) => eb.ref('excluded.always_applies_if_present'),

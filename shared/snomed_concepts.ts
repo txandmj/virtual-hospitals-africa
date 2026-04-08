@@ -669,3 +669,8 @@ export const KNOWN_ABSENT = asConcept({
   name: 'Known absent',
   category: 'qualifier value' as const,
 })
+export const PATIENT_CONDITION_RESOLVED = asConcept({
+  id: '370996005',
+  name: 'Patient condition resolved',
+  category: 'finding' as const,
+})

@@ -70,45 +70,27 @@ export const EVENTS = {
     }),
     {},
   ),
-  // TODO Obviously
-  // SystemDiagnosisCreated: defineEvent(
-  //   z.object({
-  //     patient_id: z.string().uuid(),
-  //     patient_encounter_id: z.string().uuid(),
-  //     patient_age_determination: z.enum(['adult', 'older child', 'younger child']),
-  //     evaluation_id: z.string().uuid(),
-  //   }),
-  //   {
-  //     insertTasksIfNotAlreadyIdentified(trx, payload) {
-  //       return additional_tasks.insertTasksIfNotAlreadyIdentified(
-  //         trx,
-  //         {
-  //           ...payload.data,
-  //           // listener_id: payload.listener_id,
-  //           // listener_name: payload.listener_name,
-  //           records: [{
-  //             id: payload.data.evaluation_id,
-  //             existence: 'Yes' as const,
-  //           }],
-  //         },
-  //       )
-  //     },
-  //     insertSystemPriorityEvaluationsIfNotAlreadyIdentified(trx, payload) {
-  //       return system_priority_evaluations.insertSystemPriorityEvaluationsIfNotAlreadyIdentified(
-  //         trx,
-  //         {
-  //           ...payload.data,
-  //           listener_id: payload.listener_id,
-  //           listener_name: payload.listener_name,
-  //           records: [{
-  //             id: payload.data.evaluation_id,
-  //             existence: 'Yes' as const,
-  //           }],
-  //         },
-  //       )
-  //     },
-  //   },
-  // ),
+  SystemDiagnosisCreated: defineEvent(
+    z.object({
+      patient_id: z.string().uuid(),
+      patient_encounter_id: z.string().uuid(),
+      patient_age_determination: z.enum(['adult', 'older child', 'younger child']),
+      evaluation_id: z.string().uuid(),
+    }),
+    {
+      tagRecordsWithDueTos(trx, payload) {
+        return due_to.addFromNewRecords(trx, {
+          ...payload.data,
+          // listener_id: payload.listener_id,
+          // listener_name: payload.listener_name,
+          records: [{
+            id: payload.data.evaluation_id,
+            existence: 'Yes' as const,
+          }],
+        })
+      },
+    },
+  ),
   ProcedureCompleted: defineEvent(
     z.object({
       workflow: z.enum(WORKFLOWS),
@@ -163,7 +145,7 @@ export const EVENTS = {
     z.object({
       // workflow: z.enum(WORKFLOWS),
       // step: z.string(),
-      procedure_id: z.string().uuid(),
+      // procedure_id: z.string().uuid(),
       patient_id: z.string().uuid(),
       patient_age_determination: z.enum(['adult', 'older child', 'younger child']),
       patient_encounter_id: z.string().uuid(),

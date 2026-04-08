@@ -155,10 +155,10 @@ export const due_to = base({
 
   async addFromNewRecords(
     trx: TrxOrDbOrQueryCreator,
-    new_records: NewRecordsToConsider & { procedure_id: string },
+    new_records: NewRecordsToConsider,
   ): Promise<string> {
-    if (!new_records.patient_age_determination)return 'Skipped: patient age determination is unknown'
     const { patient_id, patient_encounter_id, patient_age_determination, records } = new_records
+    if (!patient_age_determination) return 'Skipped: patient age determination is unknown'
 
     const positive_record_ids = records
       .filter((r) => r.existence === 'Yes')
@@ -218,7 +218,7 @@ export const due_to = base({
 
     await events.insert(trx, {
       type: 'RecordDueTosTagged',
-      data: { ...new_records, records: records_with_satisfying_due_to_ids },
+      data: { ...new_records, patient_age_determination, records: records_with_satisfying_due_to_ids },
     })
 
     return `Inserted ${inserted.map((item) => item.patient_record_satisfying_due_to_id)}`

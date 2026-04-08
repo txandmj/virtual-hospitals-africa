@@ -18,6 +18,7 @@ const referral_complete_task_base = {
   attributes: [],
   displays: { finding: referral_complete_description, value: null, full: referral_complete_description },
   s_expression: '',
+  history: false,
   existing_record: null,
 }
 

@@ -1,18 +1,18 @@
 import { sql } from 'kysely'
 import { AgeDetermination, ApplicableRule, NewRecordsToConsiderWithSatisfyingDueToIds, RecordsSatisfyingDueToIds, TrxOrDbOrQueryCreator } from '../../types.ts'
 import { asText, jsonBuildObject, literalString } from '../helpers.ts'
-import { groupBy } from '../../util/groupBy.ts'
-import { parseWithSchema } from '../../shared/s_expression.ts'
-import { any_query_evidence } from '../../shared/s_expression_schemas.ts'
+
+import { QueryableEvidenceNode } from '../../shared/s_expression_schemas.ts'
 import uniq from '../../util/uniq.ts'
-import partition from '../../util/partition.ts'
-import { s_expression_evidence } from './s_expression_evidence.ts'
-import { exists } from '../../util/exists.ts'
+import { EvidenceNode } from './s_expression_evidence.ts'
 import compactMap from '../../util/compactMap.ts'
 import { base, identity } from './_base.ts'
 import { jsonArrayFrom } from '../helpers.ts'
 import { arrayIsEmpty } from '../../util/arraySize.ts'
 import { assert } from 'std/assert/assert.ts'
+import { getRuleByDescription } from '../../shared/rules.ts'
+import { activeConditionAsOr } from '../../shared/s_expression_active_condition_as_or.ts'
+import { inverseSExpression } from '../../shared/s_expression_inverse.ts'
 
 export const rules = base({
   top_level_table: 'rules',
@@ -63,18 +63,20 @@ export const rules = base({
             .innerJoin('matching_rules', 'matching_rules.id', 'rule_due_to.rule_id')
             .innerJoin('patient_records_aggregated', 'patient_record_satisfying_due_tos.patient_record_id', 'patient_records_aggregated.id')
             .where('patient_records_aggregated.patient_id', '=', patient_id)
-            .where(eb2 => eb2.or([
-              eb2('history', '=', true),
-              eb2('patient_records_aggregated.patient_encounter_id', '=', patient_encounter_id)
-            ]))
+            .where((eb2) =>
+              eb2.or([
+                eb2('history', '=', true),
+                eb2('patient_records_aggregated.patient_encounter_id', '=', patient_encounter_id),
+              ])
+            )
             .select([
               'patient_record_id',
               's_expression',
               'always_applies_if_present',
               'history',
-            ])
+            ]),
         )
-        .as('evidence'),
+          .as('evidence'),
         eb.case()
           .when('tasks.id', 'is not', null)
           .then(jsonBuildObject({
@@ -104,16 +106,11 @@ export const rules = base({
 
   formatResult: identity,
 
-  async foo() {
-
-  },
-
   async getApplicableBasedOnNewRecords(
     trx: TrxOrDbOrQueryCreator,
     { patient_id, patient_encounter_id, patient_age_determination, /*procedure_id, */ records }: NewRecordsToConsiderWithSatisfyingDueToIds,
     type?: 'task' | 'system_priority_evaluation' | 'system_diagnosis_rule',
   ): Promise<string | ApplicableRule[]> {
-
     const positive_records_satisfying_some_due_to = records
       .filter((r) => r.existence === 'Yes')
       .filter((r) => !!r.satisfying_due_to_ids.length)
@@ -128,18 +125,18 @@ export const rules = base({
       type,
     })
 
-    const parsed = rules_matching_some_finding.map((rule) => ({
+    const parsed_rules = rules_matching_some_finding.map((rule) => ({
       ...rule,
+      ...getRuleByDescription(rule.description),
       // TODO The uniq could be removed probably if upstream we enforce uniqueness
       matching_finding_ids: uniq(rule.evidence.map((record) => record.patient_record_id)),
       certainly_applies: rule.evidence.some((record) => record.always_applies_if_present),
-      due_to: parseWithSchema(rule.due_to_s_expression, any_query_evidence),
     }))
 
-    const [certain, uncertain] = partition(parsed, (t) => t.certainly_applies)
+    // const [certain, uncertain] = partition(parsed, (t) => t.certainly_applies)
 
     // As it stands, history just means we don't consider patient_encounter_id
-    // TODO support invalidation 
+    // TODO support invalidation
 
     // const certain_results = certain.map(({ findings, matching_finding_ids, due_to }) => ({
     //   id: findings[0].rule_id,
@@ -149,20 +146,117 @@ export const rules = base({
     //   due_to,
     // }))
 
-    // const due_to_nodes = uncertain.map((t) => t.due_to)
-    const evidence_results = await s_expression_evidence.evaluateMultiple(trx, { patient_id }, due_to_nodes)
+    // for (const rule of uncertain) {
+    //   evaluateEvidence(rule.due_to, rule.evidence)
+    // }
 
-    const uncertain_results = compactMap(uncertain, ({ findings, due_to }) => {
-      const result = exists(evidence_results.get(due_to))
+    // // const due_to_nodes = uncertain.map((t) => t.due_to)
+    // const evidence_results = await s_expression_evidence.evaluateMultiple(trx, { patient_id }, due_to_nodes)
+
+    // const uncertain_results = compactMap(uncertain, ({ findings, due_to }) => {
+    //   const result = exists(evidence_results.get(due_to))
+    //   return result.satisfies && {
+    //     id: findings[0].rule_id,
+    //     description: findings[0].rule_id,
+    //     rule_effect: findings[0].rule_effect,
+    //     matching_finding_ids: result.contributing_records,
+    //     due_to,
+    //   }
+    // })
+
+    return compactMap(parsed_rules, (rule) => {
+      // rule.certainly_applies
+      const result = evaluateEvidence(rule.due_to, rule.evidence)
       return result.satisfies && {
-        id: findings[0].rule_id,
-        description: findings[0].rule_id,
-        rule_effect: findings[0].rule_effect,
+        ...rule,
         matching_finding_ids: result.contributing_records,
-        due_to,
       }
     })
-
-    return [...certain, ...uncertain]
   },
 })
+
+type Evidence = {
+  patient_record_id: string
+  always_applies_if_present: boolean
+  history: boolean
+  s_expression: string
+}[]
+
+type Result =
+  | { satisfies: true; contributing_records: string[] }
+  | { satisfies: false }
+
+function evaluateEvidence(due_to: QueryableEvidenceNode, evidence: Evidence): Result {
+  switch (due_to.atom) {
+    case 'or': {
+      const contributing_records: string[] = []
+      let any_true = false
+      for (const expr of due_to.expressions) {
+        const result = evaluateEvidence(expr, evidence)
+        if (result.satisfies) {
+          any_true = true
+          contributing_records.push(...result.contributing_records)
+        }
+      }
+      if (any_true) return { satisfies: true, contributing_records }
+      return { satisfies: false }
+    }
+
+    case 'and': {
+      const contributing_records: string[] = []
+      for (const expr of due_to.expressions) {
+        const result = evaluateEvidence(expr, evidence)
+        if (!result.satisfies) return { satisfies: false }
+        contributing_records.push(...result.contributing_records)
+      }
+      return { satisfies: true, contributing_records }
+    }
+
+    case 'any2': {
+      const contributing_records: string[] = []
+      let true_count = 0
+      for (const expr of due_to.expressions) {
+        const result = evaluateEvidence(expr, evidence)
+        if (result.satisfies) {
+          true_count++
+          contributing_records.push(...result.contributing_records)
+        }
+      }
+      if (true_count >= 2) return { satisfies: true, contributing_records }
+      return { satisfies: false }
+    }
+
+    case 'finding':
+    case 'evaluation':
+    case 'diagnosis':
+      return evaluateSingle(due_to, evidence)
+
+    case 'active_condition':
+      return evaluateEvidence(activeConditionAsOr(due_to), evidence)
+
+    case '<':
+    case '<=':
+    case '=':
+    case '>':
+    case '>=': {
+      if (due_to.type === 'measurement') return evaluateSingle(due_to, evidence)
+      // TODO timestamp time_ago
+      return { satisfies: false }
+    }
+
+    default:
+      throw new Error(`Not supported ${(due_to as QueryableEvidenceNode).atom}`)
+  }
+}
+
+function evaluateSingle(due_to: EvidenceNode, evidence: Evidence): Result {
+  const due_to_s_expression = inverseSExpression(due_to)
+  const contributing_records = evidence
+    .filter((record) => record.s_expression === due_to_s_expression)
+    .map((record) => record.patient_record_id)
+
+  if (contributing_records.length) {
+    return { satisfies: true, contributing_records }
+  }
+  return { satisfies: false }
+}

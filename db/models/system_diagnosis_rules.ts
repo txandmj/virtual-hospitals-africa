@@ -164,7 +164,7 @@ export const system_diagnosis_rules = {
   insertPositiveDiagnoses(
     trx: TrxOrDb,
     input: RuleRunnerInput & {
-      procedure_id: string
+      procedure_id?: string
     },
     rules_result: string | ApplicableRule[],
   ): Promise<InsertDiagnosisResult[]> {
@@ -317,12 +317,14 @@ export const system_diagnosis_rules = {
   async insertSystemDiagnosesIfNotAlreadyIdentified(
     trx: TrxOrDb,
     input: RuleRunnerInput & {
-      procedure_id: string
+      procedure_id?: string
     },
   ) {
     const rules_result = await rules.getApplicableBasedOnNewRecords(trx, input, 'system_diagnosis_rule')
     const inserted_diagnoses = await system_diagnosis_rules.insertPositiveDiagnoses(trx, input, rules_result)
-    const improbable_diagnoses = await system_diagnosis_rules.insertImprobableDiagnoses(trx, input, inserted_diagnoses)
+    const improbable_diagnoses = input.procedure_id
+      ? await system_diagnosis_rules.insertImprobableDiagnoses(trx, { ...input, procedure_id: input.procedure_id }, inserted_diagnoses)
+      : []
 
     return compact([
       inserted_diagnoses.length && `Inserted ${inserted_diagnoses.length} diagnosis(es): ${inserted_diagnoses.map((d) => d.record_id).join(', ')}`,

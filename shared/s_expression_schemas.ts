@@ -122,6 +122,7 @@ type QueryableSingleBaseLang =
         role: 'doctor' | 'nurse' | 'specialist'
         specialty?: string
       }>
+      history: boolean
     }
     evaluation: {
       root_snomed_concept: Lang['snomed_concept'] | null
@@ -130,6 +131,7 @@ type QueryableSingleBaseLang =
       evaluates: null | Lang['evaluates']
       qualifiers: Lang['qualifier'][]
       attributes: Lang['attribute'][]
+      history: boolean
     }
     attribute: {
       root_snomed_concept: Lang['snomed_concept']
@@ -147,6 +149,7 @@ type QueryableSingleBaseLang =
     measurement: {
       snomed_concept: Lang['snomed_concept']
       units: Units
+      history: false
     }
     active_condition: {
       snomed_concept: Lang['snomed_concept']
@@ -446,12 +449,16 @@ export const clinical_finding: z.ZodType<NonNullableProperty<Lang['finding'], 'r
   )
 ).describe('clinical_finding')
 
-export const finding: z.ZodType<Lang['finding']> = z.lazy(() => finding_base.or(clinical_finding).or(allergy)).describe('finding')
+export const positive_finding: z.ZodType<Lang['finding']> = z.lazy(() => finding_base.or(clinical_finding).or(allergy).or(history_finding)).describe(
+  'positive_finding',
+)
+
+export const finding: z.ZodType<Lang['finding']> = z.lazy(() => positive_finding.or(no_finding)).describe('finding')
 
 export const no_finding: z.ZodType<Lang['finding']> = z.lazy(() =>
   z.object({
     atom: z.literal('no'),
-    args: z.tuple([finding]),
+    args: z.tuple([positive_finding]),
   }).transform(({ args: [finding] }) => {
     assert(!finding.value_snomed_concept, 'Attempt to overwrite value_snomed_concept with (no)')
     return {
@@ -463,7 +470,7 @@ export const no_finding: z.ZodType<Lang['finding']> = z.lazy(() =>
       existence: 'No' as const,
     }
   })
-).describe('no')
+).describe('no_finding')
 
 export const timestamp: z.ZodType<Lang['timestamp']> = z.lazy(() =>
   z.object({
@@ -489,7 +496,7 @@ export const time_ago: z.ZodType<Lang['time_ago']> = z.lazy(() =>
   }).transform(({ atom, args: [value, units] }) => ({ atom, value, units }))
 ).describe('time_ago')
 
-export const insertable_finding_base: z.ZodType<InsertableFindingBase> = z.lazy(() => finding.or(no_finding))
+export const insertable_finding_base: z.ZodType<InsertableFindingBase> = z.lazy(() => finding)
   .refine(
     (finding) => finding.root_snomed_concept != null,
     {
@@ -610,6 +617,7 @@ export const evaluation: z.ZodType<Lang['evaluation']> = z.lazy(() =>
         qualifiers,
         evaluates,
         attributes,
+        history: false,
       }
     },
   )
@@ -704,6 +712,7 @@ export const measurement: z.ZodType<Lang['measurement']> = z.lazy(() =>
     atom,
     snomed_concept,
     units,
+    history: false as const,
   }))
 ).describe('measurement')
 
@@ -813,6 +822,7 @@ export const procedure_base: z.ZodType<Lang['procedure']> = z.lazy(() =>
             qualifiers,
             attributes,
             value: maybe_link,
+            history: false,
           }
         },
       ),
@@ -841,6 +851,7 @@ export const check_for: z.ZodType<Lang['procedure']> = z.lazy(
       },
       qualifiers: [],
       attributes: [],
+      history: false,
       value: check_for.map((node) => {
         const inner_finding: InsertableFindingBase = node.atom === 'finding' ? node : node.finding
         return {
@@ -868,6 +879,7 @@ export const measure: z.ZodType<Lang['procedure']> = z.lazy(
       },
       qualifiers: [],
       attributes: [],
+      history: false,
       value: measurement_nodes,
     })),
 ).describe('measure')
@@ -910,6 +922,7 @@ export const manage: z.ZodType<Lang['procedure']> = z.lazy(
       },
       qualifiers: [],
       attributes: [],
+      history: false,
       value: snomed_concept,
       ...(permissions.length ? { permissions } : {}),
     })),
@@ -981,7 +994,7 @@ export const finding_recency_comparator: z.ZodType<Lang[Comparisons] & { type: '
 
 // export const comparator = measurement_comparator.or(finding_recency_comparator)
 
-export const history: z.ZodType<Lang['finding'] & { history: true }> = z.lazy(() =>
+export const history_finding: z.ZodType<Lang['finding'] & { history: true }> = z.lazy(() =>
   z.object({
     atom: z.literal('history'),
     args: z.tuple([finding]),
@@ -989,7 +1002,17 @@ export const history: z.ZodType<Lang['finding'] & { history: true }> = z.lazy(()
     ...finding,
     history: true as const,
   }))
-).describe('history')
+).describe('history_finding')
+
+// export const history_evaluation: z.ZodType<Lang['evaluation'] & { history: true }> = z.lazy(() =>
+//   z.object({
+//     atom: z.literal('history'),
+//     args: z.tuple([evaluation]),
+//   }).transform(({ args: [evaluation] }) => ({
+//     ...evaluation,
+//     history: true as const,
+//   }))
+// ).describe('history_evaluation')
 
 export const exact: z.ZodType<Lang['finding'] & { exact: true }> = z.lazy(() =>
   z.object({
@@ -1140,13 +1163,13 @@ export const any_query_single: z.ZodType<QueryableSingleNode> = z.lazy(() =>
     finding,
     no_finding,
     evaluation,
+    diagnosis,
     procedure,
     measurement,
     active_condition,
     measurement_comparator,
     qualifier,
     exact,
-    diagnosis,
   ])
 ).describe('any_query_single')
 
@@ -1155,6 +1178,7 @@ export const any_query_evidence: z.ZodType<QueryableEvidenceNode> = z.lazy(() =>
     event,
     finding,
     evaluation,
+    diagnosis,
     procedure,
     measurement,
     active_condition,
@@ -1165,6 +1189,5 @@ export const any_query_evidence: z.ZodType<QueryableEvidenceNode> = z.lazy(() =>
     and,
     not,
     any2,
-    diagnosis,
   ])
 ).describe('any_query_evidence')
