@@ -6,8 +6,8 @@ import { STATUS_ATTRIBUTE, YES_QUALIFIER } from './snomed_concepts.ts'
 export function activeConditionAsOr({ snomed_concept, possible }: Lang['active_condition']): Lang['or'] {
   const snomed_concept_s_expression = inverseSExpression(snomed_concept)
   const disjuncts = [
-    `(clinical_finding ${snomed_concept_s_expression})`,
-    `(finding ${STATUS_ATTRIBUTE.s_expression} ${snomed_concept_s_expression} ${YES_QUALIFIER.s_expression})`,
+    `(history (clinical_finding ${snomed_concept_s_expression}))`,
+    `(history (finding ${STATUS_ATTRIBUTE.s_expression} ${snomed_concept_s_expression} ${YES_QUALIFIER.s_expression}))`,
     `(diagnosis ${snomed_concept_s_expression} probable)`,
     `(diagnosis ${snomed_concept_s_expression} definite)`,
   ]

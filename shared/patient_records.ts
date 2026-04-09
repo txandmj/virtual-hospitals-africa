@@ -558,6 +558,7 @@ export function asNormalFormSExpression<Rest>(
           evaluates: null,
           qualifiers,
           attributes,
+          history: false,
         }
       }
       // case 'procedure': {

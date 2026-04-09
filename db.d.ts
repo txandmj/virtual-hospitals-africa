@@ -350,14 +350,34 @@ export interface Devices {
   updated_at: Generated<Timestamp>
 }
 
-export interface DueToFindings {
+export interface DueTo {
+  age_determinations: ArrayType<AgeDetermination>
   created_at: Generated<Timestamp>
+  history: boolean
   id: Generated<string>
-  root_snomed_concept_id: Int8 | null
   s_expression: string
-  specific_snomed_concept_id: Int8
   updated_at: Generated<Timestamp>
+}
+
+export interface DueToFindings {
+  id: string
+  is_somehow_qualified: boolean
+  root_snomed_concept_id: Int8 | null
+  specific_snomed_concept_id: Int8
   value_snomed_concept_id: Int8 | null
+}
+
+export interface DueToFindingSites {
+  id: string
+  value_snomed_concept_id: Int8
+}
+
+export interface DueToMeasurements {
+  comparator: Comparator
+  id: string
+  root_snomed_concept_id: Int8 | null
+  specific_snomed_concept_id: Int8
+  value: Numeric
 }
 
 export interface Employment {
@@ -1174,6 +1194,14 @@ export interface PatientRecordsAggregated {
   value: Json | null
 }
 
+export interface PatientRecordSatisfyingDueTos {
+  created_at: Generated<Timestamp>
+  due_to_id: string
+  id: Generated<string>
+  patient_record_id: string
+  updated_at: Generated<Timestamp>
+}
+
 export interface PatientRecordSExpressions {
   id: string
   s_expression: string
@@ -1274,10 +1302,10 @@ export interface PatientWorkflowStepsCompleted {
 }
 
 export interface PgStatStatements {
+  blk_read_time: number | null
+  blk_write_time: number | null
   calls: Int8 | null
   dbid: number | null
-  jit_deform_count: Int8 | null
-  jit_deform_time: number | null
   jit_emission_count: Int8 | null
   jit_emission_time: number | null
   jit_functions: Int8 | null
@@ -1286,8 +1314,6 @@ export interface PgStatStatements {
   jit_inlining_time: number | null
   jit_optimization_count: Int8 | null
   jit_optimization_time: number | null
-  local_blk_read_time: number | null
-  local_blk_write_time: number | null
   local_blks_dirtied: Int8 | null
   local_blks_hit: Int8 | null
   local_blks_read: Int8 | null
@@ -1298,18 +1324,14 @@ export interface PgStatStatements {
   mean_plan_time: number | null
   min_exec_time: number | null
   min_plan_time: number | null
-  minmax_stats_since: Timestamp | null
   plans: Int8 | null
   query: string | null
   queryid: Int8 | null
   rows: Int8 | null
-  shared_blk_read_time: number | null
-  shared_blk_write_time: number | null
   shared_blks_dirtied: Int8 | null
   shared_blks_hit: Int8 | null
   shared_blks_read: Int8 | null
   shared_blks_written: Int8 | null
-  stats_since: Timestamp | null
   stddev_exec_time: number | null
   stddev_plan_time: number | null
   temp_blk_read_time: number | null
@@ -1391,33 +1413,13 @@ export interface RegulatoryAgencies {
   updated_at: Generated<Timestamp>
 }
 
-export interface RuleDueToFindings {
+export interface RuleDueTo {
   always_applies_if_present: boolean
   created_at: Generated<Timestamp>
-  due_to_finding_id: string | null
+  due_to_id: string
   id: Generated<string>
   rule_id: string
   updated_at: Generated<Timestamp>
-}
-
-export interface RuleDueToFindingSites {
-  always_applies_if_present: boolean
-  created_at: Generated<Timestamp>
-  id: Generated<string>
-  rule_id: string
-  updated_at: Generated<Timestamp>
-  value_snomed_concept_id: Int8
-}
-
-export interface RuleDueToMeasurements {
-  always_applies_if_present: boolean
-  comparator: Comparator
-  created_at: Generated<Timestamp>
-  id: Generated<string>
-  rule_id: string
-  specific_snomed_concept_id: Int8
-  updated_at: Generated<Timestamp>
-  value: Numeric
 }
 
 export interface Rules {
@@ -1836,7 +1838,10 @@ export interface DB {
   departments: Departments
   device_capabilities: DeviceCapabilities
   devices: Devices
+  due_to: DueTo
+  due_to_finding_sites: DueToFindingSites
   due_to_findings: DueToFindings
+  due_to_measurements: DueToMeasurements
   employment: Employment
   employment_calendars: EmploymentCalendars
   employment_presence: EmploymentPresence
@@ -1928,6 +1933,7 @@ export interface DB {
   patient_record_qualifiers: PatientRecordQualifiers
   patient_record_relations: PatientRecordRelations
   patient_record_s_expressions: PatientRecordSExpressions
+  patient_record_satisfying_due_tos: PatientRecordSatisfyingDueTos
   patient_record_tasks: PatientRecordTasks
   patient_records: PatientRecords
   patient_records_aggregated: PatientRecordsAggregated
@@ -1949,9 +1955,7 @@ export interface DB {
   procurers: Procurers
   regulators: Regulators
   regulatory_agencies: RegulatoryAgencies
-  rule_due_to_finding_sites: RuleDueToFindingSites
-  rule_due_to_findings: RuleDueToFindings
-  rule_due_to_measurements: RuleDueToMeasurements
+  rule_due_to: RuleDueTo
   rules: Rules
   sats_priority_levels: SatsPriorityLevels
   sats_triage_assessment_options: SatsTriageAssessmentOptions

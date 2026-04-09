@@ -60,7 +60,8 @@ export function inverseSExpression(node: AnyNode): string {
       for (const attr of node.attributes) parts.push(inverseSExpression(attr))
       for (const qual of node.qualifiers) parts.push(inverseSExpression(qual))
       for (const excluding of node.excluding) parts.push(inverseSExpression(excluding))
-      return `(${parts.join(' ')})`
+      const finding_s_expression = `(${parts.join(' ')})`
+      return node.history ? `(history ${finding_s_expression})` : finding_s_expression
     }
 
     case 'attribute': {

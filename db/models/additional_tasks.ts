@@ -4,7 +4,7 @@ import { patient_evaluations } from './patient_evaluations.ts'
 import { buildExpression } from './s_expression.ts'
 import generateUUID from '../../util/uuid.ts'
 import {
-  NewRecordsToConsider,
+  NewRecordsToConsiderWithSatisfyingDueToIds,
   RecordValueMeasurement,
   RenderedEvaluationRelativeToHealthWorker,
   RenderedFindingRelativeToHealthWorker,
@@ -79,7 +79,7 @@ export function isMeasurements(to_be_done: ToBeDone): to_be_done is ToBeDoneProc
 export const additional_tasks = {
   async getTasksToInsertUsingPreComputedTables(
     trx: TrxOrDbOrQueryCreator,
-    new_records: NewRecordsToConsider,
+    new_records: NewRecordsToConsiderWithSatisfyingDueToIds,
   ): Promise<string | TaskToInsert[]> {
     const applicable_rules = await rules.getApplicableBasedOnNewRecords(trx, new_records, 'task')
     if (isString(applicable_rules)) return applicable_rules
@@ -103,7 +103,7 @@ export const additional_tasks = {
   },
   async insertTasksIfNotAlreadyIdentified(
     trx: TrxOrDbOrQueryCreator,
-    { patient_id, patient_encounter_id, patient_age_determination, records }: NewRecordsToConsider,
+    { patient_id, patient_encounter_id, patient_age_determination, records }: NewRecordsToConsiderWithSatisfyingDueToIds,
   ) {
     const tasks_to_insert = await additional_tasks.getTasksToInsertUsingPreComputedTables(trx, {
       patient_id,

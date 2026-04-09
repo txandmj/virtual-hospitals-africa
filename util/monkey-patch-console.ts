@@ -17,7 +17,7 @@ export const monkeyPatchConsole = once(function monkeyPatchConsole() {
     if (
       line_number.includes('db/helpers.ts') ||
       line_number.includes('humanReadableJson.ts') ||
-      line_number.includes('logJSONToFileIfOnServer.ts')
+      line_number.includes('logToFileIfOnServer.ts')
     ) {
       line_number = getFileLineNumber(3)
     }

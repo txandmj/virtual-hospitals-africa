@@ -5271,6 +5271,7 @@ export const TUTORIAL_MANAGE_PATIENT_TASKS: Array<
     },
     'qualifiers': [],
     'attributes': [],
+    'history': false,
     'value': { 'atom': 'snomed_concept', 'name': 'Oxygen therapy', 'category': 'procedure' },
     'displays': {
       'finding': 'Patient management procedure Procedure',
@@ -5295,6 +5296,7 @@ export const TUTORIAL_MANAGE_PATIENT_TASKS: Array<
     },
     'qualifiers': [],
     'attributes': [],
+    'history': false,
     'value': {
       'atom': 'snomed_concept',
       'name': 'Product containing epinephrine',
@@ -5324,6 +5326,7 @@ export const TUTORIAL_MANAGE_PATIENT_TASKS: Array<
     },
     'qualifiers': [],
     'attributes': [],
+    'history': false,
     'value': {
       'atom': 'snomed_concept',
       'name': 'Product containing only hydrocortisone',
@@ -5353,6 +5356,7 @@ export const TUTORIAL_MANAGE_PATIENT_TASKS: Array<
     },
     'qualifiers': [],
     'attributes': [],
+    'history': false,
     'value': {
       'atom': 'snomed_concept',
       'name': 'Product containing only promethazine',
@@ -5382,6 +5386,7 @@ export const TUTORIAL_MANAGE_PATIENT_TASKS: Array<
     },
     'qualifiers': [],
     'attributes': [],
+    'history': false,
     'value': {
       'atom': 'snomed_concept',
       'name': 'Product containing precisely sodium chloride 9 milligram/1 milliliter conventional release solution for infusion and/or injection',
@@ -5413,6 +5418,7 @@ export const TUTORIAL_MANAGE_PATIENT_TASKS: Array<
     },
     'qualifiers': [],
     'attributes': [],
+    'history': false,
     'value': { 'atom': 'snomed_concept', 'name': 'Elevation of lower limb', 'category': 'procedure' },
     'displays': {
       'finding': 'Patient management procedure Procedure',

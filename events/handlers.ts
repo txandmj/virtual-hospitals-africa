@@ -18,6 +18,7 @@ import { patient_triage } from '../db/models/patient_triage.ts'
 import { EVALUATION_ACTION, TRIAGE_INDEX } from '../shared/snomed_concepts.ts'
 import { triageLevelFromTEWSTotal } from '../shared/vitals.ts'
 import { system_diagnosis_rules } from '../db/models/system_diagnosis_rules.ts'
+import { due_to } from '../db/models/due_to.ts'
 
 export const EVENTS = {
   HealthWorkerLogin: defineEvent(
@@ -77,33 +78,16 @@ export const EVENTS = {
       evaluation_id: z.string().uuid(),
     }),
     {
-      insertTasksIfNotAlreadyIdentified(trx, payload) {
-        return additional_tasks.insertTasksIfNotAlreadyIdentified(
-          trx,
-          {
-            ...payload.data,
-            // listener_id: payload.listener_id,
-            // listener_name: payload.listener_name,
-            records: [{
-              id: payload.data.evaluation_id,
-              existence: 'Yes' as const,
-            }],
-          },
-        )
-      },
-      insertSystemPriorityEvaluationsIfNotAlreadyIdentified(trx, payload) {
-        return system_priority_evaluations.insertSystemPriorityEvaluationsIfNotAlreadyIdentified(
-          trx,
-          {
-            ...payload.data,
-            listener_id: payload.listener_id,
-            listener_name: payload.listener_name,
-            records: [{
-              id: payload.data.evaluation_id,
-              existence: 'Yes' as const,
-            }],
-          },
-        )
+      tagRecordsWithDueTos(trx, payload) {
+        return due_to.addFromNewRecords(trx, {
+          ...payload.data,
+          // listener_id: payload.listener_id,
+          // listener_name: payload.listener_name,
+          records: [{
+            id: payload.data.evaluation_id,
+            existence: 'Yes' as const,
+          }],
+        })
       },
     },
   ),
@@ -121,25 +105,8 @@ export const EVENTS = {
       }).array(),
     }),
     {
-      insertTasksIfNotAlreadyIdentified(trx, payload) {
-        return additional_tasks.insertTasksIfNotAlreadyIdentified(
-          trx,
-          {
-            ...payload.data,
-            // listener_id: payload.listener_id,
-            // listener_name: payload.listener_name,
-          },
-        )
-      },
-      insertSystemDiagnosesIfNotAlreadyIdentified(trx, payload) {
-        return system_diagnosis_rules.insertSystemDiagnosesIfNotAlreadyIdentified(
-          trx,
-          {
-            ...payload.data,
-            listener_id: payload.listener_id,
-            listener_name: payload.listener_name,
-          },
-        )
+      tagRecordsWithDueTos(trx, payload) {
+        return due_to.addFromNewRecords(trx, payload.data)
       },
       async insertTotalScoreAfterMeasureVitals(trx, { data: { workflow, step, patient_id, patient_age_determination, patient_encounter_id, procedure_id } }) {
         const completed_measure_vitals = workflow === 'triage' && step === 'measure_vitals'
@@ -171,6 +138,43 @@ export const EVENTS = {
           triage_level,
         })
         return `Inserted TEWS total score ${total_score} and triage level ${triage_level}`
+      },
+    },
+  ),
+  RecordDueTosTagged: defineEvent(
+    z.object({
+      // workflow: z.enum(WORKFLOWS),
+      // step: z.string(),
+      procedure_id: z.string().uuid().optional(),
+      patient_id: z.string().uuid(),
+      patient_age_determination: z.enum(['adult', 'older child', 'younger child']),
+      patient_encounter_id: z.string().uuid(),
+      records: z.object({
+        id: z.string().uuid(),
+        existence: z.enum(['Yes', 'No', 'Unknown']),
+        satisfying_due_to_ids: z.string().uuid().array(),
+      }).array(),
+    }),
+    {
+      insertTasksIfNotAlreadyIdentified(trx, payload) {
+        return additional_tasks.insertTasksIfNotAlreadyIdentified(
+          trx,
+          {
+            ...payload.data,
+            // listener_id: payload.listener_id,
+            // listener_name: payload.listener_name,
+          },
+        )
+      },
+      insertSystemDiagnosesIfNotAlreadyIdentified(trx, payload) {
+        return system_diagnosis_rules.insertSystemDiagnosesIfNotAlreadyIdentified(
+          trx,
+          {
+            ...payload.data,
+            listener_id: payload.listener_id,
+            listener_name: payload.listener_name,
+          },
+        )
       },
       insertSystemPriorityEvaluationsIfNotAlreadyIdentified(trx, payload) {
         return system_priority_evaluations.insertSystemPriorityEvaluationsIfNotAlreadyIdentified(

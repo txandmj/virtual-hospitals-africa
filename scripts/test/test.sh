@@ -158,4 +158,6 @@ if $use_test_servers; then
   fi
 fi
 
+mkdir -p "./logs/slow_queries"
+
 run_tests "$@"

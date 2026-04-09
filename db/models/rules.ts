@@ -1,163 +1,86 @@
 import { sql } from 'kysely'
-import { AgeDetermination, ApplicableRule, NewRecordsToConsider, TrxOrDbOrQueryCreator } from '../../types.ts'
+import { AgeDetermination, ApplicableRule, NewRecordsToConsiderWithSatisfyingDueToIds, RecordsSatisfyingDueToIds, TrxOrDbOrQueryCreator } from '../../types.ts'
 import { asText, jsonBuildObject, literalString } from '../helpers.ts'
-import { groupBy } from '../../util/groupBy.ts'
-import { FINDING_SITE } from '../../shared/snomed_concepts.ts'
-import { parseWithSchema } from '../../shared/s_expression.ts'
-import { any_query_evidence } from '../../shared/s_expression_schemas.ts'
+
+import { QueryableEvidenceNode } from '../../shared/s_expression_schemas.ts'
 import uniq from '../../util/uniq.ts'
-import partition from '../../util/partition.ts'
-import { s_expression_evidence } from './s_expression_evidence.ts'
-import { exists } from '../../util/exists.ts'
+import { EvidenceNode } from './s_expression_evidence.ts'
 import compactMap from '../../util/compactMap.ts'
 import { base, identity } from './_base.ts'
+import { jsonArrayFrom } from '../helpers.ts'
 import { arrayIsEmpty } from '../../util/arraySize.ts'
 import { assert } from 'std/assert/assert.ts'
+
+import { activeConditionAsOr } from '../../shared/s_expression_active_condition_as_or.ts'
+import { inverseSExpression } from '../../shared/s_expression_inverse.ts'
+import { diagnosisToEvaluation } from '../../shared/diagnosis.ts'
+import { logToFileIfOnServer } from '../../util/logToFileIfOnServer.ts'
+import { getRuleByDescription } from '../../shared/rules.ts'
 
 export const rules = base({
   top_level_table: 'rules',
   baseQuery(trx: TrxOrDbOrQueryCreator, {
-    // patient_id,
+    patient_id,
+    patient_encounter_id,
     patient_age_determination,
-    positive_record_ids,
+    positive_records_satisfying_some_due_to,
     type,
   }: {
     patient_id: string
+    patient_encounter_id: string
     patient_age_determination: AgeDetermination
-    positive_record_ids: string[]
+    positive_records_satisfying_some_due_to: RecordsSatisfyingDueToIds
     type?: 'task' | 'system_priority_evaluation' | 'system_diagnosis_rule'
   }) {
-    assert(positive_record_ids.length)
-    const by_findings_query = trx.selectFrom('rules')
-      .innerJoin('rule_due_to_findings', 'rules.id', 'rule_due_to_findings.rule_id')
-      .innerJoin('due_to_findings', 'due_to_findings.id', 'rule_due_to_findings.due_to_finding_id')
-      .innerJoin(
-        'snomed_concept_active_descendants_realized as specific_descendants',
-        'specific_descendants.ancestor_id',
-        'due_to_findings.specific_snomed_concept_id',
-      )
-      .innerJoin('patient_records', 'patient_records.specific_snomed_concept_id', 'specific_descendants.descendant_id')
-      .innerJoin('patient_records_still_valid', 'patient_records_still_valid.id', 'patient_records.id')
-      .whereRef('patient_records.root_snomed_concept_id', '=', 'due_to_findings.root_snomed_concept_id')
-      .where('rules.age_determinations', '@>', sql<AgeDetermination[]>`ARRAY[${patient_age_determination}]::age_determination[]`)
-      .where('patient_records.id', 'in', positive_record_ids)
-      .where((eb) =>
-        eb.or([
-          eb('due_to_findings.value_snomed_concept_id', 'is', null),
-          eb.exists(
-            eb.selectFrom('snomed_concept_active_descendants_realized as value_descendants')
-              .whereRef('value_descendants.ancestor_id', '=', 'due_to_findings.value_snomed_concept_id')
-              .whereRef('value_descendants.descendant_id', '=', 'patient_records.value_snomed_concept_id'),
-          ),
-        ])
-      )
-      .select([
-        'patient_records.id as finding_id',
-        'rule_due_to_findings.rule_id',
-        'due_to_s_expression',
-        'rule_due_to_findings.always_applies_if_present',
-      ])
+    assert(positive_records_satisfying_some_due_to.length)
 
-    const by_finding_sites_query = trx.selectFrom('rules')
-      .innerJoin('rule_due_to_finding_sites', 'rules.id', 'rule_due_to_finding_sites.rule_id')
-      .innerJoin('patient_records', (join) => join.onTrue())
-      .innerJoin('patient_records_still_valid', 'patient_records_still_valid.id', 'patient_records.id')
-      .where('rules.age_determinations', '@>', sql<AgeDetermination[]>`ARRAY[${patient_age_determination}]::age_determination[]`)
-      .where('patient_records.id', 'in', positive_record_ids)
-      .where((eb) =>
-        eb.or([
-          eb.exists(
-            trx.selectFrom('patient_records as finding_sites')
-              .innerJoin('patient_record_qualifiers', 'finding_sites.id', 'patient_record_qualifiers.id')
-              .innerJoin(
-                'snomed_concept_active_descendants_realized as dest_descendants',
-                (join) =>
-                  join
-                    .onRef('dest_descendants.descendant_id', '=', 'finding_sites.value_snomed_concept_id')
-                    .on('dest_descendants.ancestor_id', '=', eb.ref('rule_due_to_finding_sites.value_snomed_concept_id')),
-              )
-              .where('patient_record_qualifiers.qualifies_record_id', '=', eb.ref('patient_records.id'))
-              .where('finding_sites.specific_snomed_concept_id', '=', FINDING_SITE.id),
-          ),
-          eb.exists(
-            trx.selectFrom('snomed_relationship')
-              .where('snomed_relationship.active', '=', true)
-              .where(
-                'snomed_relationship.type_id',
-                '=',
-                FINDING_SITE.id,
-              )
-              .where(
-                'snomed_relationship.source_id',
-                '=',
-                eb.ref('patient_records.specific_snomed_concept_id'),
-              )
-              .innerJoin(
-                'snomed_concept_active_descendants_realized as dest_descendants',
-                (join) =>
-                  join
-                    .onRef('dest_descendants.descendant_id', '=', 'snomed_relationship.destination_id')
-                    .on('dest_descendants.ancestor_id', '=', eb.ref('rule_due_to_finding_sites.value_snomed_concept_id')),
-              ),
-          ),
-        ])
-      )
-      .select([
-        'patient_records.id as finding_id',
-        'rule_due_to_finding_sites.rule_id',
-        'due_to_s_expression',
-        'rule_due_to_finding_sites.always_applies_if_present',
-      ])
+    const all_satisfying_due_to_ids = positive_records_satisfying_some_due_to
+      .flatMap((r) => r.satisfying_due_to_ids)
 
-    const by_measurements_query = trx.selectFrom('rules')
-      .innerJoin('rule_due_to_measurements', 'rules.id', 'rule_due_to_measurements.rule_id')
-      .innerJoin('patient_records', 'patient_records.specific_snomed_concept_id', 'rule_due_to_measurements.specific_snomed_concept_id')
-      .innerJoin('patient_records_still_valid', 'patient_records_still_valid.id', 'patient_records.id')
-      .innerJoin('patient_measurements', 'patient_records.id', 'patient_measurements.id')
+    const matching_rules_query = trx
+      .selectFrom('patient_record_satisfying_due_tos')
+      .where('patient_record_satisfying_due_tos.id', 'in', all_satisfying_due_to_ids)
+      .innerJoin('rule_due_to', 'rule_due_to.due_to_id', 'patient_record_satisfying_due_tos.due_to_id')
+      .innerJoin('rules', 'rules.id', 'rule_due_to.rule_id')
       .where('rules.age_determinations', '@>', sql<AgeDetermination[]>`ARRAY[${patient_age_determination}]::age_determination[]`)
-      .where('patient_records.id', 'in', positive_record_ids)
-      .where((eb) =>
-        eb.or([
-          eb.and([
-            eb('rule_due_to_measurements.comparator', '=', '>'),
-            eb('patient_measurements.value', '>', eb.ref('rule_due_to_measurements.value')),
-          ]),
-          eb.and([
-            eb('rule_due_to_measurements.comparator', '=', '>='),
-            eb('patient_measurements.value', '>=', eb.ref('rule_due_to_measurements.value')),
-          ]),
-          eb.and([
-            eb('rule_due_to_measurements.comparator', '=', '<'),
-            eb('patient_measurements.value', '<', eb.ref('rule_due_to_measurements.value')),
-          ]),
-          eb.and([
-            eb('rule_due_to_measurements.comparator', '=', '<='),
-            eb('patient_measurements.value', '<=', eb.ref('rule_due_to_measurements.value')),
-          ]),
-        ])
-      )
-      .select([
-        'patient_records.id as finding_id',
-        'rule_due_to_measurements.rule_id',
-        'due_to_s_expression',
-        'rule_due_to_measurements.always_applies_if_present',
-      ])
+      .select('rules.id')
+      .distinct()
 
-    return trx.with('matching_rule_findings', () =>
-      by_findings_query
-        .unionAll(by_finding_sites_query)
-        .unionAll(by_measurements_query))
-      .selectFrom('matching_rule_findings')
-      .selectAll('matching_rule_findings')
-      .leftJoin('tasks', 'rule_id', 'tasks.id')
-      .leftJoin('system_priority_evaluations', 'rule_id', 'system_priority_evaluations.id')
-      .leftJoin('system_diagnosis_rules', 'rule_id', 'system_diagnosis_rules.id')
+    return trx.with('matching_rules', () => matching_rules_query)
+      .selectFrom('matching_rules')
+      .innerJoin('rules', 'matching_rules.id', 'rules.id')
+      .selectAll('rules')
+      .leftJoin('tasks', 'matching_rules.id', 'tasks.id')
+      .leftJoin('system_priority_evaluations', 'matching_rules.id', 'system_priority_evaluations.id')
+      .leftJoin('system_diagnosis_rules', 'matching_rules.id', 'system_diagnosis_rules.id')
       .leftJoin(
         'snomed_inferred_canonical_name_and_category as diagnosis_snomed_concept',
         'system_diagnosis_rules.snomed_concept_id',
         'diagnosis_snomed_concept.id',
       )
       .select((eb) => [
+        jsonArrayFrom(
+          eb.selectFrom('patient_record_satisfying_due_tos')
+            .innerJoin('due_to', 'patient_record_satisfying_due_tos.due_to_id', 'due_to.id')
+            .innerJoin('rule_due_to', 'rule_due_to.due_to_id', 'due_to.id')
+            .where('rule_due_to.rule_id', '=', eb.ref('rules.id'))
+            .innerJoin('patient_records_aggregated', 'patient_record_satisfying_due_tos.patient_record_id', 'patient_records_aggregated.id')
+            .where('patient_records_aggregated.patient_id', '=', patient_id)
+            .where((eb2) =>
+              eb2.or([
+                eb2('history', '=', true),
+                eb2('patient_records_aggregated.patient_encounter_id', '=', patient_encounter_id),
+              ])
+            )
+            .distinct()
+            .select([
+              'patient_record_id',
+              's_expression',
+              'always_applies_if_present',
+              'history',
+            ]),
+        )
+          .as('evidence'),
         eb.case()
           .when('tasks.id', 'is not', null)
           .then(jsonBuildObject({
@@ -189,63 +112,170 @@ export const rules = base({
 
   async getApplicableBasedOnNewRecords(
     trx: TrxOrDbOrQueryCreator,
-    { patient_id, patient_age_determination, /*procedure_id, */ records: findings }: NewRecordsToConsider,
+    { patient_id, patient_encounter_id, patient_age_determination, /*procedure_id, */ records }: NewRecordsToConsiderWithSatisfyingDueToIds,
     type?: 'task' | 'system_priority_evaluation' | 'system_diagnosis_rule',
   ): Promise<string | ApplicableRule[]> {
-    if (!patient_age_determination) return 'Skipped: patient age determination is unknown'
+    const positive_records_satisfying_some_due_to = records
+      .filter((r) => r.existence === 'Yes')
+      .filter((r) => !!r.satisfying_due_to_ids.length)
 
-    const positive_record_ids = findings
-      .filter((f) => f.existence === 'Yes')
-      .map((f) => f.id)
+    if (arrayIsEmpty(positive_records_satisfying_some_due_to)) return 'Skipped: no positive findings satisfying some due_to'
 
-    if (arrayIsEmpty(positive_record_ids)) return 'Skipped: no positive findings to check'
-
-    const tasks_matching_some_finding = await rules.findAll(trx, {
+    const rules_matching_some_finding = await rules.findAll(trx, {
       patient_id,
+      patient_encounter_id,
       patient_age_determination,
-      positive_record_ids,
+      positive_records_satisfying_some_due_to,
       type,
     })
 
-    const all_tasks = groupBy(tasks_matching_some_finding, 'rule_id').values().toArray()
-
-    const parsed = all_tasks.map((findings) => ({
-      findings,
+    const parsed_rules = rules_matching_some_finding.map((rule) => ({
+      ...rule,
+      ...getRuleByDescription(rule.description),
       // TODO The uniq could be removed probably if upstream we enforce uniqueness
-      matching_finding_ids: uniq(findings.map((finding) => finding.finding_id)),
-      certainly_applies: findings.some((finding) => finding.always_applies_if_present),
-      due_to: parseWithSchema(findings[0].due_to_s_expression, any_query_evidence),
+      matching_finding_ids: uniq(rule.evidence.map((record) => record.patient_record_id)),
+      certainly_applies: rule.evidence.some((record) => record.always_applies_if_present),
     }))
 
-    const [certain, uncertain] = partition(parsed, (t) => t.certainly_applies)
+    logToFileIfOnServer({ parsed_rules })
 
-    console.log({
-      certain: certain.map((r) => r.findings[0].rule_id),
-      uncertain: uncertain.map((r) => r.findings[0].rule_id),
-    })
-
-    const certain_results = certain.map(({ findings, matching_finding_ids, due_to }) => ({
-      id: findings[0].rule_id,
-      description: findings[0].rule_id,
-      rule_effect: findings[0].rule_effect,
-      matching_finding_ids,
-      due_to,
-    }))
-
-    const due_to_nodes = uncertain.map((t) => t.due_to)
-    const evidence_results = await s_expression_evidence.evaluateMultiple(trx, { patient_id }, due_to_nodes)
-
-    const uncertain_results = compactMap(uncertain, ({ findings, due_to }) => {
-      const result = exists(evidence_results.get(due_to))
+    logToFileIfOnServer(compactMap(parsed_rules, (rule) => {
+      // rule.certainly_applies
+      const result = evaluateEvidence(rule.due_to, rule.evidence)
       return result.satisfies && {
-        id: findings[0].rule_id,
-        description: findings[0].rule_id,
-        rule_effect: findings[0].rule_effect,
+        ...rule,
         matching_finding_ids: result.contributing_records,
-        due_to,
+      }
+    }))
+
+    // const [certain, uncertain] = partition(parsed, (t) => t.certainly_applies)
+
+    // As it stands, history just means we don't consider patient_encounter_id
+    // TODO support invalidation
+
+    // const certain_results = certain.map(({ findings, matching_finding_ids, due_to }) => ({
+    //   id: findings[0].rule_id,
+    //   description: findings[0].rule_id,
+    //   rule_effect: findings[0].rule_effect,
+    //   matching_finding_ids,
+    //   due_to,
+    // }))
+
+    // for (const rule of uncertain) {
+    //   evaluateEvidence(rule.due_to, rule.evidence)
+    // }
+
+    // // const due_to_nodes = uncertain.map((t) => t.due_to)
+    // const evidence_results = await s_expression_evidence.evaluateMultiple(trx, { patient_id }, due_to_nodes)
+
+    // const uncertain_results = compactMap(uncertain, ({ findings, due_to }) => {
+    //   const result = exists(evidence_results.get(due_to))
+    //   return result.satisfies && {
+    //     id: findings[0].rule_id,
+    //     description: findings[0].rule_id,
+    //     rule_effect: findings[0].rule_effect,
+    //     matching_finding_ids: result.contributing_records,
+    //     due_to,
+    //   }
+    // })
+
+    return compactMap(parsed_rules, (rule) => {
+      // rule.certainly_applies
+      const result = evaluateEvidence(rule.due_to, rule.evidence)
+      return result.satisfies && {
+        ...rule,
+        matching_finding_ids: result.contributing_records,
       }
     })
-
-    return [...certain_results, ...uncertain_results]
   },
 })
+
+type Evidence = {
+  patient_record_id: string
+  always_applies_if_present: boolean
+  history: boolean
+  s_expression: string
+}[]
+
+type Result =
+  | { satisfies: true; contributing_records: string[] }
+  | { satisfies: false }
+
+export function evaluateEvidence(due_to: QueryableEvidenceNode, evidence: Evidence): Result {
+  console.log({ due_to })
+  switch (due_to.atom) {
+    case 'or': {
+      const contributing_records: string[] = []
+      let any_true = false
+      for (const expr of due_to.expressions) {
+        const result = evaluateEvidence(expr, evidence)
+        if (result.satisfies) {
+          any_true = true
+          contributing_records.push(...result.contributing_records)
+        }
+      }
+      if (any_true) return { satisfies: true, contributing_records }
+      return { satisfies: false }
+    }
+
+    case 'and': {
+      const contributing_records: string[] = []
+      for (const expr of due_to.expressions) {
+        const result = evaluateEvidence(expr, evidence)
+        if (!result.satisfies) return { satisfies: false }
+        contributing_records.push(...result.contributing_records)
+      }
+      return { satisfies: true, contributing_records }
+    }
+
+    case 'any2': {
+      const contributing_records: string[] = []
+      let true_count = 0
+      for (const expr of due_to.expressions) {
+        const result = evaluateEvidence(expr, evidence)
+        if (result.satisfies) {
+          true_count++
+          contributing_records.push(...result.contributing_records)
+        }
+      }
+      if (true_count >= 2) return { satisfies: true, contributing_records }
+      return { satisfies: false }
+    }
+
+    case 'finding':
+    case 'evaluation':
+      return evaluateSingle(due_to, evidence)
+
+    case 'diagnosis':
+      return evaluateSingle(diagnosisToEvaluation(due_to), evidence)
+
+    case 'active_condition':
+      return evaluateEvidence(activeConditionAsOr(due_to), evidence)
+
+    case '<':
+    case '<=':
+    case '=':
+    case '>':
+    case '>=': {
+      if (due_to.type === 'measurement') return evaluateSingle(due_to, evidence)
+      // TODO timestamp time_ago
+      return { satisfies: false }
+    }
+
+    default:
+      throw new Error(`Not supported ${(due_to as QueryableEvidenceNode).atom}`)
+  }
+}
+
+export function evaluateSingle(due_to: EvidenceNode, evidence: Evidence): Result {
+  const due_to_s_expression = inverseSExpression(due_to)
+  console.log({ due_to_s_expression })
+  const contributing_records = evidence
+    .filter((record) => record.s_expression === due_to_s_expression)
+    .map((record) => record.patient_record_id)
+
+  if (contributing_records.length) {
+    return { satisfies: true, contributing_records }
+  }
+  return { satisfies: false }
+}

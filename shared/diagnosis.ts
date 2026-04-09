@@ -36,6 +36,7 @@ export function diagnosisToEvaluation(diagnosis: {
       category: certainty_qualifier_concept.category,
     },
     evaluates: null,
+    history: true,
     qualifiers: [],
     attributes: [],
   }
