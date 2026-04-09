@@ -202,7 +202,6 @@ type Result =
   | { satisfies: false }
 
 export function evaluateEvidence(due_to: QueryableEvidenceNode, evidence: Evidence): Result {
-  console.log({ due_to })
   switch (due_to.atom) {
     case 'or': {
       const contributing_records: string[] = []
@@ -269,7 +268,6 @@ export function evaluateEvidence(due_to: QueryableEvidenceNode, evidence: Eviden
 
 export function evaluateSingle(due_to: EvidenceNode, evidence: Evidence): Result {
   const due_to_s_expression = inverseSExpression(due_to)
-  console.log({ due_to_s_expression })
   const contributing_records = evidence
     .filter((record) => record.s_expression === due_to_s_expression)
     .map((record) => record.patient_record_id)

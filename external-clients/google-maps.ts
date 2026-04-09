@@ -43,7 +43,6 @@ export async function getGeocodeData(
   if (data.error_message) {
     throw new Error(data.error_message)
   }
-  console.log({ data })
   if (data.status === 'OK' && Array.isArray(data.results)) {
     return data.results
   }

@@ -130,7 +130,6 @@ describeParallel('db/models/additional_tasks.ts', () => {
         existence: 'Yes',
       }],
     })
-    console.log({ due_to_result })
     assert(!isString(due_to_result))
     const tasks_to_insert = await additional_tasks.getTasksToInsertUsingPreComputedTables(db, due_to_result)
 

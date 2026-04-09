@@ -23,7 +23,7 @@ import { inverseSExpression } from './s_expression_inverse.ts'
 import { Lang, ToBeDone } from './s_expression_schemas.ts'
 import capitalize from '../util/capitalize.ts'
 import isString from '../util/isString.ts'
-import { ATTRIBUTE, CAUSATIVE_AGENT, FINDING_SITE, MEASUREMENT_FINDING } from './snomed_concepts.ts'
+import { ATTRIBUTE, CAUSATIVE_AGENT, EVENT, FINDING_SITE, MEASUREMENT_FINDING } from './snomed_concepts.ts'
 import { SnomedCategory } from '../db.d.ts'
 import last from '../util/last.ts'
 import words from '../util/words.ts'
@@ -311,6 +311,11 @@ const ATTRIBUTES_TO_INCLUDE_IN_DISPLAY = new Set([
   CAUSATIVE_AGENT.name,
 ])
 
+const ROOT_ATTRIBUTE_SNOMED_CONCEPT_NAMES = new Set([
+  ATTRIBUTE.name,
+  EVENT.name,
+])
+
 function buildDisplays(
   record: WithProperRecordValue<DisplayableRecord> & {
     attributes?: Array<WithProperRecordValue<DisplayableRecord> & { displays: RecordDisplays }>
@@ -331,7 +336,8 @@ function buildDisplays(
 
   const attributes_to_include_in_display = (record.attributes || [])
     .filter((attribute) =>
-      ATTRIBUTES_TO_INCLUDE_IN_DISPLAY.has(attribute.specific_snomed_concept_name) || attribute.root_snomed_concept_name !== ATTRIBUTE.name
+      ATTRIBUTES_TO_INCLUDE_IN_DISPLAY.has(attribute.specific_snomed_concept_name) ||
+      !ROOT_ATTRIBUTE_SNOMED_CONCEPT_NAMES.has(attribute.root_snomed_concept_name)
     )
     .map((attribute) => `(${exists(attribute.displays.value)})`)
 

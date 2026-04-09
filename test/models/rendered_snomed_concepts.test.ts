@@ -10,9 +10,22 @@ describe('db/models/rendered_snomed_concepts.ts', () => {
   it('can find concepts by category', async () => {
     const administration_methods = await rendered_snomed_concepts.findAll(db, {
       category: 'administration method',
+      search: 'gar',
     })
 
     const gargle = findMatching(administration_methods, { name: 'Gargle' })
     assert(gargle)
+
+    assert(administration_methods.every((snomed_concept) => snomed_concept.name !== 'Gari'))
+
+    const substances = await rendered_snomed_concepts.findAll(db, {
+      category: 'administration method',
+      search: 'gar',
+    })
+
+    const gargle = findMatching(substances, { name: 'Gargle' })
+    assert(gargle)
+
+    assert(administration_methods.every((snomed_concept) => snomed_concept.name !== 'Gari'))
   })
 })

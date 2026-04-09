@@ -11,7 +11,6 @@ const test_cases = parseJSONSync(test_cases_file_path)
 // deno-lint-ignore no-explicit-any
 const results: any[] = []
 afterAll(async () => {
-  console.log('wEKLLKE')
   await Deno.writeTextFile(test_cases_file_path, humanReadableJson(results), { create: true })
 })
 

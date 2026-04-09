@@ -11,7 +11,7 @@ describeParallel('db/models/rules.ts', () => {
     }, [
       {
         'patient_record_id': 'b72525b4-c972-4a86-af4f-c4e66c53bf89',
-        's_expression': '(finding (snomed_concept "Clinical finding" "finding") (snomed_concept "Bite - wound" "disorder"))',
+        's_expression': '(history (finding (snomed_concept "Clinical finding" "finding") (snomed_concept "Bite - wound" "disorder")))',
         'always_applies_if_present': true,
         'history': false,
       },
