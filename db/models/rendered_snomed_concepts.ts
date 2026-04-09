@@ -1,3 +1,4 @@
+import { sql } from 'kysely'
 import type { RenderedFullSnomedConcept, TrxOrDbOrQueryCreator } from '../../types.ts'
 import type { SnomedCategory } from '../../db.d.ts'
 import { asText, jsonArrayFrom } from '../helpers.ts'
@@ -6,6 +7,7 @@ import { base, identity } from './_base.ts'
 type SearchTerms = {
   include_inactive?: boolean
   category?: SnomedCategory
+  search?: string
 }
 
 export const rendered_snomed_concepts = base({
@@ -19,6 +21,11 @@ export const rendered_snomed_concepts = base({
         'snomed_concept.id',
       )
       .$if(!!opts.category, (qb) => qb.where('snomed_inferred_canonical_name_and_category.category', '=', opts.category!))
+      .$if(!!opts.search, (qb) =>
+        qb
+          .where(sql<boolean>`${opts.search} <% snomed_inferred_canonical_name_and_category.name`)
+          .orderBy(sql<number>`similarity(${opts.search}, snomed_inferred_canonical_name_and_category.name)`, 'desc')
+      )
       .where('snomed_concept.active', '=', !opts?.include_inactive)
       .select((eb) => [
         asText(eb, 'snomed_concept.id').as('id'),

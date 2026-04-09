@@ -19,13 +19,13 @@ describe('db/models/rendered_snomed_concepts.ts', () => {
     assert(administration_methods.every((snomed_concept) => snomed_concept.name !== 'Gari'))
 
     const substances = await rendered_snomed_concepts.findAll(db, {
-      category: 'administration method',
+      category: 'substance',
       search: 'gar',
     })
 
-    const gargle = findMatching(substances, { name: 'Gargle' })
-    assert(gargle)
+    const gari = findMatching(substances, { name: 'Gari' })
+    assert(gari)
 
-    assert(administration_methods.every((snomed_concept) => snomed_concept.name !== 'Gari'))
+    assert(substances.every((snomed_concept) => snomed_concept.name !== 'Gargle'))
   })
 })
