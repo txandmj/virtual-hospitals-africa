@@ -36,6 +36,7 @@ jobs:
         deno task db:restore snomed
         deno task db:migrate all
         deno task build
+        test -f _fresh/client/.vite/manifest.json
       run: |
         deno task test --use-build test/web/login.test.ts
 
