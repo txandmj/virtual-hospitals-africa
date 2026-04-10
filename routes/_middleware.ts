@@ -7,6 +7,7 @@ import generateUUID from '../util/uuid.ts'
 import { __local_storage__ } from '../backend/local_storage.ts'
 import { stripAnsiCode } from 'std/fmt/colors.ts'
 import { grokPostgresError } from '../backend/grokPostgresError.ts'
+import { logToFileIfOnServer } from '../util/logToFileIfOnServer.ts'
 // import { grokPostgresError } from '../backend/grokPostgresError.ts'
 
 function generateTraceparent(): string {
@@ -36,6 +37,10 @@ async function handleError(ctx: Context<any>) {
     return await ctx.next()
   } catch (error) {
     console.error(error)
+    // deno-lint-ignore no-explicit-any
+    logToFileIfOnServer((error as any).stack || (error as any).message || error, {
+      file_prefix: 'error',
+    })
     if (!isObjectLike(error)) {
       console.log(ctx.url.href, typeof error)
       console.error(error)
