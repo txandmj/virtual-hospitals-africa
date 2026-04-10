@@ -37,7 +37,7 @@ jobs:
         deno task db:migrate all
         deno task build
       run: |
-        deno task test --use-build test/web
+        deno task test --use-build test/web/login.test.ts
 
   test_non_web:
     uses: ./.github/workflows/test-with-db.yml

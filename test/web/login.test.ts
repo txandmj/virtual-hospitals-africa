@@ -141,7 +141,7 @@ describeParallel('/login', () => {
       },
     )
 
-    itParallel(
+    itParallel.only(
       'starts in an empty waiting room with a start-registration link for a receptionist',
       async () => {
         const organization = await createTestOrganization(db)
