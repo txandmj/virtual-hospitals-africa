@@ -32,6 +32,7 @@ COPY --from=build /deno-dir /deno-dir
 COPY --from=build /app/deno.json ./deno.json
 COPY --from=build /app/deno.lock ./deno.lock
 COPY --from=build /app/scripts/web.sh ./scripts/web.sh
+COPY --from=build /app/scripts/fix_fresh_route_order.ts ./scripts/fix_fresh_route_order.ts
 
 EXPOSE 8000
 
