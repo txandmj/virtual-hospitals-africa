@@ -39,13 +39,6 @@ jobs:
         run: |
           docker buildx build \
             -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
-            -t $ECR_REGISTRY/$ECR_REPOSITORY:vha-app \
-            --platform linux/arm64 \
-            --no-cache \
-            --push .
-        run: |
-          docker buildx build \
-            -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
             --platform linux/arm64 \
             --cache-from type=gha \
             --cache-to type=gha,mode=max \
