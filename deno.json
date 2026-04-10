@@ -2,7 +2,7 @@
   "tasks": {
     "chatbot:patient": "deno task run:trusted chatbot/chatbot.ts patient",
     "chatbot:pharmacist": "mkdir -p temp_files && deno task run:trusted chatbot/chatbot.ts pharmacist",
-    "build": "NO_EXTERNAL_CONNECT=1 vite build",
+    "build": "NO_EXTERNAL_CONNECT=1 vite build && deno run -A scripts/fix_fresh_route_order.ts",
     "vite": "vite",
     "proxy": "NO_MONKEY_PATCH_CONSOLE=1 deno task run:trusted proxy.ts",
     "start": "./scripts/dev.sh",
