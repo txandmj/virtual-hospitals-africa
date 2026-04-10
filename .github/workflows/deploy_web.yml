@@ -39,10 +39,12 @@ jobs:
         run: |
           docker buildx build \
             -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:vha-app \
             --platform linux/arm64 \
             --cache-from type=gha \
             --cache-to type=gha,mode=max \
             --push .
+
 
       - name: Deploy to EC2
         uses: appleboy/ssh-action@master
@@ -66,7 +68,7 @@ jobs:
 
             # Pull the latest image
             docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-            
+
             # Stop and remove existing container if it exists
             docker stop vha-app || true
             docker rm vha-app || true
