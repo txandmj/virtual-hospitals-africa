@@ -38,7 +38,7 @@ jobs:
         deno task build
         test -f _fresh/client/.vite/manifest.json
       run: |
-        deno task test --use-build test/web/login.test.ts
+        deno task test --use-build test/web
 
   test_non_web:
     uses: ./.github/workflows/test-with-db.yml
