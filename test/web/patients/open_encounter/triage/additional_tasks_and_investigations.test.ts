@@ -1098,6 +1098,78 @@ describeParallel('triage/additional_tasks_and_investigations', () => {
     },
   )
 
+  itParallel(
+    'prompts for blood glucose status if consciousness is not alert. If between 3-6 mmol/L for a patient with high BMI, follows up for other possible diabetes risk factors',
+    async () => {
+      const { $, postStep } = await setupTriageNewPatient({
+        patient_demographics: randomDemographics('ZA', 'female', 'adult'),
+        warning_signs: asWarningSignsAdult([], { pregnant: false }),
+        brief_history: {
+          common_conditions: {
+            diabetes: { existence: 'No' },
+            pregnancy: { existence: 'No' },
+          },
+        },
+        // High BMI
+        height_and_weight: {
+          measurements: {
+            height: {
+              value: 140,
+              units: 'cm',
+            },
+            weight: {
+              value: 130,
+              units: 'kg',
+            },
+          },
+        },
+        measure_vitals: {
+          measurements: asVitalMeasurementFormValues({
+            respiratory_rate: 12,
+            heart_rate: 60,
+            blood_pressure_systolic: 120,
+            blood_pressure_diastolic: 80,
+            temperature: 36.6,
+          }),
+          assessments: asVitalAssessmentFormValues({
+            mobility_assessment: 'Walking',
+            consciousness: 'Reacts to voice',
+            trauma_presence: 'No',
+          }),
+        },
+      })
+
+      // deno-lint-ignore no-explicit-any
+      const form_values: any = getFormValues($)
+
+      assertMatches(form_values, {
+        measurements: {
+          'measurement-blood-glucose-status': {
+            value: null,
+            units: 'mmol/L',
+            s_expression: '(measurement (snomed_concept "Blood glucose status" "observable entity") mmol/L)',
+          },
+        },
+      })
+
+      const post_data = structuredClone(form_values)
+      // deno-lint-ignore no-explicit-any
+      post_data.measurements['measurement-blood-glucose-status'].value = '5.1' as any
+
+      const $after_post = await postStep({
+        additional_tasks_and_investigations: post_data,
+      })
+
+      assert($after_post.url.endsWith('/triage/additional_tasks_and_investigations'))
+      assertEquals($after_post('span:contains("Follow up based on new findings")').length, 1)
+
+      // deno-lint-ignore no-explicit-any
+      const after_post_form_values: any = getFormValues($after_post)
+
+      assert('finding-sedentary-lifestyle' in after_post_form_values.check_for)
+    },
+  )
+
   itParallel.skip('creates an additional task if oxygen saturation is below 92%', async () => {
     const age_determination = 'adult' as const
     /*const { nurse, encounter, patient_encounter_id } =*/ await setupTriageNewPatient({

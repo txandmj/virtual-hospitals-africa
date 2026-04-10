@@ -201,7 +201,7 @@ describe('s_expression', () => {
 
         for (const system_diagnosis_rules_file_path of apc_system_diagnosis_rules_file_paths) {
           const task_file_path = system_diagnosis_rules_file_path.replace('/system_diagnosis_rules/', '/tasks/')
-          assert(tasks_file_paths.includes(task_file_path))
+          assert(tasks_file_paths.includes(task_file_path), `${task_file_path} missing`)
 
           const system_diagnosis_rules = await parseLispFile(system_diagnosis_rules_file_path).then((expressions) =>
             expressions.map((expression) => parseWithSchema(expression, system_diagnosis_rule))

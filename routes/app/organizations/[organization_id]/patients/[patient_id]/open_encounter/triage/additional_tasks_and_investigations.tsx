@@ -72,6 +72,8 @@ export const handler = postHandler(
       workflow_step_snomed_concept,
     } = ctx.state
 
+    console.log({ form_values })
+
     assert(patient_age_determination)
     const completed_procedure = completedProcedure(ctx)
 
@@ -106,7 +108,7 @@ export const handler = postHandler(
         }
       })
 
-      if (!findings_to_insert.length) {
+      if (!findings_to_insert.length && !measurements_to_insert.length) {
         return NoInsertOnAccountOfPreviouslyCompletedProcedureWithNoChanges
       }
 
