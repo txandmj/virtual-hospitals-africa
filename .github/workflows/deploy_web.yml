@@ -40,7 +40,7 @@ jobs:
           docker buildx build \
             -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
             -t $ECR_REGISTRY/$ECR_REPOSITORY:vha-app \
-            --platform linux/arm64 \
+            --platform linux/amd64 \
             --no-cache \
             --push .
         # run: |
