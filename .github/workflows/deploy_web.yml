@@ -27,16 +27,30 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build, tag, and push image to Amazon ECR
-        id: build-image
+      - name: Build, tag, and push events-image to Amazon ECR
+        id: build-events-image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
-          IMAGE_TAG: ${{ github.sha }}
+          SHA: ${{ github.sha }}
         run: |
           docker buildx build \
-            -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
-            -t $ECR_REGISTRY/$ECR_REPOSITORY:vha-app \
+            -f Dockerfile.vha-events-processor \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:$SHA-events \
+            --platform linux/arm64 \
+            --cache-from type=gha \
+            --cache-to type=gha,mode=max \
+            --push .
+
+      - name: Build, tag, and push web-image to Amazon ECR
+        id: build-web-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+          SHA: ${{ github.sha }}
+        run: |
+          docker buildx build \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:$SHA \
             --platform linux/arm64 \
             --cache-from type=gha \
             --cache-to type=gha,mode=max \
@@ -48,29 +62,32 @@ jobs:
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
-          IMAGE_TAG: ${{ github.sha }}
+          SHA: ${{ github.sha }}
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          envs: ECR_REGISTRY,ECR_REPOSITORY,IMAGE_TAG
+          envs: ECR_REGISTRY,ECR_REPOSITORY,SHA
           script: |
             set -euo pipefail
 
             # Login to ECR
             aws ecr get-login-password --region af-south-1 | docker login --username AWS --password-stdin $ECR_REGISTRY
 
-            # Remove all but the latest 3 images
-            docker images | awk 'NR > 4 { print $3 }' | xargs docker rmi || true
+            # Remove all but the latest 2 images (events + web)
+            docker images | awk 'NR > 3 { print $3 }' | xargs docker rmi || true
 
-            # Pull the latest image
-            docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+            # Pull the latest images
+            docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$SHA
+            docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$SHA-events
 
-            # Stop and remove existing container if it exists
+            # Stop and remove existing containers if they exists
             docker stop vha-app || true
             docker rm vha-app || true
+            docker stop vha-events || true
+            docker rm vha-events || true
 
-            # Run the new container
+            # Run the new web container
             docker run -d \
               --name vha-app \
               --restart unless-stopped \
@@ -80,4 +97,17 @@ jobs:
               --log-opt awslogs-region=af-south-1 \
               --log-opt awslogs-group=/docker/virtual-hospitals-africa \
               --log-opt awslogs-stream=vha-app \
-              $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+              $ECR_REGISTRY/$ECR_REPOSITORY:$SHA
+
+            docker run -d \
+              --name vha-events \
+              --restart unless-stopped \
+              --env-file /home/ec2-user/.env \
+              --log-driver=awslogs \
+              --log-opt awslogs-region=af-south-1 \
+              --log-opt awslogs-group=/docker/virtual-hospitals-africa \
+              --log-opt awslogs-stream=vha-events \
+              $ECR_REGISTRY/$ECR_REPOSITORY:$SHA-events
+
+            docker ps | grep vha
+            echo "Deployment complete"
