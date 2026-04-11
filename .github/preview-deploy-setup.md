@@ -39,27 +39,11 @@ SSH in and run:
 ```bash
 # Install Docker
 sudo apt-get update
-sudo apt-get install -y docker.io git git-lfs
+sudo apt-get install -y docker.io 
 sudo systemctl enable --now docker
 sudo usermod -aG docker ubuntu
 # Re-login after this for group membership to take effect
 
-# Create the preview directory structure
-sudo mkdir -p /opt/vha-preview/db/dumps
-sudo chown -R ubuntu:ubuntu /opt/vha-preview   # replace 'ubuntu' as above
-
-# Pull the SNOMED dump from the repo (only needed once; it rarely changes)
-# Clone the repo temporarily to get the LFS file, then keep just the dump
-git clone --no-checkout https://github.com/morehumaninternet/virtual-hospitals-africa.git /tmp/vha-clone
-cd /tmp/vha-clone
-git lfs install
-git lfs pull --include="db/dumps/snomed"
-cp db/dumps/snomed /opt/vha-preview/db/dumps/snomed
-rm -rf /tmp/vha-clone
-
-# Verify the dump is there
-ls -lh /opt/vha-preview/db/dumps/snomed
-```
 
 ### 5. Create the shared preview env file
 
@@ -77,7 +61,7 @@ chmod 600 /opt/vha-preview/.env.preview
 
 ### 6. Update the SNOMED dump when it changes
 
-The dump rarely changes (it's SNOMED base data). When it does, SSH into the preview instance and replace the file:
+The dump rarely changes (it's SNOMED base data). When it does, scp the file into the preview instance
 
 ```bash
 scp db/dumps/snomed ubuntu@<preview-ec2-ip>:/opt/vha-preview/db/dumps/snomed
