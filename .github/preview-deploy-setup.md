@@ -39,12 +39,15 @@ SSH in and run:
 ```bash
 # Install Docker
 sudo apt-get update
-sudo apt-get install -y docker.io 
+sudo apt-get install -y docker.io unzip
+curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
 sudo systemctl enable --now docker
 sudo usermod -aG docker ubuntu
 # Re-login after this for group membership to take effect
 
-
+sudo mkdir -p /opt/vha-preview
 ### 5. Create the shared preview env file
 
 All preview environments share secrets from `/opt/vha-preview/.env.preview`. The `DATABASE_URL` is overridden per-PR by docker compose, so it can be a placeholder here.
@@ -56,7 +59,7 @@ GOOGLE_MAPS_API_KEY=your_key_here
 SKIP_GOOGLE_MAPS=false
 # ... add any other env vars the app needs at runtime
 EOF
-chmod 600 /opt/vha-preview/.env.preview
+sudo chmod 600 /opt/vha-preview/.env.preview
 ```
 
 ### 6. Update the SNOMED dump when it changes
@@ -64,8 +67,10 @@ chmod 600 /opt/vha-preview/.env.preview
 The dump rarely changes (it's SNOMED base data). When it does, scp the file into the preview instance
 
 ```bash
-scp db/dumps/snomed ubuntu@<preview-ec2-ip>:/opt/vha-preview/db/dumps/snomed
+scp -i ~/.ssh/vha.pem db/dumps/snomed ubuntu@<preview-ec2-ip>:~/
 ```
+
+sudo mv ~/snomed /opt/vha-preview/db/dumps
 
 ---
 
