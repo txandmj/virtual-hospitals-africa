@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:16
+    image: postgis/postgis:17-3.5
     environment:
       POSTGRES_USER: vha_user
       POSTGRES_PASSWORD: vha_preview_pw

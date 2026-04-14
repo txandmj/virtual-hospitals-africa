@@ -33,7 +33,7 @@ export async function restore(name: string, ...additional_args: string[]) {
   logStdOut()
   logStdErr()
   const status = await process.status
-  assert(!status.code)
+  assert(!status.code, `pg_restore failed with exit code ${status.code}`)
 }
 
 if (import.meta.main) {
