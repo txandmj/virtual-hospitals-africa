@@ -37,9 +37,9 @@ Each PR gets port `8000 + PR_NUMBER` (e.g. PR 1180 â†’ port 9180). Opening 8001â
 SSH in and run:
 
 ```bash
-# Install Docker
+# Install Docker + Compose plugin
 sudo apt-get update
-sudo apt-get install -y docker.io unzip
+sudo apt-get install -y docker.io docker-compose-v2 unzip
 curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip"
 unzip awscliv2.zip
 sudo ./aws/install

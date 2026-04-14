@@ -1,0 +1,48 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: vha_user
+      POSTGRES_PASSWORD: vha_preview_pw
+      POSTGRES_DB: vha_pr
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vha_user -d vha_pr"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  migrator:
+    image: ${IMAGE}
+    command: /bin/sh -c "deno task db:restore snomed && deno task db:migrate all"
+    environment:
+      DATABASE_URL: postgres://vha_user:vha_preview_pw@postgres:5432/vha_pr
+    volumes:
+      - /opt/vha-preview/db/dumps:/app/db/dumps:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  app:
+    image: ${IMAGE}
+    env_file:
+      - /opt/vha-preview/.env.preview
+    environment:
+      DATABASE_URL: postgres://vha_user:vha_preview_pw@postgres:5432/vha_pr
+    ports:
+      - "${PORT}:8000"
+    depends_on:
+      migrator:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  events:
+    image: ${EVENTS_IMAGE}
+    env_file:
+      - /opt/vha-preview/.env.preview
+    environment:
+      DATABASE_URL: postgres://vha_user:vha_preview_pw@postgres:5432/vha_pr
+    depends_on:
+      migrator:
+        condition: service_completed_successfully
+    restart: unless-stopped

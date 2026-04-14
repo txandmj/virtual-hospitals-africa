@@ -61,6 +61,16 @@ jobs:
             --cache-to type=gha,mode=max,scope=pr-$PR_NUMBER-events \
             --push .
 
+      - name: Upload compose file to preview EC2
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.PREVIEW_EC2_HOST }}
+          username: ${{ secrets.PREVIEW_EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: scripts/deploy/docker-compose-preview-deploy.yml
+          target: /opt/vha-preview/
+          strip_components: 2
+
       - name: Deploy to preview EC2
         uses: appleboy/ssh-action@master
         env:
@@ -76,82 +86,7 @@ jobs:
 
           # Migrations can take several minutes; allow up to 15 min total
           command_timeout: 15m
-          script: |
-            set -euo pipefail
-
-            PORT=$((8000 + PR_NUMBER))
-            PROJECT=pr-$PR_NUMBER
-            DIR=/opt/vha-preview/$PROJECT
-            IMAGE=$ECR_REGISTRY/$ECR_REPOSITORY:pr-$PR_NUMBER-$SHA
-            EVENTS_IMAGE=$ECR_REGISTRY/$ECR_REPOSITORY:pr-$PR_NUMBER-$SHA-events
-
-            # Login to ECR
-            aws ecr get-login-password --region af-south-1 | docker login --username AWS --password-stdin $ECR_REGISTRY
-
-            # Pull images before taking down the old environment to minimise downtime
-            docker pull $IMAGE
-            docker pull $EVENTS_IMAGE
-
-            # Tear down any existing deployment for this PR (fresh DB on each push)
-            docker compose --project-name $PROJECT -f $DIR/docker-compose.yml down -v --remove-orphans 2>/dev/null || true
-
-            mkdir -p $DIR
-
-            cat > $DIR/docker-compose.yml << COMPOSE_EOF
-            services:
-              postgres:
-                image: postgres:16
-                environment:
-                  POSTGRES_USER: vha_user
-                  POSTGRES_PASSWORD: vha_preview_pw
-                  POSTGRES_DB: vha_pr
-                healthcheck:
-                  test: ["CMD-SHELL", "pg_isready -U vha_user -d vha_pr"]
-                  interval: 5s
-                  timeout: 5s
-                  retries: 20
-
-              migrator:
-                image: $IMAGE
-                command: /bin/sh -c "deno task db:restore snomed && deno task db:migrate all"
-                environment:
-                  DATABASE_URL: postgres://vha_user:vha_preview_pw@postgres:5432/vha_pr
-                volumes:
-                  - /opt/vha-preview/db/dumps:/app/db/dumps:ro
-                depends_on:
-                  postgres:
-                    condition: service_healthy
-                restart: "no"
-
-              app:
-                image: $IMAGE
-                env_file:
-                  - /opt/vha-preview/.env.preview
-                environment:
-                  DATABASE_URL: postgres://vha_user:vha_preview_pw@postgres:5432/vha_pr
-                ports:
-                  - "$PORT:8000"
-                depends_on:
-                  migrator:
-                    condition: service_completed_successfully
-                restart: unless-stopped
-
-              events:
-                image: $EVENTS_IMAGE
-                env_file:
-                  - /opt/vha-preview/.env.preview
-                environment:
-                  DATABASE_URL: postgres://vha_user:vha_preview_pw@postgres:5432/vha_pr
-                depends_on:
-                  migrator:
-                    condition: service_completed_successfully
-                restart: unless-stopped
-            COMPOSE_EOF
-
-            docker compose --project-name $PROJECT -f $DIR/docker-compose.yml up -d --wait --wait-timeout 600
-
-            docker compose --project-name $PROJECT -f $DIR/docker-compose.yml ps
-            echo "Preview deployed at http://$(curl -sf http://169.254.169.254/latest/meta-data/public-ipv4):$PORT"
+          script_path: scripts/deploy/preview_deploy.sh
 
       - name: Comment preview URL on PR
         uses: actions/github-script@v7
@@ -159,34 +94,7 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           PREVIEW_EC2_IP: ${{ secrets.PREVIEW_EC2_IP }}
         with:
-          script: |
-            const port = 8000 + parseInt(process.env.PR_NUMBER);
-            const url = `http://${process.env.PREVIEW_EC2_IP}:${port}`;
-            const body = `### Preview Environment\n\n**${url}**\n\n_Redeployed on each push. Torn down when this PR is closed._`;
-
-            const { data: comments } = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: parseInt(process.env.PR_NUMBER),
-            });
-
-            const existing = comments.find(c => c.body.includes('Preview Environment'));
-
-            if (existing) {
-              await github.rest.issues.updateComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: existing.id,
-                body,
-              });
-            } else {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: parseInt(process.env.PR_NUMBER),
-                body,
-              });
-            }
+          script_path: scripts/deploy/comment_preview_url.js
 
   teardown:
     if: github.event.action == 'closed'
@@ -202,48 +110,11 @@ jobs:
           username: ${{ secrets.PREVIEW_EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           envs: PR_NUMBER
-          script: |
-            set -euo pipefail
-
-            PROJECT=pr-$PR_NUMBER
-            DIR=/opt/vha-preview/$PROJECT
-
-            if [ -d "$DIR" ]; then
-              docker compose --project-name $PROJECT -f $DIR/docker-compose.yml down -v --remove-orphans
-              rm -rf $DIR
-              echo "Preview environment for PR $PR_NUMBER torn down"
-            else
-              echo "No preview environment found for PR $PR_NUMBER, nothing to do"
-            fi
+          script_path: scripts/deploy/preview_teardown.sh
 
       - name: Comment teardown on PR
         uses: actions/github-script@v7
         env:
           PR_NUMBER: ${{ github.event.pull_request.number }}
         with:
-          script: |
-            const { data: comments } = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: parseInt(process.env.PR_NUMBER),
-            });
-
-            const existing = comments.find(c => c.body.includes('Preview Environment'));
-
-            const body = `### Preview Environment\n\nTorn down.`;
-
-            if (existing) {
-              await github.rest.issues.updateComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: existing.id,
-                body,
-              });
-            } else {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: parseInt(process.env.PR_NUMBER),
-                body,
-              });
-            }
+          script_path: scripts/deploy/comment_teardown.js
