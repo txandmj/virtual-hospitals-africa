@@ -1,22 +1,37 @@
-FROM postgis/postgis:16-3.4
+# Use the official Ubuntu 24.04 as a base
+FROM ubuntu:noble
 
-# Install build dependencies for pg_stat_monitor and pg_ivm
+# Set environment variables to non-interactive to avoid prompts during build
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install dependencies and the PostgreSQL official repository
 RUN apt-get update && apt-get install -y \
-    build-essential \
-    postgresql-server-dev-16 \
-    llvm-13 \
-    clang-13 \
-    unzip \
+    gnupg \
+    lsb-release \
+    curl \
+    ca-certificates \
+    && curl -fSsL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /usr/share/keyrings/postgresql-archive-keyring.gpg \
+    && echo "deb [signed-by=/usr/share/keyrings/postgresql-archive-keyring.gpg] http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list
+
+# Install PostgreSQL 17 and PostGIS 3
+RUN apt-get update && apt-get install -y \
+    postgresql-17 \
+    postgresql-17-postgis-3 \
+    postgresql-client-17 \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy and build pg_stat_monitor from source
-COPY pg_stat_monitor-2.3.1.zip /tmp/
-RUN cd /tmp \
-    && unzip pg_stat_monitor-2.3.1.zip \
-    && cd pg_stat_monitor-2.3.1 \
-    && make USE_PGXS=1 \
-    && make USE_PGXS=1 install \
-    && cd / \
-    && rm -rf /tmp/pg_stat_monitor-2.3.1*
+# Switch to the postgres user
+USER postgres
 
-WORKDIR /
+# Initialize the database and allow local connections
+RUN /etc/init.d/postgresql start && \
+    psql --command "CREATE USER admin WITH SUPERUSER PASSWORD 'password';" && \
+    createdb -O admin mydatabase && \
+    psql -d mydatabase -c "CREATE EXTENSION IF NOT EXISTS postgis;"
+
+# Expose the PostgreSQL port
+EXPOSE 5432
+
+# Set the default command to run PostgreSQL in the foreground
+CMD ["/usr/lib/postgresql/17/bin/postgres", "-D", "/var/lib/postgresql/17/main", "-c", "config_file=/etc/postgresql/17/main/postgresql.conf"]
