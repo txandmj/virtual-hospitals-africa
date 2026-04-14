@@ -16,6 +16,7 @@ services:
     command: /bin/sh -c "deno task db:restore snomed && deno task db:migrate all"
     environment:
       DATABASE_URL: postgres://vha_user:vha_preview_pw@postgres:5432/vha_pr
+      NO_DATABASE_SSL: "true"
     volumes:
       - /opt/vha-preview/db/dumps:/app/db/dumps:ro
     depends_on:
@@ -29,6 +30,7 @@ services:
       - /opt/vha-preview/.env.preview
     environment:
       DATABASE_URL: postgres://vha_user:vha_preview_pw@postgres:5432/vha_pr
+      NO_DATABASE_SSL: "true"
     ports:
       - "${PORT}:8000"
     depends_on:
@@ -42,6 +44,7 @@ services:
       - /opt/vha-preview/.env.preview
     environment:
       DATABASE_URL: postgres://vha_user:vha_preview_pw@postgres:5432/vha_pr
+      NO_DATABASE_SSL: "true"
     depends_on:
       migrator:
         condition: service_completed_successfully
