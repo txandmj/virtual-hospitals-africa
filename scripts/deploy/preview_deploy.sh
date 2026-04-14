@@ -4,6 +4,7 @@ set -euo pipefail
 export PORT=$((8000 + PR_NUMBER))
 export PROJECT=pr-$PR_NUMBER
 export IMAGE=$ECR_REGISTRY/$ECR_REPOSITORY:pr-$PR_NUMBER-$SHA
+export MIGRATOR_IMAGE=$ECR_REGISTRY/$ECR_REPOSITORY:pr-$PR_NUMBER-$SHA-migrator
 export EVENTS_IMAGE=$ECR_REGISTRY/$ECR_REPOSITORY:pr-$PR_NUMBER-$SHA-events
 
 COMPOSE_FILE=/opt/vha-preview/docker-compose-preview-deploy.yml
@@ -13,6 +14,7 @@ aws ecr get-login-password --region af-south-1 | docker login --username AWS --p
 
 # Pull images before taking down the old environment to minimise downtime
 docker pull "$IMAGE"
+docker pull "$MIGRATOR_IMAGE"
 docker pull "$EVENTS_IMAGE"
 
 # Tear down any existing deployment for this PR (fresh DB on each push)

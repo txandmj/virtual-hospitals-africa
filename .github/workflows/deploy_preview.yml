@@ -46,6 +46,21 @@ jobs:
             --cache-to type=gha,mode=max,scope=pr-$PR_NUMBER \
             --push .
 
+      - name: Build, tag, and push migrator image to Amazon ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+          SHA: ${{ github.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          docker buildx build \
+            -f Dockerfile.migrator \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:pr-$PR_NUMBER-$SHA-migrator \
+            --platform linux/arm64 \
+            --cache-from type=gha,scope=pr-$PR_NUMBER-migrator \
+            --cache-to type=gha,mode=max,scope=pr-$PR_NUMBER-migrator \
+            --push .
+
       - name: Build, tag, and push events image to Amazon ECR
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
