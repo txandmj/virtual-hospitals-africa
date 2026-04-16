@@ -1,4 +1,4 @@
-import { walk } from 'std/fs/mod.ts'
+import { copy, walk } from 'std/fs/mod.ts'
 import { marked } from 'marked'
 import { assert } from 'std/assert/assert.ts'
 
@@ -11,6 +11,8 @@ type BlogPostMeta = {
   description: string
   tags: string[]
   word_count: number
+  hero_image?: string
+  wide_image?: string
 }
 
 type BlogPost = BlogPostMeta & {
@@ -59,18 +61,27 @@ function parseFrontmatter(content: string): { meta: BlogPostMeta; body: string }
       description: meta.description,
       tags,
       word_count,
+      hero_image: meta.hero_image,
+      wide_image: meta.wide_image,
     } as BlogPostMeta,
     body,
   }
 }
 
 /**
- * Process a single markdown file and return blog post data
+ * Process a single markdown file and return blog post data.
+ * Returns null for drafts (frontmatter `draft: true`).
  */
-async function processBlogPost(file_path: string): Promise<BlogPost> {
+async function processBlogPost(file_path: string): Promise<BlogPost | null> {
   console.log(`Processing ${file_path}...`)
 
   const content = await Deno.readTextFile(file_path)
+  const draft_match = content.match(/^---\n([\s\S]*?)\n---/)
+  if (draft_match && /^\s*draft:\s*true\s*$/m.test(draft_match[1])) {
+    console.log(`  → skipping draft`)
+    return null
+  }
+
   const { meta, body } = parseFrontmatter(content)
   const html = await marked(body)
 
@@ -98,6 +109,8 @@ function formatPostAsTypescript(post: BlogPost): string {
   const tags_ts = post.tags.map((t) => `'${escapeForSingleQuotes(t)}'`).join(', ')
   const subtitle_ts = post.subtitle ? `'${escapeForSingleQuotes(post.subtitle)}'` : 'undefined'
   const author_ts = post.author ? `'${escapeForSingleQuotes(post.author)}'` : 'undefined'
+  const hero_image_ts = post.hero_image ? `'${escapeForSingleQuotes(post.hero_image)}'` : 'undefined'
+  const wide_image_ts = post.wide_image ? `'${escapeForSingleQuotes(post.wide_image)}'` : 'undefined'
   return `  {
     title: '${escapeForSingleQuotes(post.title)}',
     subtitle: ${subtitle_ts},
@@ -107,6 +120,8 @@ function formatPostAsTypescript(post: BlogPost): string {
     description: '${escapeForSingleQuotes(post.description)}',
     tags: [${tags_ts}],
     word_count: ${post.word_count},
+    hero_image: ${hero_image_ts},
+    wide_image: ${wide_image_ts},
     html: '${escapeForSingleQuotes(post.html)}',
   }`
 }
@@ -118,6 +133,8 @@ function formatPostMetaAsTypescript(post: BlogPostMeta): string {
   const tags_ts = post.tags.map((t) => `'${escapeForSingleQuotes(t)}'`).join(', ')
   const subtitle_ts = post.subtitle ? `'${escapeForSingleQuotes(post.subtitle)}'` : 'undefined'
   const author_ts = post.author ? `'${escapeForSingleQuotes(post.author)}'` : 'undefined'
+  const hero_image_ts = post.hero_image ? `'${escapeForSingleQuotes(post.hero_image)}'` : 'undefined'
+  const wide_image_ts = post.wide_image ? `'${escapeForSingleQuotes(post.wide_image)}'` : 'undefined'
   return `  {
     title: '${escapeForSingleQuotes(post.title)}',
     subtitle: ${subtitle_ts},
@@ -127,6 +144,8 @@ function formatPostMetaAsTypescript(post: BlogPostMeta): string {
     description: '${escapeForSingleQuotes(post.description)}',
     tags: [${tags_ts}],
     word_count: ${post.word_count},
+    hero_image: ${hero_image_ts},
+    wide_image: ${wide_image_ts},
   }`
 }
 
@@ -150,6 +169,8 @@ type BlogPostMeta = {
   description: string
   tags: string[]
   word_count: number
+  hero_image?: string
+  wide_image?: string
 }
 
 const BLOG_POSTS: BlogPostMeta[] = [
@@ -183,6 +204,8 @@ type BlogPostMeta = {
   description: string
   tags: string[]
   word_count: number
+  hero_image?: string
+  wide_image?: string
 }
 
 type BlogPost = BlogPostMeta & {
@@ -209,7 +232,17 @@ export default function BlogPostPage(ctx: Context<unknown>) {
   const html_content = <div dangerouslySetInnerHTML={{ __html: post.html }} />
 
   return (
-    <LayoutBlogPost title={post.title} subtitle={post.subtitle} author={post.author} date={post.date} tags={post.tags} word_count={post.word_count} other_posts={other_posts}>
+    <LayoutBlogPost
+      title={post.title}
+      subtitle={post.subtitle}
+      author={post.author}
+      date={post.date}
+      tags={post.tags}
+      word_count={post.word_count}
+      hero_image={post.hero_image}
+      wide_image={post.wide_image}
+      other_posts={other_posts}
+    >
       {html_content}
     </LayoutBlogPost>
   )
@@ -224,13 +257,15 @@ async function main() {
   const blog_dir = 'blog'
   const post_route_path = 'routes/blog/[post].tsx'
   const index_route_path = 'routes/blog.tsx'
+  const images_src = 'blog/images'
+  const images_dest = 'static/blog/images'
 
   const posts: BlogPost[] = []
 
   for await (const entry of walk(blog_dir, { exts: ['.md'] })) {
     if (entry.isFile) {
       const post = await processBlogPost(entry.path)
-      posts.push(post)
+      if (post) posts.push(post)
     }
   }
 
@@ -243,6 +278,11 @@ async function main() {
 
   // Ensure the routes/blog directory exists
   await Deno.mkdir('routes/blog', { recursive: true })
+
+  // Copy blog images to static/blog/images
+  await Deno.mkdir('static/blog', { recursive: true })
+  await Deno.remove(images_dest, { recursive: true }).catch(() => {})
+  await copy(images_src, images_dest)
 
   // Generate the route files
   const post_route_content = generateRouteFile(posts)
