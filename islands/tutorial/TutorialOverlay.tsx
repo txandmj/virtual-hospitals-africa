@@ -98,15 +98,63 @@ function handleInput({ field, value }: {
   el.dispatchEvent(new Event('input', { bubbles: true }))
 }
 
+type ScriptItemSansTransition = Exclude<ScriptItem, { type: 'step_transition' }>
+
+type DialogueProps = Parameters<typeof TutorialDialogue>[0]
+
+/**
+ * Compute TutorialDialogue props for any renderable script item.
+ * For items without a dialogue (highlight, modal), returns show=false with
+ * placeholder values so the component stays mounted in the DOM.
+ */
+function getDialogueProps(
+  item: ScriptItemSansTransition,
+  onNext: () => void,
+  button_text: string,
+): DialogueProps {
+  switch (item.type) {
+    case 'dialogue':
+      return {
+        show: true,
+        speaker: SPEAKERS[item.speaker],
+        text: item.text,
+        dangerousHTML: !!item.dangerousHTML,
+        onNext,
+        button_text,
+        position: item.position || 'bottom-left',
+        link: item.link,
+      }
+    case 'wait_click':
+      return {
+        show: true,
+        speaker: SPEAKERS.guide,
+        text: item.text ?? 'Complete the action highlighted above to continue.',
+        dangerousHTML: !!item.dangerousHTML,
+        position: item.position || 'bottom-left',
+      }
+    case 'highlight':
+    case 'modal':
+      return {
+        show: false,
+        speaker: SPEAKERS.guide,
+        text: '',
+        position: 'bottom-left',
+      }
+  }
+}
+
 /**
  * Render a single script item based on its type.
+ * TutorialDialogue is rendered here (not in individual renderers) so it stays
+ * mounted across item transitions — otherwise the avatar image flashes as the
+ * component unmounts and remounts.
  */
 function RenderItem({
   item,
   onNext,
   button_text,
 }: {
-  item: Exclude<ScriptItem, { type: 'step_transition' }>
+  item: ScriptItemSansTransition
   onNext: () => void
   button_text: string
 }) {
@@ -120,53 +168,26 @@ function RenderItem({
     inputs.forEach(handleInput)
   })
 
-  switch (item.type) {
-    case 'dialogue':
-      return (
-        <DialogueRenderer
-          item={item}
-          onNext={onNext}
-          button_text={button_text}
-        />
-      )
-
-    case 'highlight':
-      return (
-        <HighlightRenderer
-          item={item}
-          onNext={onNext}
-        />
-      )
-
-    case 'wait_click':
-      return (
-        <WaitClickRenderer
-          item={item}
-          onNext={onNext}
-        />
-      )
-
-    case 'modal':
-      return (
-        <ModalRenderer
-          item={item}
-          onNext={onNext}
-        />
-      )
-  }
+  return (
+    <>
+      <TutorialDialogue {...getDialogueProps(item, onNext, button_text)} />
+      {item.type === 'dialogue' && <DialogueRenderer item={item} onNext={onNext} />}
+      {item.type === 'highlight' && <HighlightRenderer item={item} onNext={onNext} />}
+      {item.type === 'wait_click' && <WaitClickRenderer item={item} onNext={onNext} />}
+      {item.type === 'modal' && <ModalRenderer item={item} onNext={onNext} />}
+    </>
+  )
 }
 
 /**
- * Render dialogue item with speaker and optional highlight.
+ * Render dialogue item - spotlight plus portal-click handling.
  */
 function DialogueRenderer({
   item,
   onNext,
-  button_text,
 }: {
   item: Extract<ScriptItem, { type: 'dialogue' }>
   onNext: () => void
-  button_text: string
 }) {
   // When portal=true, clicking the highlighted target also advances the tutorial
   useEffect(() => {
@@ -178,21 +199,7 @@ function DialogueRenderer({
     return () => elements.forEach((el) => el.removeEventListener('click', handler))
   }, [item.portal, item.highlight, onNext])
 
-  return (
-    <>
-      <TutorialSpotlight target={item.highlight} portal={item.portal} />
-      <TutorialDialogue
-        key={item.speaker}
-        speaker={SPEAKERS[item.speaker]}
-        text={item.text}
-        dangerousHTML={!!item.dangerousHTML}
-        onNext={onNext}
-        button_text={button_text}
-        position={item.position || 'bottom-left'}
-        link={item.link}
-      />
-    </>
-  )
+  return <TutorialSpotlight target={item.highlight} portal={item.portal} />
 }
 
 /**
@@ -238,17 +245,7 @@ function WaitClickRenderer({
     return () => el.removeEventListener('click', handler)
   }, [item.target, onNext])
 
-  return (
-    <>
-      <TutorialSpotlight target={item.target} clickable />
-      <TutorialDialogue
-        speaker={SPEAKERS.guide}
-        text={item.text ?? 'Complete the action highlighted above to continue.'}
-        dangerousHTML={!!item.dangerousHTML}
-        position={item.position || 'bottom-left'}
-      />
-    </>
-  )
+  return <TutorialSpotlight target={item.target} clickable />
 }
 
 /**

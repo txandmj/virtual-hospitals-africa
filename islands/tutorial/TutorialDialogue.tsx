@@ -13,6 +13,7 @@ export const TUTORIAL_BUTTON_CLASSNAME =
 type Position = 'bottom-left' | 'top-left' | 'top-right' | 'bottom-right'
 
 type Props = {
+  show?: boolean // When false, keep in DOM but hidden (prevents image re-mount flash)
   speaker: {
     name: string
     avatar_src: string
@@ -31,6 +32,7 @@ type Props = {
  * Position is determined by speaker: guide → bottom-left, patient → top-right
  */
 export function TutorialDialogue({
+  show = true,
   speaker,
   text,
   dangerousHTML,
@@ -46,6 +48,7 @@ export function TutorialDialogue({
   return (
     <div
       className={cls('fixed z-[60] flex items-end gap-3 md:gap-6 max-w-[92vw] md:max-w-2xl lg:max-w-3xl', {
+        invisible: !show,
         'bottom-8': effective_position.startsWith('bottom'),
         'top-8': effective_position.startsWith('top'),
         'left-8': effective_position.endsWith('left'),
