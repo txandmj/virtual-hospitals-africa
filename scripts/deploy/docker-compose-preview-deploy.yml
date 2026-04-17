@@ -17,6 +17,7 @@ services:
     environment:
       DATABASE_URL: postgres://vha_user:vha_preview_pw@postgres:5432/vha_pr
       NO_DATABASE_SSL: "true"
+      GOOGLE_MAPS_API_KEY: unused
     volumes:
       - /opt/vha-preview/db/dumps:/app/db/dumps:ro
     depends_on:

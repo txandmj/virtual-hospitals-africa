@@ -8,6 +8,3 @@ scripts/**
 logs/
 
 .env*
-
-db/dumps/
-db/resources/
