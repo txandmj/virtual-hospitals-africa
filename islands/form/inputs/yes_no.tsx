@@ -64,8 +64,9 @@ export function YesNoGrid(
   const show_guidance_on_clicking_all_nos = useSignal(false)
 
   useEffect(() => {
+    const is_tutorial = globalThis.location.pathname.includes('/tutorial')
     function listener(event: Event) {
-      if ((event.target as HTMLInputElement)?.closest('[data-existence="No"]')) {
+      if (!is_tutorial && (event.target as HTMLInputElement)?.closest('[data-existence="No"]')) {
         show_guidance_on_clicking_all_nos.value = true
       }
     }
