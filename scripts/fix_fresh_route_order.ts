@@ -62,6 +62,7 @@ function sortRoutePaths(a: string, b: string): number {
       segment = false
       const score_a = getRoutePathScore(char_a, a, a_idx)
       const score_b = getRoutePathScore(char_b, b, b_idx)
+
       if (score_a === score_b) {
         if (char_a !== char_b) {
           // Fixed: was `charA < charB ? 0 : 1` — the `0` should be `-1`
@@ -77,8 +78,13 @@ function sortRoutePaths(a: string, b: string): number {
       return char_a < char_b ? -1 : 1
     }
 
+<<<<<<< HEAD
     if (a_idx === a_len - 1 && b_idx < b_len - 1) return 1
     else if (b_idx === b_len - 1 && a_idx < a_len - 1) return -1
+=======
+    if (aIdx === a_len - 1 && bIdx < b_len - 1) return 1
+    else if (bIdx === b_len - 1 && aIdx < a_len - 1) return -1
+>>>>>>> d246d3dc8 (hygiene fix)
   }
 
   return 0
@@ -86,8 +92,12 @@ function sortRoutePaths(a: string, b: string): number {
 
 const content = await Deno.readTextFile(SERVER_ENTRY)
 
+<<<<<<< HEAD
 // String split to avoid tripping the `no camelCase const` hygiene rule on the literal.
 const MARKER = '\nconst fs' + 'Routes = [\n'
+=======
+const MARKER = '\nconst fsRoutes = [\n'
+>>>>>>> d246d3dc8 (hygiene fix)
 const start_idx = content.indexOf(MARKER)
 if (start_idx === -1) {
   console.log('fix_fresh_route_order: fsRoutes array not found, skipping')
