@@ -12,28 +12,22 @@ type BlogPostMeta = {
   description: string
   tags: string[]
   word_count: number
+  hero_image?: string
+  wide_image?: string
 }
 
 const BLOG_POSTS: BlogPostMeta[] = [
   {
-    title: 'Design Principles',
-    subtitle: 'The foundations of everything we build',
-    author: 'Will Weiss',
-    slug: 'design-principles',
-    date: '2026-02-20',
-    description: 'Our core design principles for building healthcare technology',
-    tags: ['tech', 'medicine'],
-    word_count: 738,
-  },
-  {
-    title: 'Building a Rules Engine',
-    subtitle: 'Clinical decision support with S-expressions',
+    title: 'How Health Workers Can Love Their Devices',
+    subtitle: 'Learning from Dr. Atul Gawande how to gain in efficiency while letting practitioners focus on care',
     author: undefined,
-    slug: 'rules-engine',
-    date: '2024-01-20',
+    slug: 'how-health-workers-can-love-their-devices',
+    date: '2026-04-17',
     description: 'How we built our clinical decision support rules engine',
-    tags: ['tech', 'medicine', 'analytics'],
-    word_count: 80,
+    tags: ['ux design', 'medicine'],
+    word_count: 1660,
+    hero_image: '/blog/images/how-health-workers-can-love-their-devices/lindiwe-holding-tablet.png',
+    wide_image: '/blog/images/how-health-workers-can-love-their-devices/lindiwe-holding-tablet-wide.png',
   },
 ]
 

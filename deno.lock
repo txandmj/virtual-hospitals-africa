@@ -52,6 +52,7 @@
     "npm:@preact/signals@^2.5.0": "2.8.2_preact@10.27.2",
     "npm:@prefresh/vite@^2.4.8": "2.4.12_preact@10.27.2_vite@7.3.1",
     "npm:@tailwindcss/forms@0.5.7": "0.5.7_tailwindcss@4.1.18",
+    "npm:@tailwindcss/typography@0.5.16": "0.5.16_tailwindcss@4.1.18",
     "npm:@tailwindcss/vite@4.1.12": "4.1.12_vite@7.3.1",
     "npm:@types/fast-levenshtein@0.0.4": "0.0.4",
     "npm:@types/html@latest": "1.0.4",
@@ -68,7 +69,6 @@
     "npm:fracturedjsonjs@5.0.1": "5.0.1",
     "npm:html@latest": "1.0.0",
     "npm:kysely@0.28.8": "0.28.8",
-    "npm:marked@15.0.7": "15.0.7",
     "npm:natural@6.10.4": "6.10.4",
     "npm:patch-package@latest": "8.0.1",
     "npm:pdfjs-dist@4.10.38": "4.10.38",
@@ -1319,6 +1319,16 @@
       ],
       "scripts": true
     },
+    "@tailwindcss/typography@0.5.16_tailwindcss@4.1.18": {
+      "integrity": "sha512-0wDLwCVF5V3x3b1SGXPCDcdsbDHMBe+lkFzBRaHeLvNi+nrrnZ1lA18u+OTWO8iSWU2GxUOCvlXtDuqftc1oiA==",
+      "dependencies": [
+        "lodash.castarray",
+        "lodash.isplainobject",
+        "lodash.merge",
+        "postcss-selector-parser",
+        "tailwindcss@4.1.18"
+      ]
+    },
     "@tailwindcss/vite@4.1.12_vite@7.3.1": {
       "integrity": "sha512-4pt0AMFDx7gzIrAOIYgYP0KCBuKWqyW8ayrdiLEjoJTT4pKTjrzG/e4uzWtTLDziC+66R9wbUqZBccJalSE5vQ==",
       "dependencies": [
@@ -1464,7 +1474,8 @@
       "bin": true
     },
     "basic-ftp@5.2.0": {
-      "integrity": "sha512-VoMINM2rqJwJgfdHq6RiUudKt2BV+FY5ZFezP/ypmwayk68+NzzAQy4XXLlqsGD4MCzq3DrmNFD/uUmBJuGoXw=="
+      "integrity": "sha512-VoMINM2rqJwJgfdHq6RiUudKt2BV+FY5ZFezP/ypmwayk68+NzzAQy4XXLlqsGD4MCzq3DrmNFD/uUmBJuGoXw==",
+      "deprecated": true
     },
     "boolbase@1.0.0": {
       "integrity": "sha512-JZOSA7Mo9sNGB8+UjSgzdLtokWAky1zbztM3WRLCbZ70/3cTANmQmOdR7y2g+J0e2WXywy1yS468tY+IruqEww=="
@@ -1636,6 +1647,10 @@
     },
     "css-what@6.2.2": {
       "integrity": "sha512-u/O3vwbptzhMs3L1fQE82ZSLHQQfto5gyZzwteVIEyeaY5Fc7R4dapF/BvRoSYFeqfBk4m0V1Vafq5Pjv25wvA=="
+    },
+    "cssesc@3.0.0": {
+      "integrity": "sha512-/Tb/JcjK111nNScGob5MNtsntNM1aCNUDipB/TkwZFhyDrrE47SOx/18wF2bbjgc3ZzCSKW1T5nt5EbFoAz/Vg==",
+      "bin": true
     },
     "data-uri-to-buffer@6.0.2": {
       "integrity": "sha512-7hvf7/GW8e86rW0ptuwS3OcBGDjIi6SZva7hCyWC0yYry2cOPmLIjXAUHI6DK2HsnwJd9ifmt57i8eV2n4YNpw=="
@@ -2247,6 +2262,15 @@
     "lines-and-columns@1.2.4": {
       "integrity": "sha512-7ylylesZQ/PV29jhEDl3Ufjo6ZX7gCqJr5F7PKrqc93v7fzSymt1BpwEU8nAUXs8qzzvqhbjhK5QZg6Mt/HkBg=="
     },
+    "lodash.castarray@4.4.0": {
+      "integrity": "sha512-aVx8ztPv7/2ULbArGJ2Y42bG1mEQ5mGjpdvrbJcJFU3TbYybe+QlLS4pst9zV52ymy2in1KpFPiZnAOATxD4+Q=="
+    },
+    "lodash.isplainobject@4.0.6": {
+      "integrity": "sha512-oSXzaWypCMHkPC3NvBEaPHf0KsA5mvPrOPgQWDsbg8n7orZ290M0BmC/jgRZ4vcJ6DTAhjrsSYgdsW/F+MFOBA=="
+    },
+    "lodash.merge@4.6.2": {
+      "integrity": "sha512-0KpjqXRVvrYyCsX1swR/XTK0va6VQkQM6MNo7PqW77ByjAhoARA8EfrP1N4+KlKj8YS0ZUCtRT/YUuhyYDujIQ=="
+    },
     "loose-envify@1.4.0": {
       "integrity": "sha512-lyuxPGr/Wfhrlem2CL/UcnUc1zcqKAImBDzukY7Y5F/yQiNdko6+fRLevlw1HgMySw7f611UIY408EtxRSoK3Q==",
       "dependencies": [
@@ -2269,8 +2293,8 @@
         "@jridgewell/sourcemap-codec"
       ]
     },
-    "marked@15.0.7": {
-      "integrity": "sha512-dgLIeKGLx5FwziAnsk4ONoGwHwGPJzselimvlVskE9XLN4Orv9u2VA3GWw/lYUqjfA0rUT/6fqKwfZJapP9BEg==",
+    "marked@18.0.0": {
+      "integrity": "sha512-2e7Qiv/HJSXj8rDEpgTvGKsP8yYtI9xXHKDnrftrmnrJPaFNM7VRb2YCzWaX4BP1iCJ/XPduzDJZMFoqTCcIMA==",
       "bin": true
     },
     "math-intrinsics@1.1.0": {
@@ -2513,6 +2537,13 @@
     },
     "picomatch@4.0.3": {
       "integrity": "sha512-5gTmgEY/sqK6gFXLIsQNH19lWb4ebPDLA4SdLP7dsWkIXHWlG66oPuVvXSGFPppYZz8ZDZq0dYYrbHfBCVUb1Q=="
+    },
+    "postcss-selector-parser@6.0.10": {
+      "integrity": "sha512-IQ7TZdoaqbT+LCpShg46jnZVlhWD2w6iQYAcYXfHARZ7X1t/UGhhceQDs5X0cGqKvYlHNOuv7Oa1xmb0oQuA3w==",
+      "dependencies": [
+        "cssesc",
+        "util-deprecate"
+      ]
     },
     "postcss@8.5.8": {
       "integrity": "sha512-OW/rX8O/jXnm82Ey1k44pObPtdblfiuWnrd8X7GJ7emImCOstunGbXUpp7HdBrFQX6rJzn3sPT397Wp5aCwCHg==",
@@ -3235,6 +3266,7 @@
       "npm:@headlessui/react@2.2.9",
       "npm:@preact/signals@^2.5.0",
       "npm:@tailwindcss/forms@0.5.7",
+      "npm:@tailwindcss/typography@0.5.16",
       "npm:@tailwindcss/vite@4.1.12",
       "npm:@types/fast-levenshtein@0.0.4",
       "npm:@types/html@latest",

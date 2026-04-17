@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 /* @theme references vars so Tailwind registers utilities at build time;
    actual values are set in :root and overridden by media query at runtime. */
