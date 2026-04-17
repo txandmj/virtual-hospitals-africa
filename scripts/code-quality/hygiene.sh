@@ -22,9 +22,10 @@ rule_no_camel_case() {
     tableClassName
     tdClassName
     clipPath
+    fsRoutes
   )
 
-  # Functions/patterns that create functions, so `const getById = model.getById` is fine
+  # Functions/patterns that create functions
   local function_creators=(
     spy
     stub
@@ -37,7 +38,6 @@ rule_no_camel_case() {
     collapse
     simpleBaseQuery
     cacheable
-    'model\.'
     'pick\('
   )
 

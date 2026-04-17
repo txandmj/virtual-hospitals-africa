@@ -93,7 +93,7 @@ jobs:
             docker pull $EVENTS_IMAGE
 
             # Tear down any existing deployment for this PR (fresh DB on each push)
-            docker compose -p $PROJECT -f $DIR/docker-compose.yml down -v --remove-orphans 2>/dev/null || true
+            docker compose --project-name $PROJECT -f $DIR/docker-compose.yml down -v --remove-orphans 2>/dev/null || true
 
             mkdir -p $DIR
 
@@ -148,9 +148,9 @@ jobs:
                 restart: unless-stopped
             COMPOSE_EOF
 
-            docker compose -p $PROJECT -f $DIR/docker-compose.yml up -d --wait --wait-timeout 600
+            docker compose --project-name $PROJECT -f $DIR/docker-compose.yml up -d --wait --wait-timeout 600
 
-            docker compose -p $PROJECT -f $DIR/docker-compose.yml ps
+            docker compose --project-name $PROJECT -f $DIR/docker-compose.yml ps
             echo "Preview deployed at http://$(curl -sf http://169.254.169.254/latest/meta-data/public-ipv4):$PORT"
 
       - name: Comment preview URL on PR
@@ -209,7 +209,7 @@ jobs:
             DIR=/opt/vha-preview/$PROJECT
 
             if [ -d "$DIR" ]; then
-              docker compose -p $PROJECT -f $DIR/docker-compose.yml down -v --remove-orphans
+              docker compose --project-name $PROJECT -f $DIR/docker-compose.yml down -v --remove-orphans
               rm -rf $DIR
               echo "Preview environment for PR $PR_NUMBER torn down"
             else
