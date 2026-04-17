@@ -7,12 +7,51 @@ import { getFormValues } from '../../../../_helpers/form.ts'
 import { asWarningSignsAdult, dateOfBirth, heightOf, setupTriageNewPatient, setupTriageReturningPatient, weightOf } from './_setup.ts'
 import { patient_encounters } from '../../../../../db/models/patient_encounters.ts'
 import { events } from '../../../../../db/models/events.ts'
-import { VITAL_MEASUREMENTS_SNOMED_CONCEPTS } from '../../../../../shared/vitals.ts'
+import { VITAL_MEASUREMENTS_SNOMED_CONCEPTS, VITALS_COMPUTED_SNOMED_CONCEPTS } from '../../../../../shared/vitals.ts'
 
 describeParallel('triage/height_and_weight', () => {
   before(waitUntilTestServerUp)
   afterAll(() => db.destroy())
   afterAll(() => events.closeAllProcessedPubSub({ graceful: false }))
+
+  describeParallel('POST', () => {
+    itParallel(
+      'computes and inserts BMI alongside height/weight when both are submitted',
+      async () => {
+        const { patient_id } = await setupTriageNewPatient({
+          patient_demographics: { date_of_birth: dateOfBirth('adult') },
+          warning_signs: asWarningSignsAdult([], { pregnant: false }),
+          brief_history: {
+            common_conditions: {
+              diabetes: { existence: 'No' },
+              pregnancy: { existence: 'No' },
+            },
+          },
+          height_and_weight: {
+            measurements: {
+              height: { value: heightOf('adult'), units: 'cm' },
+              weight: { value: weightOf('adult'), units: 'kg' },
+            },
+          },
+        })
+
+        const bmi_record = await db.selectFrom('patient_records_aggregated as pra')
+          .innerJoin('patient_measurements as pm', 'pm.id', 'pra.id')
+          .where('pra.patient_id', '=', patient_id)
+          .where(
+            'pra.specific_snomed_concept_id',
+            '=',
+            VITALS_COMPUTED_SNOMED_CONCEPTS.body_mass_index.id,
+          )
+          .select(['pm.value', 'pm.units'])
+          .executeTakeFirstOrThrow()
+
+        // 70 kg / (1.6 m)^2 = 27.34375 → rounded to 1 decimal place
+        assertEquals(bmi_record.units, 'kg/m²')
+        assertEquals(String(bmi_record.value), '27.3')
+      },
+    )
+  })
 
   describeParallel('GET', () => {
     itParallel(
