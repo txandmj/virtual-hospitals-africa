@@ -69,6 +69,7 @@
     "npm:fracturedjsonjs@5.0.1": "5.0.1",
     "npm:html@latest": "1.0.0",
     "npm:kysely@0.28.8": "0.28.8",
+    "npm:marked@15.0.7": "15.0.7",
     "npm:natural@6.10.4": "6.10.4",
     "npm:patch-package@latest": "8.0.1",
     "npm:pdfjs-dist@4.10.38": "4.10.38",
@@ -2293,8 +2294,8 @@
         "@jridgewell/sourcemap-codec"
       ]
     },
-    "marked@18.0.0": {
-      "integrity": "sha512-2e7Qiv/HJSXj8rDEpgTvGKsP8yYtI9xXHKDnrftrmnrJPaFNM7VRb2YCzWaX4BP1iCJ/XPduzDJZMFoqTCcIMA==",
+    "marked@15.0.7": {
+      "integrity": "sha512-dgLIeKGLx5FwziAnsk4ONoGwHwGPJzselimvlVskE9XLN4Orv9u2VA3GWw/lYUqjfA0rUT/6fqKwfZJapP9BEg==",
       "bin": true
     },
     "math-intrinsics@1.1.0": {

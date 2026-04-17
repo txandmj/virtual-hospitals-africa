@@ -4,7 +4,13 @@ import { z } from 'zod'
 import { postHandler } from '../../../../../../../../backend/postHandler.ts'
 import { positive_decimal } from '../../../../../../../../util/validators.ts'
 import { HeightAndWeight } from '../../../../../../../../components/HeightAndWeight.tsx'
-import { VITAL_MEASUREMENTS_SNOMED_CONCEPTS } from '../../../../../../../../shared/vitals.ts'
+import {
+  BMI_DECIMAL_PLACES,
+  computeBMI,
+  VITAL_COMPUTED_UNITS,
+  VITAL_MEASUREMENTS_SNOMED_CONCEPTS,
+  VITALS_COMPUTED_SNOMED_CONCEPTS,
+} from '../../../../../../../../shared/vitals.ts'
 import { parseWithSchema } from '../../../../../../../../shared/s_expression.ts'
 import { patient_findings } from '../../../../../../../../db/models/patient_findings.ts'
 import { patient_vitals } from '../../../../../../../../db/models/patient_vitals.ts'
@@ -48,6 +54,16 @@ export const handler = postHandler(
         )
       }),
     )
+
+    const { height, weight } = form_values.measurements
+    if (height && weight) {
+      const bmi = computeBMI(height.value.toNumber(), weight.value.toNumber())
+        .toFixed(BMI_DECIMAL_PLACES)
+      measurements_to_insert.push(parseWithSchema(
+        `(= (measurement ${VITALS_COMPUTED_SNOMED_CONCEPTS.body_mass_index.s_expression} ${VITAL_COMPUTED_UNITS.body_mass_index}) ${bmi})`,
+        measurement_comparator,
+      ))
+    }
 
     await patient_findings.insertMany(trx, {
       patient_id,

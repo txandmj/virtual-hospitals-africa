@@ -158,6 +158,7 @@ const UNITS = new Set([
   '°C' as const,
   'cm' as const,
   'kg' as const,
+  'kg/m²' as const,
   'mmol/L' as const,
   'mmHg' as const,
   'mm' as const,
