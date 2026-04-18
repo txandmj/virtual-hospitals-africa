@@ -116,6 +116,9 @@ jobs:
       - build_container
       - compile_web
       - compile_chatbot
+    concurrency:
+      group: deploy-preview
+      cancel-in-progress: false
     runs-on: ubuntu-24.04
     permissions:
       contents: read

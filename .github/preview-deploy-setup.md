@@ -47,8 +47,9 @@ sudo systemctl enable --now docker
 sudo usermod -aG docker ubuntu
 # Re-login after this for group membership to take effect
 
-sudo mkdir -p /opt/vha-preview
+sudo mkdir -p /opt/vha-preview/db/dumps
 sudo chmod 777 /opt/vha-preview
+sudo chmod 777 /opt/vha-preview/db/dumps
 
 ### 5. Create the shared preview env file
 
@@ -79,7 +80,7 @@ Add the following repository secrets (Settings → Secrets and variables → Act
 |---|---|
 | `PREVIEW_EC2_HOST` | The Elastic IP or DNS hostname of the preview instance |
 | `PREVIEW_EC2_USERNAME` | SSH username (e.g. `ubuntu`) |
-| `EC2_SSH_KEY` | Contents of the private key file for the instance |
+| `PREVIEW_EC2_SSH_KEY` | Contents of the private key file for the instance |
 | `PREVIEW_EC2_IP` | The Elastic IP (used to construct the preview URL in PR comments) |
 
 The existing `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and `ECR_REPOSITORY` secrets are reused from the prod workflow — no changes needed there.
