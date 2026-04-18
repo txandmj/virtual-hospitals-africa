@@ -28,8 +28,8 @@ import { assert } from 'std/assert/assert.ts'
 import { positive_decimal } from '../util/validators.ts'
 import { collectSortedUniqDecimals } from '../util/collectSorted.ts'
 
-import { normalForm } from './s_expression.ts'
-import { Lang } from './s_expression_schemas.ts'
+import { normalForm, parseWithSchema } from './s_expression.ts'
+import { finding, Lang } from './s_expression_schemas.ts'
 import { inverseSExpression } from './s_expression_inverse.ts'
 import { humanReadableJson } from '../util/humanReadableJson.ts'
 import assertOneOf from '../util/assertOneOf.ts'
@@ -225,7 +225,7 @@ function asClinicalFindingSExpression(specific_snomed_concept: SnomedConcept) {
 }
 
 // deno-fmt-ignore
-const ASESSMENT_OPTIONS: {
+export const ASESSMENT_OPTIONS: {
   [a in VitalAssessment]: {
     label: string
     score: TEWSScore
@@ -255,6 +255,10 @@ const ASESSMENT_OPTIONS: {
   ],
 }
 // deno-fmt-ignore-end
+
+export const ALL_ASESSMENT_OPTIONS_PARSED = values(ASESSMENT_OPTIONS).flatMap(options => options.map(option => 
+  parseWithSchema(option.s_expression, finding)
+))
 
 export const ASESSMENTS_ORDERED = keys(ASESSMENT_OPTIONS)
 

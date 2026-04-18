@@ -8,13 +8,12 @@ import { assertArrayEmpty } from '../../util/arraySize.ts'
 import { SYSTEM_PRIORITY_EVALUATIONS_LISP } from '../../s_expression/system_priority_evaluations.ts'
 import { SYSTEM_DIAGNOSIS_RULES_LISP } from '../../s_expression/system_diagnosis_rules.ts'
 import { parseLispFile, walkDirectory } from '../../s_expression/compile.ts'
-import { exists } from '../../util/exists.ts'
-import { assert } from 'std/assert/assert.ts'
 import { allEvidenceToLookFor } from '../../db/models/s_expression_evidence.ts'
 import { inverseSExpression } from '../../shared/s_expression_inverse.ts'
-import { VITALS_ADULT_SNOMED_CONCEPT_NAMES } from '../../shared/vitals.ts'
+import { ALL_ASESSMENT_OPTIONS_PARSED, VITALS_ADULT_SNOMED_CONCEPT_NAMES } from '../../shared/vitals.ts'
 import { assertUnreachable } from '../../util/assertUnreachable.ts'
 import { isCheckFor } from '../../db/models/additional_tasks.ts'
+import compactMap from '../../util/compactMap.ts'
 
 export function* allConceptsToLookFor(node: QueryableEvidenceNode): Generator<SnomedConcept> {
   switch (node.atom) {
@@ -136,6 +135,85 @@ describe('s_expression', () => {
       const not_found = await filter(nodesAndConceptsSystemPriorityEvaluations(), conceptDoesNotExist)
       assertArrayEmpty(not_found)
     })
+
+    it('leverages findings we check for in TASKS_LISP or things that we can diagnose as probable based on the apc adult guidelines', async () => {
+      const system_diagnosis_rules = SYSTEM_DIAGNOSIS_RULES_LISP.map((s_expression) => parseWithSchema(s_expression, system_diagnosis_rule))
+
+      const all_probable_diagnoses = compactMap(system_diagnosis_rules, (system_diagnosis_rule) => {
+        if (system_diagnosis_rule.diagnosis.certainty_qualifier !== 'probable') return
+        return system_diagnosis_rule.diagnosis.snomed_concept
+      })
+
+      const rules_without_corresponding_check_foror_system_diagnosis_rule = await collect(systemPriorityEvaluationsWithNoCheckForNorDiagnosis())
+      assertArrayEmpty(rules_without_corresponding_check_foror_system_diagnosis_rule)
+
+      async function* systemPriorityEvaluationsWithNoCheckForNorDiagnosis() {
+        for await (const { file_path, system_priority_evaluations, tasks } of correspondingAPCRules()) {
+          const all_checking_for = new Set(tasks.flatMap((task_node) => {
+            const due_to = allEvidenceToLookFor(task_node.due_to).map(inverseSExpression)
+            // TODO  || isMeasurements(task_node.to_be_done)?
+            const checking_for = isCheckFor(task_node.to_be_done) ? task_node.to_be_done.value.map(inverseSExpression) : []
+
+            return [
+              ...due_to,
+              ...checking_for,
+            ]
+          }))
+
+          for (const rule of system_priority_evaluations) {
+            for (const evidence of allEvidenceToLookFor(rule.due_to)) {
+              const finding = (
+                  evidence.atom === '>' ||
+                  evidence.atom === '<' ||
+                  evidence.atom === '>=' ||
+                  evidence.atom === '<=' ||
+                  evidence.atom === '='
+                )
+                ? evidence.measurement
+                : evidence
+
+              const evidence_collected_during_vitals = (
+                finding.atom === 'measurement' && VITALS_ADULT_SNOMED_CONCEPT_NAMES.has(finding.snomed_concept.name)
+              ) || (
+                finding.atom === 'active_condition' && finding.snomed_concept.name === 'Fever'
+              ) || (
+                finding.atom === 'finding' &&
+                ALL_ASESSMENT_OPTIONS_PARSED.some((option) =>
+                  option.specific_snomed_concept!.name === finding.specific_snomed_concept?.name &&
+                  option.specific_snomed_concept!.category === finding.specific_snomed_concept?.category
+                )
+              )
+              if (evidence_collected_during_vitals) continue
+              const evaluating_a_diagnosed_condition = finding.atom === 'active_condition' &&
+                all_probable_diagnoses.some((probable_diagnosis) =>
+                  finding.snomed_concept.name === probable_diagnosis.name &&
+                  finding.snomed_concept.category === probable_diagnosis.category
+                )
+              if (evaluating_a_diagnosed_condition) continue
+              const finding_s_expression = inverseSExpression(finding)
+              if (all_checking_for.has(finding_s_expression)) continue
+
+              yield {
+                file_path,
+                description: rule.description,
+                didnt_check_for: finding_s_expression,
+              }
+            }
+          }
+        }
+      }
+
+      async function* correspondingAPCRules() {
+        for await (const file_path of walkDirectory('s_expression/rules/apc-adult')) {
+          const rules = await parseLispFile(file_path)
+          yield {
+            file_path,
+            tasks: rules.filter((rule) => rule.atom === 'task'),
+            system_priority_evaluations: rules.filter((rule) => rule.atom === 'system_priority_evaluation'),
+          }
+        }
+      }
+    })
   })
   describe('SYSTEM_DIAGNOSIS_RULES_LISP', () => {
     it('has valid snomed concepts', async () => {
@@ -148,7 +226,7 @@ describe('s_expression', () => {
       assertArrayEmpty(rules_without_corresponding_check_for)
 
       async function* probableSystemDiagnosisRulesWithNoCheckFor() {
-        for await (const { task_file_path, system_diagnosis_rules_file_path, system_diagnosis_rules, tasks } of correspondingAPCRules()) {
+        for await (const { file_path, system_diagnosis_rules, tasks } of correspondingAPCRules()) {
           const all_checking_for = new Set(tasks.flatMap((task_node) => {
             const due_to = allEvidenceToLookFor(task_node.due_to).map(inverseSExpression)
             // TODO  || isMeasurements(task_node.to_be_done)?
@@ -182,8 +260,7 @@ describe('s_expression', () => {
               const finding_s_expression = inverseSExpression(finding)
               if (!all_checking_for.has(finding_s_expression)) {
                 yield {
-                  task_file_path,
-                  system_diagnosis_rules_file_path,
+                  file_path,
                   description: rule.description,
                   didnt_check_for: finding_s_expression,
                 }
@@ -194,25 +271,12 @@ describe('s_expression', () => {
       }
 
       async function* correspondingAPCRules() {
-        const s_expression_directory = await walkDirectory()
-        const system_diagnosis_rules_file_paths = exists(s_expression_directory.get('system_diagnosis_rules'))
-        const tasks_file_paths = exists(s_expression_directory.get('tasks'))
-        const apc_system_diagnosis_rules_file_paths = system_diagnosis_rules_file_paths.filter((path) => path.includes('apc-adult'))
-
-        for (const system_diagnosis_rules_file_path of apc_system_diagnosis_rules_file_paths) {
-          const task_file_path = system_diagnosis_rules_file_path.replace('/system_diagnosis_rules/', '/tasks/')
-          assert(tasks_file_paths.includes(task_file_path), `${task_file_path} missing`)
-
-          const system_diagnosis_rules = await parseLispFile(system_diagnosis_rules_file_path).then((expressions) =>
-            expressions.map((expression) => parseWithSchema(expression, system_diagnosis_rule))
-          )
-          const tasks = await parseLispFile(task_file_path).then((expressions) => expressions.map((expression) => parseWithSchema(expression, task)))
-
+        for await (const file_path of walkDirectory('s_expression/rules/apc-adult')) {
+          const rules = await parseLispFile(file_path)
           yield {
-            task_file_path,
-            system_diagnosis_rules_file_path,
-            system_diagnosis_rules,
-            tasks,
+            file_path,
+            tasks: rules.filter((rule) => rule.atom === 'task'),
+            system_diagnosis_rules: rules.filter((rule) => rule.atom === 'system_diagnosis_rule'),
           }
         }
       }
@@ -220,16 +284,8 @@ describe('s_expression', () => {
   })
   describe('apc-adult', () => {
     it('has maximum one file per page number', async () => {
-      const s_expression_directory = await walkDirectory()
-      const system_diagnosis_rules_file_paths = exists(s_expression_directory.get('system_diagnosis_rules')).filter((path) => path.includes('apc-adult'))
-      const system_priority_evaluations_file_paths = exists(s_expression_directory.get('system_priority_evaluations')).filter((path) =>
-        path.includes('apc-adult')
-      )
-      const tasks_file_paths = exists(s_expression_directory.get('tasks')).filter((path) => path.includes('apc-adult'))
-
-      assertUniquePageNumbers(system_diagnosis_rules_file_paths)
-      assertUniquePageNumbers(system_priority_evaluations_file_paths)
-      assertUniquePageNumbers(tasks_file_paths)
+      const filepaths = await collect(walkDirectory('s_expression/rules/apc-adult'))
+      assertUniquePageNumbers(filepaths)
 
       function assertUniquePageNumbers(filepaths: string[]) {
         const page_numbers = new Set<string>()

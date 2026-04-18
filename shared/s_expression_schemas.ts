@@ -1157,6 +1157,8 @@ export const system_diagnosis_rule: z.ZodType<Lang['system_diagnosis_rule']> = z
   }))
 ).describe('system_diagnosis_rule')
 
+export const any_rule = z.lazy(() => task.or(system_diagnosis_rule).or(system_priority_evaluation)).describe('any_rule')
+
 export const any_query_single: z.ZodType<QueryableSingleNode> = z.lazy(() =>
   z.union([
     event,
