@@ -1,11 +1,10 @@
 import { assert } from 'std/assert/assert.ts'
 import parse from 's-expression'
 import { walk } from 'std/fs/mod.ts'
-import * as schemas from '../shared/s_expression_schemas.ts'
 import { parseWithSchema } from '../shared/s_expression.ts'
-import isKeyOf from '../util/isKeyOf.ts'
 import { inverseSExpression } from '../shared/s_expression_inverse.ts'
-import { forEach, pMap } from '../util/inParallel.ts'
+import { any_rule, Lang } from '../shared/s_expression_schemas.ts'
+import { groupBy } from '../util/groupBy.ts'
 
 /**
  * Strip Lisp-style comments (lines starting with ;;) from the input text
@@ -24,32 +23,13 @@ function stripComments(text: string): string {
  * Extract top-level s-expressions from text
  * Returns an array of s-expression strings
  */
-function extractSExpressions(text: string): string[] {
+function extractSExpressions(text: string) {
   const parsed = parse(`(${stripComments(text)})`)
   if (parsed instanceof Error) {
     throw parsed
   }
   assert(Array.isArray(parsed))
-  return parsed.map((expr) => {
-    const atom = expr[0]
-    if (!isKeyOf(atom, schemas)) {
-      throw new Error(`No schema for ${atom}`)
-    }
-    const schema = schemas[atom]
-    return inverseSExpression(parseWithSchema(expr, schema))
-  })
-}
-
-/**
- * Convert a filename to a valid TypeScript constant name
- * e.g., "tasks.lisp" -> "TASKS"
- */
-function filenameToConstName(filename: string): string {
-  return filename
-    .replace(/^s_expression\//, '')
-    .toUpperCase()
-    .replace(/[^A-Z0-9]/g, '_')
-    .replace(/_TS$/, '_LISP')
+  return parsed.map((expr) => parseWithSchema(expr, any_rule))
 }
 
 function tsContent(const_name: string, expressions: string[]) {
@@ -67,48 +47,38 @@ export async function parseLispFile(lisp_path: string) {
   return extractSExpressions(content)
 }
 
-/**
- * Process multiple .lisp files and concatenate all expressions into a single .ts file
- */
-async function processLispDirectory(lisp_paths: string[], out_ts_path: string) {
-  console.log(`Processing ${lisp_paths.length} file(s) → ${out_ts_path}...`)
+const RULES_DIR = 's_expression/rules'
 
-  const all_expressions: string[] = (await pMap(lisp_paths, async (lisp_path) => {
-    console.log(`  Reading ${lisp_path}`)
-    const content = await Deno.readTextFile(lisp_path)
-    return extractSExpressions(content)
-  })).flat()
-
-  const const_name = filenameToConstName(out_ts_path)
-
-  await Deno.writeTextFile(out_ts_path, tsContent(const_name, all_expressions))
-  console.log(`  ✓ Generated ${out_ts_path} with ${all_expressions.length} expression(s)`)
-}
-
-const S_EXPRESSION_DIR = 's_expression'
-
-export async function walkDirectory() {
-  const subdir_files = new Map<string, string[]>()
-  for await (const entry of walk(S_EXPRESSION_DIR, { exts: ['.lisp'] })) {
+export async function* walkDirectory(dir = RULES_DIR) {
+  for await (const entry of walk(dir, { exts: ['.lisp'] })) {
     assert(entry.isFile)
-    const rel = entry.path.slice(S_EXPRESSION_DIR.length + 1) // e.g. "foo.lisp" or "tasks/apc-adult/20.lisp"
-    const first_sep = rel.indexOf('/')
-    assert(first_sep >= 0)
-    const subdir = rel.slice(0, first_sep) // e.g. "tasks"
-    const existing = subdir_files.get(subdir) ?? []
-    existing.push(entry.path)
-    subdir_files.set(subdir, existing)
+    yield entry.path
   }
-  assert(subdir_files.size, `No files found in s_expression_dir ${S_EXPRESSION_DIR}`)
-  return subdir_files
 }
 
 /**
  * Main function - process all .lisp files in s_expression directory
  */
 async function main() {
-  const subdir_files = await walkDirectory()
-  await forEach(subdir_files.entries(), ([subdir, paths]) => processLispDirectory(paths, `${S_EXPRESSION_DIR}/${subdir}.ts`))
+  const all_rules: Lang['task' | 'system_diagnosis_rule' | 'system_priority_evaluation'][] = []
+  for await (const lisp_file of walkDirectory()) {
+    const rules = await parseLispFile(lisp_file)
+    for (const rule of rules) {
+      all_rules.push(rule)
+    }
+  }
+  const grouped_rules = groupBy(all_rules, 'atom')
+
+  await Deno.writeTextFile('s_expression/tasks.ts', tsContent('TASKS_LISP', grouped_rules.get('task')!.map(inverseSExpression)))
+  await Deno.writeTextFile(
+    's_expression/system_diagnosis_rules.ts',
+    tsContent('SYSTEM_DIAGNOSIS_RULES_LISP', grouped_rules.get('system_diagnosis_rule')!.map(inverseSExpression)),
+  )
+  await Deno.writeTextFile(
+    's_expression/system_priority_evaluations.ts',
+    tsContent('SYSTEM_PRIORITY_EVALUATIONS_LISP', grouped_rules.get('system_priority_evaluation')!.map(inverseSExpression)),
+  )
+
   console.log('\n✓ All files processed successfully')
 }
 

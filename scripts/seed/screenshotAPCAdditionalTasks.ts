@@ -33,11 +33,8 @@ import { exists as fileExists } from '@std/fs/exists'
 import { MEDICAL_GUIDANCE_TASKS } from '../../shared/tasks.ts'
 
 async function* allCheckForTasks() {
-  const s_expression_directory = await walkDirectory()
-  const task_file_paths = exists(s_expression_directory.get('tasks'))
-    .filter((path) => path.includes('apc-adult'))
-  for await (const task_file_path of task_file_paths) {
-    yield* tasksFromFilepath(task_file_path)
+  for await (const file_path of walkDirectory('s_expression/rules/apc-adult')) {
+    yield* tasksFromFilepath(file_path)
   }
 }
 

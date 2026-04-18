@@ -1,10 +1,9 @@
 import db from '../../db/db.ts'
 import { parseLispFile, walkDirectory } from '../../s_expression/compile.ts'
 import { parseWithSchema } from '../../shared/s_expression.ts'
-import { any_query_single, Lang, task } from '../../shared/s_expression_schemas.ts'
+import { any_query_single, Lang } from '../../shared/s_expression_schemas.ts'
 import { allEvidenceToLookFor } from '../../db/models/s_expression_evidence.ts'
 import { inverseSExpression } from '../../shared/s_expression_inverse.ts'
-import { exists } from '../../util/exists.ts'
 import { addTestEmployee, TestEmployee } from '../../mocks/testEmployee.ts'
 import { addTestEmployeeWithSession, TestEmployeeWithSession } from '../../test/_helpers/employees.ts'
 import { insertPatientSeekingTreatmentWithEmployeeAndCompleteRegistrationForTest } from '../../test/_helpers/workflows.ts'
@@ -166,10 +165,10 @@ export function taskAsTestCase(task_node: Lang['task'], task_file_path: string) 
 }
 
 export async function* tasksFromFilepath(task_file_path: string): AsyncGenerator<APCTaskDef> {
-  const expressions = await parseLispFile(task_file_path)
-  const tasks = expressions.map((expression) => parseWithSchema(expression, task))
-  for (const task_node of tasks) {
-    yield taskAsTestCase(task_node, task_file_path)
+  const rules = await parseLispFile(task_file_path)
+  for (const rule of rules) {
+    if (rule.atom !== 'task') continue
+    yield taskAsTestCase(rule, task_file_path)
   }
 }
 
@@ -271,12 +270,8 @@ export async function setupTriageForAPCTaskNode(
 }
 
 export async function* apcTaskNodes() {
-  const s_expression_directory = await walkDirectory()
-  const task_file_paths = exists(s_expression_directory.get('tasks'))
-    .filter((path) => path.includes('apc-adult'))
-
-  for (const task_file_path of task_file_paths) {
-    yield* tasksFromFilepath(task_file_path)
+  for await (const file_path of walkDirectory('s_expression/rules/apc-adult')) {
+    yield* tasksFromFilepath(file_path)
   }
 }
 
