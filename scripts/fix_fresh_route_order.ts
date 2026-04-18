@@ -78,7 +78,6 @@ function sortRoutePaths(a: string, b: string): number {
       return char_a < char_b ? -1 : 1
     }
 
-
     if (a_idx === a_len - 1 && b_idx < b_len - 1) return 1
     else if (b_idx === b_len - 1 && a_idx < a_len - 1) return -1
   }
