@@ -15,8 +15,10 @@ COPY ./ ./
 # Build the application
 RUN deno task build
 
+
 FROM denoland/deno:2.7.5
 WORKDIR /app
+RUN apt-get update && apt-get install -y --no-install-recommends postgresql-client && rm -rf /var/lib/apt/lists/*
 RUN touch .env
 
 # Copy build output (static assets + compiled server)

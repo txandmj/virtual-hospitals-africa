@@ -345,6 +345,16 @@ Wraps a `clinical_finding` or `finding` to search the patient's full history (al
 
 ---
 
+### `no`
+
+Wraps a `clinical_finding`, `finding`, or `history` to indicate that there is a negative record corresponding to that concept. The lack of a positive record is not sufficient to trigger a rule looking for `(no)`, the health worker has to have marked "No".
+
+```lisp
+(no (clinical_finding (snomed_concept "Asthma" "disorder")))
+```
+
+---
+
 ### Logical operators
 
 **`or`** — at least one child must be satisfied:
