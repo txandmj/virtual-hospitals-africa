@@ -21,6 +21,7 @@
     (clinical_finding (snomed_concept "Muscle weakness of upper limb" "finding") (qualifier (snomed_concept "Sudden onset" "qualifier value")) (qualifier (snomed_concept "New" "qualifier value")))
     (clinical_finding (snomed_concept "Difficulty talking" "finding"))
     (clinical_finding (snomed_concept "Visual disturbance" "disorder"))
+    (clinical_finding (snomed_concept "Pain in upper limb" "finding"))
   )
 )
 ;; Page 64 - Neck Pain

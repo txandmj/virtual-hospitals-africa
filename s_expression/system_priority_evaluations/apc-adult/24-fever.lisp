@@ -3,9 +3,8 @@
   "Urgent: probable meningitis"
   adult
   Urgent
-  (diagnosis
+  (active_condition
     (snomed_concept "Meningitis" "disorder")
-    probable
   )
 )
 

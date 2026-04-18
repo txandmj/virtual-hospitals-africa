@@ -23,5 +23,8 @@
     (clinical_finding (snomed_concept "Foot pain" "finding"))
     (clinical_finding (snomed_concept "Ulcer of foot" "disorder"))
     (clinical_finding (snomed_concept "Gangrene of foot" "disorder"))
+    (clinical_finding (snomed_concept "Absent pulse" "finding"))
+    (clinical_finding (snomed_concept "Numbness of limbs" "finding"))
+    (clinical_finding (snomed_concept "Muscle weakness of limb" "finding"))
   )
 )

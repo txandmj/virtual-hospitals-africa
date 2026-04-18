@@ -10,6 +10,7 @@
         (time_ago 24 hours))
     (<= (timestamp (clinical_finding (snomed_concept "Unable to break wind" "finding")))
         (time_ago 24 hours))
+    (clinical_finding (snomed_concept "Acute constipation" "finding"))
   )
 )
 
@@ -22,5 +23,6 @@
     (clinical_finding (snomed_concept "Anal pain" "finding") (qualifier (snomed_concept "Severe (severity modifier)" "qualifier value")))
     (clinical_finding (snomed_concept "Anal polyp" "disorder"))
     (clinical_finding (snomed_concept "Difficulty in ability to defecate" "finding"))
+    (clinical_finding (snomed_concept "Perianal lump" "finding"))
   )
 )

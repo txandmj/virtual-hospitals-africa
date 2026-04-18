@@ -13,5 +13,8 @@
     (clinical_finding (snomed_concept "Irreducible hernia" "morphologic abnormality"))
     (clinical_finding (snomed_concept "Pulsatile mass of abdomen" "finding"))
     (clinical_finding (snomed_concept "Groin mass" "finding") (qualifier (snomed_concept "Pulsatile" "qualifier value")))
+    (clinical_finding (snomed_concept "Strangulated inguinal hernia" "disorder"))
+    (clinical_finding (snomed_concept "Irreducible inguinal hernia" "disorder"))
+    (clinical_finding (snomed_concept "Aneurysm" "disorder") (qualifier (snomed_concept "Pulsatile" "qualifier value")))
   )
 )

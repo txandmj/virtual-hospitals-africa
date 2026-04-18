@@ -4,7 +4,7 @@
   adult
   Urgent
   (and
-    (clinical_finding (snomed_concept "Jaundice" "finding"))
+    (active_condition (snomed_concept "Jaundice" "finding"))
     (or
       (clinical_finding (snomed_concept "Pale conjunctiva" "finding"))
       (clinical_finding (snomed_concept "Acute abdominal pain" "finding"))

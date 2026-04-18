@@ -44,5 +44,13 @@
     (clinical_finding (snomed_concept "Injury of head" "disorder") (qualifier (snomed_concept "Recent" "qualifier value")))
 
     (clinical_finding (snomed_concept "Anisocoria" "disorder"))
+
+    (clinical_finding (snomed_concept "Seizure" "finding"))
+    (clinical_finding (snomed_concept "Headache" "finding") (qualifier (snomed_concept "Sudden onset" "qualifier value")) (qualifier (snomed_concept "Severe (severity modifier)" "qualifier value")))
+    (clinical_finding (snomed_concept "Visual disturbance" "disorder"))
+    (clinical_finding (snomed_concept "Pain in eye" "finding"))
+    (clinical_finding (snomed_concept "Nausea and vomiting" "disorder"))
+    (clinical_finding (snomed_concept "Injury of head" "disorder"))
+    (clinical_finding (snomed_concept "Frequent headache" "finding"))
   )
 )

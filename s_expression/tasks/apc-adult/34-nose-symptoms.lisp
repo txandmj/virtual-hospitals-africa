@@ -2,7 +2,9 @@
 (task
   "Check for urgent nose conditions"
   adult
-  (clinical_finding (snomed_concept "Nose finding" "finding"))
+  (or
+    (clinical_finding (snomed_concept "Nose finding" "finding"))
+    (clinical_finding (finding_site (snomed_concept "Nasal structure" "body structure"))))
   (check_for
     (clinical_finding (snomed_concept "Injury of head" "disorder"))
     (clinical_finding (snomed_concept "Cerebrospinal fluid rhinorrhea" "disorder"))

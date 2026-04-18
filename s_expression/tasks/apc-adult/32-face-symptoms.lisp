@@ -23,5 +23,6 @@
     (clinical_finding (snomed_concept "Proteinuria" "finding"))
     (clinical_finding (snomed_concept "Swelling" "finding") (finding_site (snomed_concept "Face structure" "body structure")) (qualifier (snomed_concept "New" "qualifier value")))
     (clinical_finding (snomed_concept "Swelling" "finding") (finding_site (snomed_concept "Face structure" "body structure")))
+    (clinical_finding (snomed_concept "Cellulitis of face" "disorder"))
   )
 )

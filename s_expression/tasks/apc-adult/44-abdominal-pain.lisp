@@ -39,5 +39,6 @@
     (finding (snomed_concept "Exposure to (contextual qualifier)" "qualifier value") (snomed_concept "Substance" "substance"))
     (clinical_finding (snomed_concept "Upper abdominal pain" "finding") (qualifier (snomed_concept "Pain radiating to lumbar region of back" "finding")))
     (clinical_finding (snomed_concept "Pulsatile mass of abdomen" "finding"))
+    (clinical_finding (snomed_concept "Mass of pelvic structure" "finding"))
   )
 )

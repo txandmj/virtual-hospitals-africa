@@ -16,5 +16,6 @@
     (clinical_finding (snomed_concept "Abdominal pain" "finding"))
     (clinical_finding (snomed_concept "Finding of vomiting" "finding"))
     (finding (snomed_concept "Exposure to (contextual qualifier)" "qualifier value") (snomed_concept "Substance" "substance"))
+    (clinical_finding (snomed_concept "Upper respiratory tract obstruction" "disorder"))
   )
 )

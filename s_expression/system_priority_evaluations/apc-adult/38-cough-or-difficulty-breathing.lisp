@@ -3,9 +3,8 @@
   "Urgent: probable tension pneumothorax"
   adult
   Urgent
-  (diagnosis
+  (active_condition
     (snomed_concept "Tension pneumothorax" "disorder")
-    probable
   )
 )
 

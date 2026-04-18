@@ -28,5 +28,6 @@
     (clinical_finding (snomed_concept "Swollen calf" "finding"))
     (clinical_finding (snomed_concept "Pain in lower limb" "finding"))
     (clinical_finding (snomed_concept "Absent pulse" "finding"))
+    (clinical_finding (snomed_concept "Gangrenous disorder" "disorder"))
   )
 )

@@ -3,8 +3,7 @@
   "Emergency: probable hypertensive emergency"
   adult
   Emergency
-  (diagnosis
+  (active_condition
     (snomed_concept "Hypertensive emergency" "disorder")
-    probable
   )
 )

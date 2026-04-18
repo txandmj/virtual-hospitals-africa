@@ -39,5 +39,7 @@
     (clinical_finding (snomed_concept "Difficulty breathing" "finding"))
     (clinical_finding (snomed_concept "Collapse" "finding"))
     (finding (snomed_concept "Exposure to (contextual qualifier)" "qualifier value") (snomed_concept "Substance" "substance"))
+    (clinical_finding (snomed_concept "Deep breathing" "finding"))
+    (clinical_finding (snomed_concept "Abdominal pain" "finding"))
   )
 )

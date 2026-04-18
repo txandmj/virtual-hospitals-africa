@@ -10,5 +10,6 @@
     (clinical_finding (snomed_concept "Unable to drink" "finding"))
     (clinical_finding (snomed_concept "Toothache" "finding") (qualifier (snomed_concept "Wakes up during night" "finding")))
     (clinical_finding (snomed_concept "Toothache" "finding") (qualifier (snomed_concept "Spontaneous" "qualifier value")))
+    (clinical_finding (snomed_concept "Toothache" "finding"))
   )
 )

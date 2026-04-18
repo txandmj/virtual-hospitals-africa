@@ -25,5 +25,6 @@
     (clinical_finding (snomed_concept "Flank pain" "finding") (qualifier (snomed_concept "Sudden onset" "qualifier value")) (qualifier (snomed_concept "Unilateral" "qualifier value")))
     (clinical_finding (snomed_concept "Inguinal pain" "finding") (qualifier (snomed_concept "Sudden onset" "qualifier value")) (qualifier (snomed_concept "Unilateral" "qualifier value")))
     (clinical_finding (snomed_concept "Flank pain" "finding"))
+    (clinical_finding (snomed_concept "Distension of abdomen" "finding"))
   )
 )
