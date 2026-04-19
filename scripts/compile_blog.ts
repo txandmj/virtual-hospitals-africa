@@ -184,6 +184,41 @@ export default function BlogIndexPage() {
 }
 
 /**
+ * Generate the embeddable blog index page content (no header/footer)
+ */
+function generateEmbedFile(posts: BlogPost[]): string {
+  const posts_ts = posts.map(formatPostMetaAsTypescript).join(',\n')
+
+  return `// Auto-generated from /blog/*.md
+// Do not edit manually - run \`deno task compile:blog\` to regenerate
+// Embeddable version of /blog with no header/footer, for iframing into the marketing site.
+
+import { BlogIndexContent } from '../components/library/layout/BlogIndex.tsx'
+
+type BlogPostMeta = {
+  title: string
+  subtitle?: string
+  author?: string
+  slug: string
+  date: string
+  description: string
+  tags: string[]
+  word_count: number
+  hero_image?: string
+  wide_image?: string
+}
+
+const BLOG_POSTS: BlogPostMeta[] = [
+${posts_ts},
+]
+
+export default function BlogEmbedPage() {
+  return <BlogIndexContent posts={BLOG_POSTS} />
+}
+`
+}
+
+/**
  * Generate the route file content
  */
 function generateRouteFile(posts: BlogPost[]): string {
@@ -257,6 +292,7 @@ async function main() {
   const blog_dir = 'blog'
   const post_route_path = 'routes/blog/[post].tsx'
   const index_route_path = 'routes/blog.tsx'
+  const embed_route_path = 'routes/blog_embed.tsx'
   const images_src = 'blog/images'
   const images_dest = 'static/blog/images'
 
@@ -291,9 +327,12 @@ async function main() {
   const index_route_content = generateIndexFile(posts)
   await Deno.writeTextFile(index_route_path, index_route_content)
 
+  const embed_route_content = generateEmbedFile(posts)
+  await Deno.writeTextFile(embed_route_path, embed_route_content)
+
   // Format the generated files
   const fmt_command = new Deno.Command('deno', {
-    args: ['fmt', post_route_path, index_route_path],
+    args: ['fmt', post_route_path, index_route_path, embed_route_path],
     stdout: 'inherit',
     stderr: 'inherit',
   })
@@ -302,7 +341,7 @@ async function main() {
     throw new Error('Failed to format generated files')
   }
 
-  console.log(`\n✓ Generated ${post_route_path} and ${index_route_path} with ${posts.length} post(s)`)
+  console.log(`\n✓ Generated ${post_route_path}, ${index_route_path}, and ${embed_route_path} with ${posts.length} post(s)`)
   console.log('Posts:')
   for (const post of posts) {
     console.log(`  - ${post.title} (${post.slug})`)

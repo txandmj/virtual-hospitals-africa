@@ -111,7 +111,7 @@ function TextOnlyArticle({ post }: { post: BlogPostMeta }) {
   )
 }
 
-export default function LayoutBlogIndex({ posts }: LayoutBlogIndexProps) {
+export function BlogIndexContent({ posts }: LayoutBlogIndexProps) {
   const [featured, ...rest] = posts
   const with_images = rest.filter((p) => p.hero_image)
   const text_only = rest.filter((p) => !p.hero_image)
@@ -122,35 +122,41 @@ export default function LayoutBlogIndex({ posts }: LayoutBlogIndexProps) {
   }
 
   return (
+    <div className='mx-auto max-w-5xl px-6'>
+      <div className='py-8 border-b border-slate-200'>
+        <p className='text-xs uppercase tracking-widest text-slate-400 font-medium'>Virtual Hospitals Africa</p>
+        <h1 className='font-serif text-4xl font-bold text-slate-900 mt-1'>Blog</h1>
+      </div>
+
+      <ul>
+        {featured && <FeaturedArticle post={featured} />}
+
+        {pairs.map((pair, i) => (
+          <li key={i} className={`border-b border-slate-200${i === 0 && featured ? ' pt-8' : ''}`}>
+            <ul className='grid grid-cols-1 sm:grid-cols-2'>
+              {pair.map((post, j) => <HalfArticle key={post.slug} post={post} border_right={j === 0 && pair.length === 2} />)}
+            </ul>
+          </li>
+        ))}
+
+        {text_only.length > 0 && (
+          <li className={pairs.length === 0 && featured ? 'pt-8' : ''}>
+            <ul className='divide-y divide-slate-200'>
+              {text_only.map((post) => <TextOnlyArticle key={post.slug} post={post} />)}
+            </ul>
+          </li>
+        )}
+      </ul>
+    </div>
+  )
+}
+
+export default function LayoutBlogIndex({ posts }: LayoutBlogIndexProps) {
+  return (
     <div className='min-h-screen flex flex-col bg-white'>
       <BlogHeader />
       <main className='flex-1'>
-        <div className='mx-auto max-w-5xl px-6'>
-          <div className='py-8 border-b border-slate-200'>
-            <p className='text-xs uppercase tracking-widest text-slate-400 font-medium'>Virtual Hospitals Africa</p>
-            <h1 className='font-serif text-4xl font-bold text-slate-900 mt-1'>Blog</h1>
-          </div>
-
-          <ul>
-            {featured && <FeaturedArticle post={featured} />}
-
-            {pairs.map((pair, i) => (
-              <li key={i} className={`border-b border-slate-200${i === 0 && featured ? ' pt-8' : ''}`}>
-                <ul className='grid grid-cols-1 sm:grid-cols-2'>
-                  {pair.map((post, j) => <HalfArticle key={post.slug} post={post} border_right={j === 0 && pair.length === 2} />)}
-                </ul>
-              </li>
-            ))}
-
-            {text_only.length > 0 && (
-              <li className={pairs.length === 0 && featured ? 'pt-8' : ''}>
-                <ul className='divide-y divide-slate-200'>
-                  {text_only.map((post) => <TextOnlyArticle key={post.slug} post={post} />)}
-                </ul>
-              </li>
-            )}
-          </ul>
-        </div>
+        <BlogIndexContent posts={posts} />
       </main>
       <MarketingFooter />
     </div>
