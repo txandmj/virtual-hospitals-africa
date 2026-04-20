@@ -13,7 +13,6 @@ services:
 
   migrator:
     image: ${MIGRATOR_IMAGE}
-    command: /bin/sh -c "deno task db:restore snomed && deno task db:migrate all"
     environment:
       DATABASE_URL: postgres://vha_user:vha_preview_pw@postgres:5432/vha_pr
       NO_DATABASE_SSL: "true"

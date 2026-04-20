@@ -7,4 +7,9 @@ COPY deno.lock ./
 COPY deno.json ./
 RUN deno install --allow-scripts
 
-COPY ./ ./
+COPY db.d.ts ./
+COPY db/ ./
+COPY util/ ./
+COPY shared/ ./
+
+CMD ["sh", "-c", "deno task db:restore snomed && deno task db:migrate all"]

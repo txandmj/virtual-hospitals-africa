@@ -24,4 +24,5 @@ export default define(
       `.execute(trx)
     })
   },
+  { never_dump: true }
 )
