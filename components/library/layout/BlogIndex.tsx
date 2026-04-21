@@ -1,3 +1,4 @@
+import cls from '../../../util/cls.ts'
 import MarketingFooter from '../../MarketingFooter.tsx'
 import BlogHeader from './BlogHeader.tsx'
 
@@ -15,6 +16,7 @@ type BlogPostMeta = {
 
 export type LayoutBlogIndexProps = {
   posts: BlogPostMeta[]
+  embed?: boolean
 }
 
 function formatDate(date_string: string): string {
@@ -111,7 +113,7 @@ function TextOnlyArticle({ post }: { post: BlogPostMeta }) {
   )
 }
 
-export function BlogIndexContent({ posts }: LayoutBlogIndexProps) {
+export function BlogIndexContent({ posts, embed }: LayoutBlogIndexProps) {
   const [featured, ...rest] = posts
   const with_images = rest.filter((p) => p.hero_image)
   const text_only = rest.filter((p) => !p.hero_image)
@@ -123,7 +125,11 @@ export function BlogIndexContent({ posts }: LayoutBlogIndexProps) {
 
   return (
     <div className='mx-auto max-w-5xl px-6'>
-      <div className='py-8 border-b border-slate-200'>
+      <div
+        className={cls('py-8', {
+          'border-b border-slate-200': !embed,
+        })}
+      >
         <p className='text-xs uppercase tracking-widest text-slate-400 font-medium'>Virtual Hospitals Africa</p>
         <h1 className='font-serif text-4xl font-bold text-slate-900 mt-1'>Blog</h1>
       </div>

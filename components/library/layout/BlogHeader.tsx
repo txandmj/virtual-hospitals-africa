@@ -34,13 +34,11 @@ export default function BlogHeader() {
           <LogoWithCollapsibleText variant='indigo' />
         </a>
 
-        <div className='absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-4'>
+        <div className='left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-4 absolute invisible md:visible'>
           <NavLink href='/' text='Home' />
           <NavLink href='/tutorial' text='Try it out' />
           <NavLink href='https://virtualhospitalsafrica.org/team' text='Team' />
-          <a href='/blog' className='h-12 flex justify-center items-center px-2 rounded cursor-pointer text-base font-medium whitespace-nowrap text-[#29313d]'>
-            Blog
-          </a>
+          <NavLink href='/blog' text='Blog' />
         </div>
 
         <div className='flex items-center gap-2'>

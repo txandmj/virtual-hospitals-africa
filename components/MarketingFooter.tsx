@@ -25,19 +25,20 @@ function LinkedInIcon() {
 }
 
 const primary_links = [
-  { href: '/', text: 'Home' },
-  { href: '/team', text: 'Team' },
+  { href: 'https://virtualhospitalsafrica.org', text: 'Home' },
+  { href: 'https://virtualhospitalsafrica.org/team', text: 'Team' },
+  { href: 'https://za.virtualhospitalsafrica.org/blog', text: 'Blog' },
   {
     href: 'https://www.idealist.org/en/nonprofit/318fda9457534eafa3fa691bba19f5ae-virtual-hospitals-africa-polokwane#opportunities',
     text: 'Careers',
     external: true,
   },
-  { href: '/contact-general-inquiry', text: 'Contact' },
+  { href: 'https://virtualhospitalsafrica.org/contact-general-inquiry', text: 'Contact' },
 ]
 
 const legal_links = [
-  { href: '/privacy-policy', text: 'Privacy Policy' },
-  { href: '/terms-of-service', text: 'Terms of Service' },
+  { href: 'https://virtualhospitalsafrica.org/privacy-policy', text: 'Privacy Policy' },
+  { href: 'https://virtualhospitalsafrica.org/terms-of-service', text: 'Terms of Service' },
 ]
 
 function FooterLink({ href, text, external }: { href: string; text: string; external?: boolean }) {
