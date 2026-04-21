@@ -1,5 +1,6 @@
+// Auto-generated from /blog/*.md
+// Do not edit manually - run `deno task compile:blog` to regenerate
 // Embeddable version of /blog with no header/footer, for iframing into the marketing site.
-// Post list is kept in sync with routes/blog.tsx - do not edit manually, run `deno task compile:blog` to regenerate.
 
 import { BlogIndexContent } from '../components/library/layout/BlogIndex.tsx'
 
@@ -25,7 +26,7 @@ const BLOG_POSTS: BlogPostMeta[] = [
     date: '2026-04-17',
     description: 'How we built our clinical decision support rules engine',
     tags: ['ux design', 'medicine'],
-    word_count: 1660,
+    word_count: 1665,
     hero_image: '/blog/images/how-health-workers-can-love-their-devices/lindiwe-holding-tablet.png',
     wide_image: '/blog/images/how-health-workers-can-love-their-devices/lindiwe-holding-tablet-wide.png',
   },

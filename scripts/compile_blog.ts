@@ -150,6 +150,64 @@ function formatPostMetaAsTypescript(post: BlogPostMeta): string {
 }
 
 /**
+ * Escape a string for use in XML content/attributes
+ */
+function escapeXml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;')
+}
+
+/**
+ * Generate an RSS 2.0 feed for the blog posts
+ */
+function generateRssFeed(posts: BlogPost[]): string {
+  const site_url = 'https://virtualhospitalsafrica.org'
+  const feed_url = `${site_url}/blog/rss.xml`
+  const build_date = new Date().toUTCString()
+  const latest_date = posts.length > 0 ? new Date(posts[0].date).toUTCString() : build_date
+
+  const items = posts
+    .map((post) => {
+      const post_url = `${site_url}/blog/${post.slug}`
+      const pub_date = new Date(post.date).toUTCString()
+      const author_line = post.author ? `      <dc:creator><![CDATA[${post.author}]]></dc:creator>\n` : ''
+      const categories = post.tags.map((t) => `      <category>${escapeXml(t)}</category>`).join('\n')
+      const categories_line = categories ? `${categories}\n` : ''
+      return `    <item>
+      <title>${escapeXml(post.title)}</title>
+      <link>${post_url}</link>
+      <guid isPermaLink="true">${post_url}</guid>
+      <pubDate>${pub_date}</pubDate>
+      <description><![CDATA[${post.description}]]></description>
+${author_line}${categories_line}      <content:encoded><![CDATA[${post.html}]]></content:encoded>
+    </item>`
+    })
+    .join('\n')
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"
+     xmlns:atom="http://www.w3.org/2005/Atom"
+     xmlns:content="http://purl.org/rss/1.0/modules/content/"
+     xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>Virtual Hospitals Africa Blog</title>
+    <link>${site_url}/blog</link>
+    <atom:link href="${feed_url}" rel="self" type="application/rss+xml" />
+    <description>Writing from the team building Virtual Hospitals Africa</description>
+    <language>en-us</language>
+    <lastBuildDate>${build_date}</lastBuildDate>
+    <pubDate>${latest_date}</pubDate>
+${items}
+  </channel>
+</rss>
+`
+}
+
+/**
  * Generate the blog index page content
  */
 function generateIndexFile(posts: BlogPost[]): string {
@@ -329,6 +387,10 @@ async function main() {
 
   const embed_route_content = generateEmbedFile(posts)
   await Deno.writeTextFile(embed_route_path, embed_route_content)
+  // Generate the RSS feed
+  const rss_path = 'static/blog/rss.xml'
+  const rss_content = generateRssFeed(posts)
+  await Deno.writeTextFile(rss_path, rss_content)
 
   // Format the generated files
   const fmt_command = new Deno.Command('deno', {
@@ -341,7 +403,7 @@ async function main() {
     throw new Error('Failed to format generated files')
   }
 
-  console.log(`\n✓ Generated ${post_route_path}, ${index_route_path}, and ${embed_route_path} with ${posts.length} post(s)`)
+  console.log(`\n✓ Generated ${post_route_path}, ${index_route_path}, ${embed_route_path}, and ${rss_path} with ${posts.length} post(s)`)
   console.log('Posts:')
   for (const post of posts) {
     console.log(`  - ${post.title} (${post.slug})`)

@@ -25,7 +25,7 @@ const BLOG_POSTS: BlogPostMeta[] = [
     date: '2026-04-17',
     description: 'How we built our clinical decision support rules engine',
     tags: ['ux design', 'medicine'],
-    word_count: 1660,
+    word_count: 1665,
     hero_image: '/blog/images/how-health-workers-can-love-their-devices/lindiwe-holding-tablet.png',
     wide_image: '/blog/images/how-health-workers-can-love-their-devices/lindiwe-holding-tablet-wide.png',
   },
