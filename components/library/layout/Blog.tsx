@@ -17,6 +17,7 @@ export type LayoutBlogPostProps = {
   title: string
   subtitle?: string
   author?: string
+  author_image?: string
   date: string
   tags: string[]
   word_count: number
@@ -117,7 +118,7 @@ function OtherPosts({ posts }: { posts: BlogPostMeta[] }) {
 }
 
 export default function LayoutBlogPost(
-  { title, subtitle, author, date, tags, word_count, hero_image, wide_image, other_posts, children }: LayoutBlogPostProps,
+  { title, subtitle, author, author_image, date, tags, word_count, hero_image, wide_image, other_posts, children }: LayoutBlogPostProps,
 ) {
   const banner_image = wide_image ?? hero_image
   return (
@@ -133,12 +134,24 @@ export default function LayoutBlogPost(
 
           <div className='mx-auto max-w-3xl px-6 py-12'>
             <header className='mb-10'>
-              <div className='flex flex-wrap items-center gap-x-3 text-xs uppercase tracking-widest text-slate-400 mb-4'>
-                {author && <span>{author}</span>}
-                {author && <span aria-hidden='true'>·</span>}
-                <time>{formatDate(date)}</time>
-                <span aria-hidden='true'>·</span>
-                <span>{Math.ceil(word_count / 200)} min read</span>
+              <div className='flex items-center gap-3 mb-4'>
+                {author_image && (
+                  <img
+                    src={author_image}
+                    alt={author ?? ''}
+                    className='w-10 h-10 rounded-full object-cover bg-slate-100'
+                  />
+                )}
+                <div className='flex flex-wrap items-center gap-x-3 text-xs uppercase tracking-widest text-slate-400'>
+                  <div className='flex flex-col'>
+                    {author && <strong>{author}</strong>}
+                    <time>{formatDate(date)}</time>
+
+                  </div>
+                  {author && <span aria-hidden='true'>·</span>}
+                  <span aria-hidden='true'>·</span>
+                  <span>{Math.ceil(word_count / 200)} min read</span>
+                </div>
               </div>
               <h1 className='font-serif text-4xl lg:text-5xl font-bold text-slate-900 leading-tight'>{title}</h1>
               {subtitle && <p className='text-xl text-slate-500 mt-4 leading-relaxed'>{subtitle}</p>}

@@ -8,6 +8,7 @@ type BlogPostMeta = {
   title: string
   subtitle?: string
   author?: string
+  author_image?: string
   slug: string
   date: string
   description: string
@@ -25,9 +26,10 @@ const BLOG_POSTS: BlogPost[] = [
   {
     title: 'How Health Workers Can Love Their Devices',
     subtitle: 'Learning from Dr. Atul Gawande how to gain in efficiency while letting practitioners focus on care',
-    author: undefined,
+    author: 'Will Weiss',
+    author_image: '/blog/images/authors/will-weiss.png',
     slug: 'how-health-workers-can-love-their-devices',
-    date: '2026-04-17',
+    date: '2026/04/21',
     description: 'How we built our clinical decision support rules engine',
     tags: ['ux design', 'medicine'],
     word_count: 1665,
@@ -58,6 +60,7 @@ export default function BlogPostPage(ctx: Context<unknown>) {
       title={post.title}
       subtitle={post.subtitle}
       author={post.author}
+      author_image={post.author_image}
       date={post.date}
       tags={post.tags}
       word_count={post.word_count}

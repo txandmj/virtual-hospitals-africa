@@ -2,9 +2,11 @@
 title: How Health Workers Can Love Their Devices
 subtitle: Learning from Dr. Atul Gawande how to gain in efficiency while letting practitioners focus on care
 slug: how-health-workers-can-love-their-devices
-date: 2026-04-17
+date: 2026/04/21
 description: How we built our clinical decision support rules engine
 tags: ux design, medicine
+author: Will Weiss
+author_image: /blog/images/authors/will-weiss.png
 hero_image: /blog/images/how-health-workers-can-love-their-devices/lindiwe-holding-tablet.png
 wide_image: /blog/images/how-health-workers-can-love-their-devices/lindiwe-holding-tablet-wide.png
 ---

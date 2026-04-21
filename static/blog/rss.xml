@@ -9,14 +9,15 @@
     <atom:link href="https://virtualhospitalsafrica.org/blog/rss.xml" rel="self" type="application/rss+xml" />
     <description>Writing from the team building Virtual Hospitals Africa</description>
     <language>en-us</language>
-    <lastBuildDate>Tue, 21 Apr 2026 04:39:04 GMT</lastBuildDate>
-    <pubDate>Fri, 17 Apr 2026 00:00:00 GMT</pubDate>
+    <lastBuildDate>Tue, 21 Apr 2026 04:54:49 GMT</lastBuildDate>
+    <pubDate>Tue, 21 Apr 2026 04:00:00 GMT</pubDate>
     <item>
       <title>How Health Workers Can Love Their Devices</title>
       <link>https://virtualhospitalsafrica.org/blog/how-health-workers-can-love-their-devices</link>
       <guid isPermaLink="true">https://virtualhospitalsafrica.org/blog/how-health-workers-can-love-their-devices</guid>
-      <pubDate>Fri, 17 Apr 2026 00:00:00 GMT</pubDate>
+      <pubDate>Tue, 21 Apr 2026 04:00:00 GMT</pubDate>
       <description><![CDATA[How we built our clinical decision support rules engine]]></description>
+      <dc:creator><![CDATA[Will Weiss]]></dc:creator>
       <category>ux design</category>
       <category>medicine</category>
       <content:encoded><![CDATA[<p>In his 2015 essay for the New Yorker <a href="https://www.newyorker.com/magazine/2018/11/12/why-doctors-hate-their-computers">Why Doctors Hate Their Computers</a> Dr. Atul Gawande opines the many ways in which digitization of health systems, while making administration and billing more efficient, often frustrates the daily efforts of health workers who primarily want to focus their attention on providing care. </p>

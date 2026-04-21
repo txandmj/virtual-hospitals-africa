@@ -6,6 +6,7 @@ type BlogPostMeta = {
   title: string
   subtitle?: string
   author?: string
+  author_image?: string
   slug: string
   date: string
   description: string
@@ -56,6 +57,7 @@ function parseFrontmatter(content: string): { meta: BlogPostMeta; body: string }
       title: meta.title,
       subtitle: meta.subtitle,
       author: meta.author,
+      author_image: meta.author_image,
       slug: meta.slug,
       date: meta.date,
       description: meta.description,
@@ -109,12 +111,14 @@ function formatPostAsTypescript(post: BlogPost): string {
   const tags_ts = post.tags.map((t) => `'${escapeForSingleQuotes(t)}'`).join(', ')
   const subtitle_ts = post.subtitle ? `'${escapeForSingleQuotes(post.subtitle)}'` : 'undefined'
   const author_ts = post.author ? `'${escapeForSingleQuotes(post.author)}'` : 'undefined'
+  const author_image_ts = post.author_image ? `'${escapeForSingleQuotes(post.author_image)}'` : 'undefined'
   const hero_image_ts = post.hero_image ? `'${escapeForSingleQuotes(post.hero_image)}'` : 'undefined'
   const wide_image_ts = post.wide_image ? `'${escapeForSingleQuotes(post.wide_image)}'` : 'undefined'
   return `  {
     title: '${escapeForSingleQuotes(post.title)}',
     subtitle: ${subtitle_ts},
     author: ${author_ts},
+    author_image: ${author_image_ts},
     slug: '${escapeForSingleQuotes(post.slug)}',
     date: '${escapeForSingleQuotes(post.date)}',
     description: '${escapeForSingleQuotes(post.description)}',
@@ -133,12 +137,14 @@ function formatPostMetaAsTypescript(post: BlogPostMeta): string {
   const tags_ts = post.tags.map((t) => `'${escapeForSingleQuotes(t)}'`).join(', ')
   const subtitle_ts = post.subtitle ? `'${escapeForSingleQuotes(post.subtitle)}'` : 'undefined'
   const author_ts = post.author ? `'${escapeForSingleQuotes(post.author)}'` : 'undefined'
+  const author_image_ts = post.author_image ? `'${escapeForSingleQuotes(post.author_image)}'` : 'undefined'
   const hero_image_ts = post.hero_image ? `'${escapeForSingleQuotes(post.hero_image)}'` : 'undefined'
   const wide_image_ts = post.wide_image ? `'${escapeForSingleQuotes(post.wide_image)}'` : 'undefined'
   return `  {
     title: '${escapeForSingleQuotes(post.title)}',
     subtitle: ${subtitle_ts},
     author: ${author_ts},
+    author_image: ${author_image_ts},
     slug: '${escapeForSingleQuotes(post.slug)}',
     date: '${escapeForSingleQuotes(post.date)}',
     description: '${escapeForSingleQuotes(post.description)}',
@@ -222,6 +228,7 @@ type BlogPostMeta = {
   title: string
   subtitle?: string
   author?: string
+  author_image?: string
   slug: string
   date: string
   description: string
@@ -257,6 +264,7 @@ type BlogPostMeta = {
   title: string
   subtitle?: string
   author?: string
+  author_image?: string
   slug: string
   date: string
   description: string
@@ -292,6 +300,7 @@ type BlogPostMeta = {
   title: string
   subtitle?: string
   author?: string
+  author_image?: string
   slug: string
   date: string
   description: string
@@ -329,6 +338,7 @@ export default function BlogPostPage(ctx: Context<unknown>) {
       title={post.title}
       subtitle={post.subtitle}
       author={post.author}
+      author_image={post.author_image}
       date={post.date}
       tags={post.tags}
       word_count={post.word_count}
