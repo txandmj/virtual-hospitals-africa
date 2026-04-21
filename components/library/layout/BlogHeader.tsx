@@ -1,4 +1,4 @@
-import { LogoWithCollapsibleText } from '../../../islands/Logo.tsx'
+import { LogoText } from '../../../islands/Logo.tsx'
 
 function GitHubIcon() {
   return (
@@ -31,7 +31,7 @@ export default function BlogHeader() {
     <header className='w-full bg-white border-b border-slate-100'>
       <div className='flex justify-between items-center px-6 relative' style='height: 64px;'>
         <a href='https://virtualhospitalsafrica.org' className='flex items-center h-full cursor-pointer'>
-          <LogoWithCollapsibleText variant='indigo' />
+          <LogoText variant='indigo' sidebar_collapsed={false} />
         </a>
 
         <div className='left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-4 absolute invisible md:visible'>

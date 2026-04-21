@@ -146,7 +146,6 @@ export default function LayoutBlogPost(
                   <div className='flex flex-col'>
                     {author && <strong>{author}</strong>}
                     <time>{formatDate(date)}</time>
-
                   </div>
                   {author && <span aria-hidden='true'>·</span>}
                   <span aria-hidden='true'>·</span>

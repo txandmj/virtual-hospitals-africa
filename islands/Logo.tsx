@@ -188,17 +188,17 @@ function Initials({ fill }: { fill: string }) {
   )
 }
 
-export function LogoWithCollapsibleText({
+export function LogoText({
   variant,
+  sidebar_collapsed,
   className,
-}: { variant: 'white' | 'indigo'; className?: string }) {
-  const collapsed = useSidebarCollapsed()
+}: { variant: 'white' | 'indigo'; sidebar_collapsed: boolean; className?: string }) {
   const fill = variant === 'white' ? '#fff' : '#312E81'
 
   // Define ratios based on the 556 total width
   const grid_style = {
-    gridTemplateColumns: collapsed.value ? '0fr 0fr 46.55fr 0fr 0fr' : '217fr 40fr 46.55fr 4.21fr 248.24fr',
-    width: collapsed.value ? '2.5rem' : '11rem',
+    gridTemplateColumns: sidebar_collapsed ? '0fr 0fr 46.55fr 0fr 0fr' : '217fr 40fr 46.55fr 4.21fr 248.24fr',
+    width: sidebar_collapsed ? '2.5rem' : '11rem',
   }
 
   return (
@@ -217,4 +217,9 @@ export function LogoWithCollapsibleText({
       <OtherLetters fill={fill} />
     </div>
   )
+}
+
+export function LogoWithCollapsibleText(props: { variant: 'white' | 'indigo'; className?: string }) {
+  const collapsed = useSidebarCollapsed()
+  return <LogoText {...props} sidebar_collapsed={collapsed.value} />
 }
