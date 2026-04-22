@@ -271,12 +271,12 @@ async function buildPageEntries(): Promise<PageEntry[]> {
 
 // ---- Notion database operations ----
 
-async function fetchExistingPageTitles(): Promise<Set<string>> {
-  const titles = new Set<string>()
+async function fetchExistingPages(): Promise<Map<string, string>> {
+  const pages = new Map<string, string>()
   let cursor: string | undefined
   do {
     const data = await notionRequest<{
-      results: { properties: { Page: { title: { plain_text: string }[] } } }[]
+      results: { id: string; properties: { Page: { title: { plain_text: string }[] } } }[]
       next_cursor: string | null
     }>(
       `https://api.notion.com/v1/databases/${DATABASE_ID}/query`,
@@ -288,11 +288,34 @@ async function fetchExistingPageTitles(): Promise<Set<string>> {
     )
     for (const page of data.results) {
       const title = page.properties.Page?.title?.[0]?.plain_text
-      if (title) titles.add(title)
+      if (title) pages.set(title, page.id)
     }
     cursor = data.next_cursor ?? undefined
   } while (cursor)
-  return titles
+  return pages
+}
+
+async function clearPageContent(pageId: string): Promise<void> {
+  const block_ids: string[] = []
+  let cursor: string | undefined
+  do {
+    const url = new URL(`https://api.notion.com/v1/blocks/${pageId}/children`)
+    url.searchParams.set('page_size', '100')
+    if (cursor) url.searchParams.set('start_cursor', cursor)
+    const data = await notionRequest<{
+      results: { id: string }[]
+      next_cursor: string | null
+    }>(url.toString(), { method: 'GET', headers: notionHeaders() })
+    for (const block of data.results) block_ids.push(block.id)
+    cursor = data.next_cursor ?? undefined
+  } while (cursor)
+
+  for (const block_id of block_ids) {
+    await notionRequest(`https://api.notion.com/v1/blocks/${block_id}`, {
+      method: 'DELETE',
+      headers: notionHeaders(),
+    })
+  }
 }
 
 async function createPageRow(entry: PageEntry): Promise<string> {
@@ -416,15 +439,26 @@ async function main() {
   console.log(`Found ${entries.length} unique pages in TOC.`)
 
   console.log('Fetching existing Notion pages...')
-  const existing = await fetchExistingPageTitles()
+  const existing = await fetchExistingPages()
   console.log(`${existing.size} pages already exist.`)
 
   const to_create = entries.filter((e) => !existing.has(e.title))
-  console.log(`Creating ${to_create.length} new pages...`)
+  const to_update = entries.filter((e) => existing.has(e.title))
+  console.log(
+    `Creating ${to_create.length} new pages, replacing content on ${to_update.length} existing pages...`,
+  )
 
   for (const entry of to_create) {
     console.log(`Creating ${entry.title}...`)
     const page_id = await createPageRow(entry)
+    await buildAndAppendContent(page_id, entry)
+    console.log(`  ✓ ${entry.title} (${page_id})`)
+  }
+
+  for (const entry of to_update) {
+    const page_id = existing.get(entry.title)!
+    console.log(`Replacing content for ${entry.title}...`)
+    await clearPageContent(page_id)
     await buildAndAppendContent(page_id, entry)
     console.log(`  ✓ ${entry.title} (${page_id})`)
   }
