@@ -2,7 +2,10 @@
 (task
   "Check for urgent eye or vision conditions"
   adult
-  (clinical_finding (snomed_concept "Eye / vision finding" "finding"))
+  (or
+    (clinical_finding (snomed_concept "Eye / vision finding" "finding"))
+    (clinical_finding (finding_site (snomed_concept "Structure of eye proper" "body structure")))
+  )
   (check_for
     (clinical_finding (snomed_concept "Sees haloes around lights" "finding"))
     (clinical_finding (snomed_concept "Blurring of visual image" "finding"))
