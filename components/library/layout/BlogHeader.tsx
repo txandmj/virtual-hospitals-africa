@@ -1,4 +1,5 @@
 import { LogoText } from '../../../islands/Logo.tsx'
+import BlogMobileMenu from '../../../islands/BlogMobileMenu.tsx'
 
 function GitHubIcon() {
   return (
@@ -29,9 +30,9 @@ function NavLink({ href, text }: { href: string; text: string }) {
 export default function BlogHeader() {
   return (
     <header className='w-full bg-white border-b border-slate-100'>
-      <div className='flex justify-between items-center px-6 relative' style='height: 64px;'>
-        <a href='https://virtualhospitalsafrica.org' className='flex items-center h-full cursor-pointer'>
-          <LogoText variant='indigo' sidebar_collapsed={false} />
+      <div className='flex justify-between items-center px-3 md:px-6 relative h-16'>
+        <a href='https://virtualhospitalsafrica.org' className='flex items-center cursor-pointer h-10 md:h-full'>
+          <LogoText variant='indigo' sidebar_collapsed={false} className='!w-36 md:!w-44' />
         </a>
 
         <div className='left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-4 absolute invisible md:visible'>
@@ -45,8 +46,7 @@ export default function BlogHeader() {
           <a
             href='https://github.com/Virtual-Hospitals-Africa/virtual-hospitals-africa'
             target='_blank'
-            className='relative block cursor-pointer'
-            style='width: 40px; height: 40px;'
+            className='relative hidden md:block cursor-pointer w-10 h-10'
           >
             <div className='absolute inset-0'>
               <GitHubIcon />
@@ -54,11 +54,11 @@ export default function BlogHeader() {
           </a>
           <a
             href='/contact-general-inquiry'
-            className='flex items-center justify-center rounded-lg px-3 cursor-pointer text-white font-medium text-base whitespace-nowrap bg-[#473fce]'
-            style='min-width: 80px; height: 40px;'
+            className='flex items-center justify-center rounded-lg px-3 cursor-pointer text-white font-medium text-base whitespace-nowrap bg-[#473fce] min-w-20 h-10'
           >
             Get in Touch
           </a>
+          <BlogMobileMenu />
         </div>
       </div>
     </header>

@@ -4,10 +4,13 @@ import sortBy from '../../util/sortBy.ts'
 import { spinner } from '../../util/spinner.ts'
 import createSeed from '../createSeed.ts'
 
+const SEED_DUMPS_DIRECTORY = './db/seed/dumps'
+
 export const seeds: Record<
   string,
   {
     table_names: string[]
+    never_dump: boolean
     load: () => Promise<void>
     dump: () => Promise<void>
     drop: () => Promise<void>
@@ -101,6 +104,26 @@ export async function clear_dump(target: string) {
   await run('clear_dump', target)
 }
 
+export async function dumpAll() {
+  for (const seed_name of seed_targets) {
+    const seed = seeds[seed_name]
+    if (seed.never_dump) continue
+
+    const existing_dumps = new Set(
+      Array.from(Deno.readDirSync(SEED_DUMPS_DIRECTORY)).map((f) => f.name),
+    )
+    const missing = seed.table_names.filter(
+      (tn) => !existing_dumps.has(`${tn}.tsv`),
+    )
+    if (!missing.length) continue
+
+    await spinner(`dumping seed ${seed_name}`, async () => {
+      await seed.dump()
+      return `${seed_name} dumped. Tables affected: ${seed.table_names.join(', ')}. Previously missing: ${missing.join(', ')}.`
+    })
+  }
+}
+
 export async function loadRecreating(targets: string[]) {
   const to_recreate = targets.map((target) => {
     const result = findTarget(target)
@@ -171,6 +194,9 @@ function isRecognizedCommand(cmd: string): cmd is keyof typeof gerund {
 
 function main() {
   const [cmd, target] = Deno.args
+  if (cmd === 'dump:all') {
+    return dumpAll()
+  }
   if (!isRecognizedCommand(cmd)) {
     console.error(
       'Please provide a valid command name as in\ndeno task db:seed $cmd\nAvailable commands:',
