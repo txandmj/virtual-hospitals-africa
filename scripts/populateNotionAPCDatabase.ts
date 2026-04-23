@@ -442,25 +442,24 @@ async function main() {
   const existing = await fetchExistingPages()
   console.log(`${existing.size} pages already exist.`)
 
-  const to_create = entries.filter((e) => !existing.has(e.title))
-  const to_update = entries.filter((e) => existing.has(e.title))
+  const new_count = entries.filter((e) => !existing.has(e.title)).length
   console.log(
-    `Creating ${to_create.length} new pages, replacing content on ${to_update.length} existing pages...`,
+    `Creating ${new_count} new pages, replacing content on ${entries.length - new_count} existing pages...`,
   )
 
-  for (const entry of to_create) {
-    console.log(`Creating ${entry.title}...`)
-    const page_id = await createPageRow(entry)
-    await buildAndAppendContent(page_id, entry)
-    console.log(`  ✓ ${entry.title} (${page_id})`)
-  }
-
-  for (const entry of to_update) {
-    const page_id = existing.get(entry.title)!
-    console.log(`Replacing content for ${entry.title}...`)
-    await clearPageContent(page_id)
-    await buildAndAppendContent(page_id, entry)
-    console.log(`  ✓ ${entry.title} (${page_id})`)
+  for (const entry of entries) {
+    const existing_page_id = existing.get(entry.title)
+    if (existing_page_id) {
+      console.log(`Replacing content for ${entry.title}...`)
+      await clearPageContent(existing_page_id)
+      await buildAndAppendContent(existing_page_id, entry)
+      console.log(`  ✓ ${entry.title} (${existing_page_id})`)
+    } else {
+      console.log(`Creating ${entry.title}...`)
+      const page_id = await createPageRow(entry)
+      await buildAndAppendContent(page_id, entry)
+      console.log(`  ✓ ${entry.title} (${page_id})`)
+    }
   }
 
   console.log('\nDone.')
