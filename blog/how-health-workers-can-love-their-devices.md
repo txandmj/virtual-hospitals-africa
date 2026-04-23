@@ -1,9 +1,9 @@
 ---
 title: How Health Workers Can Love Their Devices
-subtitle: Learning from Dr. Atul Gawande how to gain in efficiency while letting practitioners focus on care
+subtitle: Learning from Dr. Atul Gawande and letting practitioners focus on care
 slug: how-health-workers-can-love-their-devices
 date: 2026/04/21
-description: How we built our clinical decision support rules engine
+description: A blog post from Chief Technology Officer Will Weiss exploring how Virtual Hospitals Africa's digital health system can reduce overwhelm for health workers
 tags: ux design, medicine
 author: Will Weiss
 author_image: /blog/images/authors/will-weiss.png
@@ -12,7 +12,7 @@ wide_image: /blog/images/how-health-workers-can-love-their-devices/lindiwe-holdi
 ---
 
 
-In his 2015 essay for the New Yorker [Why Doctors Hate Their Computers](https://www.newyorker.com/magazine/2018/11/12/why-doctors-hate-their-computers) Dr. Atul Gawande opines the many ways in which digitization of health systems, while making administration and billing more efficient, often frustrates the daily efforts of health workers who primarily want to focus their attention on providing care. 
+In his 2015 essay for the New Yorker [Why Doctors Hate Their Computers](https://www.newyorker.com/magazine/2018/11/12/why-doctors-hate-their-computers) Dr. Atul Gawande opines the many ways in which digitization of health systems, while making administration and billing more efficient, often frustrates the daily efforts of health workers who primarily want to focus their attention on providing care.
 
 At [Virtual Hospitals Africa](https://www.virtualhospitalsafrica.org/), we're designing for a public sector that today is largely reliant on pen and paper. With that comes a freedom to learn from what has come before without getting trapped in a local maximum with a digital system that is functional but creates more work for practitioners.
 

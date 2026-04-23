@@ -8,3 +8,6 @@ scripts/**
 logs/
 
 .env*
+
+db/resources
+!db/resources/claude_generated_probable_product_form_routes_south_africa.ts

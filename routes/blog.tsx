@@ -20,12 +20,13 @@ type BlogPostMeta = {
 const BLOG_POSTS: BlogPostMeta[] = [
   {
     title: 'How Health Workers Can Love Their Devices',
-    subtitle: 'Learning from Dr. Atul Gawande how to gain in efficiency while letting practitioners focus on care',
+    subtitle: 'Learning from Dr. Atul Gawande and letting practitioners focus on care',
     author: 'Will Weiss',
     author_image: '/blog/images/authors/will-weiss.png',
     slug: 'how-health-workers-can-love-their-devices',
     date: '2026/04/21',
-    description: 'How we built our clinical decision support rules engine',
+    description:
+      "A blog post from Chief Technology Officer Will Weiss exploring how Virtual Hospitals Africa's digital health system can reduce overwhelm for health workers",
     tags: ['ux design', 'medicine'],
     word_count: 1665,
     hero_image: '/blog/images/how-health-workers-can-love-their-devices/lindiwe-holding-tablet.png',
