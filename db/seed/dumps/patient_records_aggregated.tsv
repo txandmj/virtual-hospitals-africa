@@ -1,0 +1,1 @@
+id	created_at	patient_id	patient_encounter_id	root_snomed_concept_id	root_snomed_concept_name	root_snomed_concept_category	specific_snomed_concept_id	specific_snomed_concept_name	specific_snomed_concept_category	existence	value

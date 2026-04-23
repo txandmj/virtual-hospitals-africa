@@ -1,0 +1,104 @@
+identifier	display_name	consultation_step	slug	path	order
+head_to_toe_assessment_general	Head-to-toe Assessment (General)	general_assessments	general	/general_assessments/general	1
+head_to_toe_assessment_skin	Head-to-toe Assessment (Skin)	general_assessments	skin	/general_assessments/skin	2
+head_to_toe_assessment_head_and_neck	Head-to-toe Assessment (Head and Neck)	general_assessments	head_and_neck	/general_assessments/head_and_neck	3
+head_to_toe_assessment_cardiovascular	Head-to-toe Assessment (Cardiovascular)	general_assessments	cardiovascular	/general_assessments/cardiovascular	4
+head_to_toe_assessment_respiratory	Head-to-toe Assessment (Respiratory)	general_assessments	respiratory	/general_assessments/respiratory	5
+head_to_toe_assessment_gastrointestinal	Head-to-toe Assessment (Gastrointestinal)	general_assessments	gastrointestinal	/general_assessments/gastrointestinal	6
+head_to_toe_assessment_neuromuscular	Head-to-toe Assessment (Neuromuscular)	general_assessments	neuromuscular	/general_assessments/neuromuscular	7
+womens_health_assessment	Women's Health Assessment	general_assessments	womens_health_assessment	/general_assessments/womens_health_assessment	8
+mens_health_assessment	Men's Health Assessment	general_assessments	mens_health_assessment	/general_assessments/mens_health_assessment	9
+child_health_assessment	Child Health Assessment	general_assessments	child_health_assessment	/general_assessments/child_health_assessment	10
+maternity_assessment	Maternity Assessment	examinations	maternity_assessment	/examinations/maternity_assessment	11
+mental_health_assessment	Mental Health Assessment	examinations	mental_health_assessment	/examinations/mental_health_assessment	12
+gastroenterology	Gastroenterology	examinations	gastroenterology	/examinations/gastroenterology	13
+endocrine	Endocrine	examinations	endocrine	/examinations/endocrine	14
+osteopathy	Osteopathy	examinations	osteopathy	/examinations/osteopathy	15
+trauma	Trauma	examinations	trauma	/examinations/trauma	16
+oncology	Oncology	examinations	oncology	/examinations/oncology	17
+dental	Dental	examinations	dental	/examinations/dental	18
+otolaryngology	Otolaryngology	examinations	otolaryngology	/examinations/otolaryngology	19
+immunology	Immunology	examinations	immunology	/examinations/immunology	20
+urology	Urology	examinations	urology	/examinations/urology	21
+gynecological	Gynecological	examinations	gynecological	/examinations/gynecological	22
+neurology	Neurology	examinations	neurology	/examinations/neurology	23
+anesthetic	Anesthetic	examinations	anesthetic	/examinations/anesthetic	24
+obstetric	Obstetric	examinations	obstetric	/examinations/obstetric	25
+ophthalmology	Ophthalmology	examinations	ophthalmology	/examinations/ophthalmology	26
+geriatric	Geriatric	examinations	geriatric	/examinations/geriatric	27
+pulmonology	Pulmonology	examinations	pulmonology	/examinations/pulmonology	28
+haematology	Haematology	examinations	haematology	/examinations/haematology	29
+dermatology	Dermatology	examinations	dermatology	/examinations/dermatology	30
+paediatric	Paediatric	examinations	paediatric	/examinations/paediatric	31
+rheumatology	Rheumatology	examinations	rheumatology	/examinations/rheumatology	32
+vascular	Vascular	examinations	vascular	/examinations/vascular	33
+cardiology	Cardiology	examinations	cardiology	/examinations/cardiology	34
+psychiatry	Psychiatry	examinations	psychiatry	/examinations/psychiatry	35
+maxillofacial	Maxillofacial	examinations	maxillofacial	/examinations/maxillofacial	36
+nephrology	Nephrology	examinations	nephrology	/examinations/nephrology	37
+urine_analysis	Urine Analysis	diagnostic_tests	urine_analysis	/diagnostic_tests/urine_analysis	38
+malaria	Malaria	diagnostic_tests	malaria	/diagnostic_tests/malaria	39
+hiv	HIV	diagnostic_tests	hiv	/diagnostic_tests/hiv	40
+pregnancy	Pregnancy	diagnostic_tests	pregnancy	/diagnostic_tests/pregnancy	41
+cholesterol	Cholesterol	diagnostic_tests	cholesterol	/diagnostic_tests/cholesterol	42
+blood_glucose	Blood Glucose	diagnostic_tests	blood_glucose	/diagnostic_tests/blood_glucose	43
+hemoglobin	Hemoglobin	diagnostic_tests	hemoglobin	/diagnostic_tests/hemoglobin	44
+uric_acid	Uric Acid	diagnostic_tests	uric_acid	/diagnostic_tests/uric_acid	45
+covid_19	Covid 19	diagnostic_tests	covid_19	/diagnostic_tests/covid_19	46
+diabetes	Diabetes	diagnostic_tests	diabetes	/diagnostic_tests/diabetes	47
+inflammation	Inflammation	diagnostic_tests	inflammation	/diagnostic_tests/inflammation	48
+cardiac	Cardiac	diagnostic_tests	cardiac	/diagnostic_tests/cardiac	49
+hormone	Hormone	diagnostic_tests	hormone	/diagnostic_tests/hormone	50
+thyroid	Thyroid	diagnostic_tests	thyroid	/diagnostic_tests/thyroid	51
+bone_metabolism	Bone Metabolism	diagnostic_tests	bone_metabolism	/diagnostic_tests/bone_metabolism	52
+gastric_function	Gastric Function	diagnostic_tests	gastric_function	/diagnostic_tests/gastric_function	53
+anemia	Anemia	diagnostic_tests	anemia	/diagnostic_tests/anemia	54
+tumor	Tumor	diagnostic_tests	tumor	/diagnostic_tests/tumor	55
+brain_injury	Brain Injury	diagnostic_tests	brain_injury	/diagnostic_tests/brain_injury	56
+angiocapy	Angiocapy	diagnostic_tests	angiocapy	/diagnostic_tests/angiocapy	57
+immune_system	Immune System	diagnostic_tests	immune_system	/diagnostic_tests/immune_system	58
+renal_function	Renal Function	diagnostic_tests	renal_function	/diagnostic_tests/renal_function	59
+nervous_system	Nervous System	diagnostic_tests	nervous_system	/diagnostic_tests/nervous_system	60
+blood_pressure	Blood Pressure	diagnostic_tests	blood_pressure	/diagnostic_tests/blood_pressure	61
+blood_oxygen_saturation	Blood Oxygen Saturation	diagnostic_tests	blood_oxygen_saturation	/diagnostic_tests/blood_oxygen_saturation	62
+body_mass_index	Body Mass Index	diagnostic_tests	body_mass_index	/diagnostic_tests/body_mass_index	63
+spirometry_fvc	Spirometry FVC	diagnostic_tests	spirometry_fvc	/diagnostic_tests/spirometry_fvc	64
+spirometry_fev	Spirometry FEV	diagnostic_tests	spirometry_fev	/diagnostic_tests/spirometry_fev	65
+spirometry_pef	Spirometry PEF	diagnostic_tests	spirometry_pef	/diagnostic_tests/spirometry_pef	66
+hepatitis_c	Hepatitis C	diagnostic_tests	hepatitis_c	/diagnostic_tests/hepatitis_c	67
+tuberculosis	Tuberculosis	diagnostic_tests	tuberculosis	/diagnostic_tests/tuberculosis	68
+body_fat	Body Fat	diagnostic_tests	body_fat	/diagnostic_tests/body_fat	69
+bone_mass	Bone Mass	diagnostic_tests	bone_mass	/diagnostic_tests/bone_mass	70
+water_weight	Water Weight	diagnostic_tests	water_weight	/diagnostic_tests/water_weight	71
+muscle_mass	Muscle Mass	diagnostic_tests	muscle_mass	/diagnostic_tests/muscle_mass	72
+body_weight	Body Weight	diagnostic_tests	body_weight	/diagnostic_tests/body_weight	73
+basal_metabolic_rate	Basal Metabolic Rate	diagnostic_tests	basal_metabolic_rate	/diagnostic_tests/basal_metabolic_rate	74
+typhoid	Typhoid	diagnostic_tests	typhoid	/diagnostic_tests/typhoid	75
+syphilis	Syphilis	diagnostic_tests	syphilis	/diagnostic_tests/syphilis	76
+chlamydia	Chlamydia	diagnostic_tests	chlamydia	/diagnostic_tests/chlamydia	77
+gonorrhea	Gonorrhea	diagnostic_tests	gonorrhea	/diagnostic_tests/gonorrhea	78
+hepatitis_a_b_c	Hepatitis A/B/C	diagnostic_tests	hepatitis_a_b_c	/diagnostic_tests/hepatitis_a_b_c	79
+herpes_simplex_virus_1_2	Herpes Simplex Virus 1 & 2	diagnostic_tests	herpes_simplex_virus_1_2	/diagnostic_tests/herpes_simplex_virus_1_2	80
+trichomonas	Trichomonas	diagnostic_tests	trichomonas	/diagnostic_tests/trichomonas	81
+cholera	Cholera	diagnostic_tests	cholera	/diagnostic_tests/cholera	82
+abdominal_ultrasound	Abdominal Ultrasound	diagnostic_tests	abdominal_ultrasound	/diagnostic_tests/abdominal_ultrasound	83
+renal_ultrasound	Renal Ultrasound	diagnostic_tests	renal_ultrasound	/diagnostic_tests/renal_ultrasound	84
+breast_ultrasound	Breast Ultrasound	diagnostic_tests	breast_ultrasound	/diagnostic_tests/breast_ultrasound	85
+doppler_ultrasound	Doppler Ultrasound	diagnostic_tests	doppler_ultrasound	/diagnostic_tests/doppler_ultrasound	86
+pelvic_ultrasound	Pelvic Ultrasound	diagnostic_tests	pelvic_ultrasound	/diagnostic_tests/pelvic_ultrasound	87
+transvaginal_ultrasound	Transvaginal Ultrasound	diagnostic_tests	transvaginal_ultrasound	/diagnostic_tests/transvaginal_ultrasound	88
+thyroid_ultrasound	Thyroid Ultrasound	diagnostic_tests	thyroid_ultrasound	/diagnostic_tests/thyroid_ultrasound	89
+transrectal_ultrasound	Transrectal Ultrasound	diagnostic_tests	transrectal_ultrasound	/diagnostic_tests/transrectal_ultrasound	90
+pregnancy_ultrasound	Pregnancy Ultrasound	diagnostic_tests	pregnancy_ultrasound	/diagnostic_tests/pregnancy_ultrasound	91
+chest_x_ray	Chest X-ray	diagnostic_tests	chest_x_ray	/diagnostic_tests/chest_x_ray	92
+abdominal_x_ray	Abdominal X-ray	diagnostic_tests	abdominal_x_ray	/diagnostic_tests/abdominal_x_ray	93
+kidney_ureter_and_bladder_x_ray	Kidney, Ureter and Bladder X-ray	diagnostic_tests	kidney_ureter_and_bladder_x_ray	/diagnostic_tests/kidney_ureter_and_bladder_x_ray	94
+neck_x_ray	Neck X-ray	diagnostic_tests	neck_x_ray	/diagnostic_tests/neck_x_ray	95
+hand_x_ray	Hand X-ray	diagnostic_tests	hand_x_ray	/diagnostic_tests/hand_x_ray	96
+joint_x_ray	Joint X-ray	diagnostic_tests	joint_x_ray	/diagnostic_tests/joint_x_ray	97
+skull_x_ray	Skull X-ray	diagnostic_tests	skull_x_ray	/diagnostic_tests/skull_x_ray	98
+temperature	Temperature	diagnostic_tests	temperature	/diagnostic_tests/temperature	99
+history_pre_existing_conditions	Pre-existing Conditions	history	pre_existing_conditions	/history/pre_existing_conditions	100
+history_family	Family	history	family	/history/family	101
+history_past_conditions	Past Conditions	history	past_conditions	/history/past_conditions	102
+history_major_surgeries	Major Surgeries	history	major_surgeries	/history/major_surgeries	103

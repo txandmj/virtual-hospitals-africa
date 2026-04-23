@@ -78,5 +78,15 @@ export function define(
   async function clear_dump() {
     await pMap(table_names, (table_name) => Deno.remove(`${SEED_DUMPS_DIRECTORY}/${table_name}.tsv`))
   }
-  return { drop, load, dump, recreate, generate, reload, clear_dump, table_names }
+  return {
+    drop,
+    load,
+    dump,
+    recreate,
+    generate,
+    reload,
+    clear_dump,
+    table_names,
+    never_dump: !!opts.never_dump,
+  }
 }

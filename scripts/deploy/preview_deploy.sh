@@ -22,4 +22,18 @@ docker compose -p "$PROJECT" -f $COMPOSE_FILE down -v --remove-orphans 2>/dev/nu
 docker compose -p "$PROJECT" -f $COMPOSE_FILE up -d --wait --wait-timeout 600
 docker compose -p "$PROJECT" -f $COMPOSE_FILE ps
 
+# Remove superseded images for this PR (keeps only the current SHA)
+OLD_IMAGES=$(docker images --format '{{.Repository}}:{{.Tag}}' \
+  | grep "^${ECR_REGISTRY}/${ECR_REPOSITORY}:pr-${PR_NUMBER}-" \
+  | grep -v "$SHA" || true)
+
+if [ -n "$OLD_IMAGES" ]; then
+  echo "Removing superseded preview images for PR $PR_NUMBER:"
+  echo "$OLD_IMAGES"
+  echo "$OLD_IMAGES" | xargs docker rmi -f
+fi
+
+# Reclaim dangling layers left over from removed or overwritten images
+docker image prune -f
+
 echo "Preview deployed at http://$(curl -sf http://169.254.169.254/latest/meta-data/public-ipv4):$PORT"
