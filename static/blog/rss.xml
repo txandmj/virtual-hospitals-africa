@@ -9,18 +9,18 @@
     <atom:link href="https://virtualhospitalsafrica.org/blog/rss.xml" rel="self" type="application/rss+xml" />
     <description>Writing from the team building Virtual Hospitals Africa</description>
     <language>en-us</language>
-    <lastBuildDate>Tue, 21 Apr 2026 04:54:49 GMT</lastBuildDate>
+    <lastBuildDate>Thu, 23 Apr 2026 11:05:02 GMT</lastBuildDate>
     <pubDate>Tue, 21 Apr 2026 04:00:00 GMT</pubDate>
     <item>
       <title>How Health Workers Can Love Their Devices</title>
       <link>https://virtualhospitalsafrica.org/blog/how-health-workers-can-love-their-devices</link>
       <guid isPermaLink="true">https://virtualhospitalsafrica.org/blog/how-health-workers-can-love-their-devices</guid>
       <pubDate>Tue, 21 Apr 2026 04:00:00 GMT</pubDate>
-      <description><![CDATA[How we built our clinical decision support rules engine]]></description>
+      <description><![CDATA[A blog post from Chief Technology Officer Will Weiss exploring how Virtual Hospitals Africa's digital health system can reduce overwhelm for health workers]]></description>
       <dc:creator><![CDATA[Will Weiss]]></dc:creator>
       <category>ux design</category>
       <category>medicine</category>
-      <content:encoded><![CDATA[<p>In his 2015 essay for the New Yorker <a href="https://www.newyorker.com/magazine/2018/11/12/why-doctors-hate-their-computers">Why Doctors Hate Their Computers</a> Dr. Atul Gawande opines the many ways in which digitization of health systems, while making administration and billing more efficient, often frustrates the daily efforts of health workers who primarily want to focus their attention on providing care. </p>
+      <content:encoded><![CDATA[<p>In his 2015 essay for the New Yorker <a href="https://www.newyorker.com/magazine/2018/11/12/why-doctors-hate-their-computers">Why Doctors Hate Their Computers</a> Dr. Atul Gawande opines the many ways in which digitization of health systems, while making administration and billing more efficient, often frustrates the daily efforts of health workers who primarily want to focus their attention on providing care.</p>
 <p>At <a href="https://www.virtualhospitalsafrica.org/">Virtual Hospitals Africa</a>, we&#39;re designing for a public sector that today is largely reliant on pen and paper. With that comes a freedom to learn from what has come before without getting trapped in a local maximum with a digital system that is functional but creates more work for practitioners.</p>
 <p>Dr. Gawande&#39;s insights have been instrumental to us as we hope to bring a fresh perspective how a medical records system can <em>reduce</em> overwhelm and workload, allowing health workers to get back to what they care about: their patients.</p>
 <p>Here are some key takeaways and how our system’s calm, elegant, human-centered design speaks to the frustrations health workers have with many of today’s leading systems.</p>

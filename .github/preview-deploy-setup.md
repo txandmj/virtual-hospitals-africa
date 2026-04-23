@@ -67,7 +67,7 @@ EOF
 The dump rarely changes (it's SNOMED base data). When it does, scp the file into the preview instance
 
 ```bash
-scp -i ~/.ssh/vha-branch-deploy.pem db/dumps/snomed ubuntu@<preview-ec2-ip>:/opt/vha-preview/db/dumps
+scp -i ~/.ssh/vha-branch-deploy.pem db/dumps/snomed ubuntu@$VHA_BRANCH_DEPLOY_IP:/opt/vha-preview/db/dumps
 ```
 
 ---
@@ -89,7 +89,7 @@ The existing `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and `ECR_REPOSITORY` 
 
 ## How it works
 
-- **PR opened / new commit pushed**: builds the arm64 image tagged `pr-{N}-{sha}`, pushes to ECR, SSHes into the preview instance, writes a per-PR `docker-compose.yml`, and runs:
+- **PR opened / new commit pushed**: builds the amd image tagged `pr-{N}-{sha}`, pushes to ECR, SSHes into the preview instance, writes a per-PR `docker-compose.yml`, and runs:
   1. `postgres:16` container
   2. `migrator` container (same app image, runs `db:restore snomed && db:migrate all` against the per-PR postgres, then exits)
   3. `app` container (starts only after migrator exits cleanly), exposed on port `8000 + PR_NUMBER`

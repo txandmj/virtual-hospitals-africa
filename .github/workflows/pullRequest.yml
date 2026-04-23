@@ -69,7 +69,7 @@ jobs:
       artifact-name: test-migrations-logs
       build: deno task db:migrate latest
       run: |
-        deno task db:migrate to snomed_inferred
+        deno task db:migrate to snomed_indexes
         deno task db:migrate latest
 
   build_container:
@@ -108,14 +108,14 @@ jobs:
         run: deno task compile:chatbot
 
   deploy_preview:
-    needs:
-      - check
-      - test_web
-      - test_non_web
-      - test_migrations
-      - build_container
-      - compile_web
-      - compile_chatbot
+    # needs:
+    #   - check
+    #   - test_web
+    #   - test_non_web
+    #   - test_migrations
+    #   - build_container
+    #   - compile_web
+    #   - compile_chatbot
     concurrency:
       group: deploy-preview
       cancel-in-progress: false

@@ -22,7 +22,7 @@ export async function up(db: Kysely<DB>) {
     ON snomed_relationship(destination_id, source_id) 
   `.execute(db)
 
-    // Create GIN trigram indexes for fast fuzzy search using pg_trgm
+  // Create GIN trigram indexes for fast fuzzy search using pg_trgm
   await sql`
     CREATE INDEX trgm_snomed_description_term
     ON snomed_description

@@ -1,4 +1,3 @@
-
 import { Kysely } from 'kysely'
 import type { DB } from '../../db.d.ts'
 import { createStandardTable } from '../createTable.ts'

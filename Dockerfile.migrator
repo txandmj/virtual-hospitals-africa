@@ -8,8 +8,13 @@ COPY deno.json ./
 RUN deno install --allow-scripts
 
 COPY db.d.ts ./
-COPY db/ ./
-COPY util/ ./
-COPY shared/ ./
+COPY types.ts ./
+COPY db/ ./db/
+COPY util/ ./util/
+COPY shared/ ./shared/
+COPY s_expression/ ./s_expression/
+COPY test/_helpers/organizations.ts ./test/_helpers/
+COPY external-clients/google-maps.ts ./external-clients/
+COPY backend/predefinedAvatarMediaUUID.ts ./backend/
 
 CMD ["sh", "-c", "deno task db:restore snomed && deno task db:migrate all"]
