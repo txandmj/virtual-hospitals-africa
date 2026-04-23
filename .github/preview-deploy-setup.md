@@ -54,12 +54,6 @@ sudo chmod 777 /opt/vha-preview/db/dumps
 ### 5. Create the shared preview env file
 
 ## All preview environments share secrets from `/opt/vha-preview/.env.preview`. The `DATABASE_URL` is overridden per-PR by docker compose, so it can be a placeholder here.
-
-sudo cat > /opt/vha-preview/.env.preview << 'EOF'
-DATABASE_URL=placeholder_overridden_by_compose
-GOOGLE_MAPS_API_KEY=your_key_here
-EOF
-
 ```
 
 ### 6. Update the SNOMED dump when it changes
@@ -67,7 +61,8 @@ EOF
 The dump rarely changes (it's SNOMED base data). When it does, scp the file into the preview instance
 
 ```bash
-scp -i ~/.ssh/vha-branch-deploy.pem db/dumps/snomed ubuntu@$VHA_BRANCH_DEPLOY_IP:/opt/vha-preview/db/dumps
+scp -i ~/.ssh/vha-branch-deploy.pem db/dumps/snomed ubuntu@$VHA_BRANCH_DEPLOY_IP:/opt/vha-preview/db/dumps && \
+scp -i ~/.ssh/vha-branch-deploy.pem .env.preview ubuntu@$VHA_BRANCH_DEPLOY_IP:/opt/vha-preview
 ```
 
 ---
@@ -78,10 +73,9 @@ Add the following repository secrets (Settings → Secrets and variables → Act
 
 | Secret name | Value |
 |---|---|
-| `PREVIEW_EC2_HOST` | The Elastic IP or DNS hostname of the preview instance |
+| `PREVIEW_EC2_HOST` | The Elastic IP |
 | `PREVIEW_EC2_USERNAME` | SSH username (e.g. `ubuntu`) |
 | `PREVIEW_EC2_SSH_KEY` | Contents of the private key file for the instance |
-| `PREVIEW_EC2_IP` | The Elastic IP (used to construct the preview URL in PR comments) |
 
 The existing `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and `ECR_REPOSITORY` secrets are reused from the prod workflow — no changes needed there.
 

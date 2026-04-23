@@ -194,6 +194,33 @@ jobs:
             exit 1
           fi
 
+      - name: Delete superseded ECR images for this PR
+        env:
+          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+          SHA: ${{ github.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          OLD_TAGS=$(aws ecr list-images \
+            --repository-name "$ECR_REPOSITORY" \
+            --filter tagStatus=TAGGED \
+            --query "imageIds[?starts_with(imageTag, 'pr-${PR_NUMBER}-') && !contains(imageTag, '${SHA}')].imageTag" \
+            --output text)
+
+          if [ -z "$OLD_TAGS" ]; then
+            echo "No superseded images to clean up for PR $PR_NUMBER"
+            exit 0
+          fi
+
+          IMAGE_IDS=""
+          for tag in $OLD_TAGS; do
+            IMAGE_IDS="$IMAGE_IDS imageTag=$tag"
+          done
+
+          echo "Deleting superseded images: $OLD_TAGS"
+          aws ecr batch-delete-image \
+            --repository-name "$ECR_REPOSITORY" \
+            --image-ids $IMAGE_IDS
+
       - name: Upload compose file to preview EC2
         uses: appleboy/scp-action@master
         with:
@@ -225,11 +252,11 @@ jobs:
         uses: actions/github-script@v7
         env:
           PR_NUMBER: ${{ github.event.pull_request.number }}
-          PREVIEW_EC2_IP: ${{ secrets.PREVIEW_EC2_IP }}
+          PREVIEW_EC2_HOST: ${{ secrets.PREVIEW_EC2_HOST }}
         with:
           script: |
             const port = 8000 + parseInt(process.env.PR_NUMBER);
-            const url = `http://${process.env.PREVIEW_EC2_IP}:${port}`;
+            const url = `http://${process.env.PREVIEW_EC2_HOST}:${port}`;
             const body = `### Preview Environment\n\n**${url}**\n\n_Redeployed on each push. Torn down when this PR is closed._`;
 
             const { data: comments } = await github.rest.issues.listComments({
