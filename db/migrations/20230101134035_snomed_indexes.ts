@@ -63,6 +63,18 @@ export async function up(db: Kysely<DB>) {
     .on('snomed_inferred_canonical_name_and_category')
     .column('category')
     .execute()
+
+  await sql`
+    CREATE INDEX IF NOT EXISTS idx_relationship_recursive 
+    ON snomed_relationship (destination_id, source_id) 
+    WHERE active = true;
+  `.execute(db)
+
+  await sql`
+    CREATE INDEX IF NOT EXISTS idx_concept_active_id 
+    ON snomed_concept (id) 
+    WHERE active = true;
+  `.execute(db)
 }
 
 export async function down(_db: Kysely<DB>) {

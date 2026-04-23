@@ -19,6 +19,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - uses: actions/checkout@v5
+
       - name: Teardown preview environment
         uses: appleboy/ssh-action@master
         env:
