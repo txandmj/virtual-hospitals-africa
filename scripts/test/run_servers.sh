@@ -11,15 +11,24 @@ fail() {
   exit 1
 }
 
-# On non-CI builds ensure the .env matches either .env.local or .env.docker
+# On non-CI builds ensure the .env starts with .env.local or .env.docker
+# (.env is built by concatenating one of those with .env.extra, so compare only
+# up through the source file's byte count)
+env_prefix_matches() {
+  local source="$1"
+  local bytes
+  bytes=$(( $(wc -c < "$source") ))
+  head -c "$bytes" .env | cmp --silent - "$source"
+}
+
 if [[ "${CI:-}" == "true" ]]; then
   :
 elif [ -f .env.local ] && [ -f .env.docker ]; then
-  cmp --silent .env .env.local || cmp --silent .env .env.docker || fail $'.env differs from .env.local and .env.docker\nrun deno task switch:local before running tests'
-elif [ -f .env.local ]; then 
-  cmp --silent .env .env.local || fail $'.env differs from .env.local\nrun deno task switch:local before running tests'
-elif [ -f .env.docker ]; then 
-  cmp --silent .env .env.docker || fail $'.env differs from .env.docker\nrun deno task switch:docker before running tests'
+  env_prefix_matches .env.local || env_prefix_matches .env.docker || fail $'.env differs from .env.local and .env.docker\nrun deno task switch:local before running tests'
+elif [ -f .env.local ]; then
+  env_prefix_matches .env.local || fail $'.env differs from .env.local\nrun deno task switch:local before running tests'
+elif [ -f .env.docker ]; then
+  env_prefix_matches .env.docker || fail $'.env differs from .env.docker\nrun deno task switch:docker before running tests'
 fi
 
 events_processor_pid=""
