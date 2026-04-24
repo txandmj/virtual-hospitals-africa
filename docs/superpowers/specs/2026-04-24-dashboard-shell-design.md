@@ -30,7 +30,7 @@ Rather than land a partial version of every area, this project delivers the **sh
   - **Encounters in range** — count of encounters at this org whose `created_at` falls in the selected date range. Default range: `today → today`.
   - **Staff on shift** — count of employees at this org currently present (`employees_presence.at_work = true`).
 - **Widget framework** — `canSee(employment)` predicate + colocated `fetch` and `render` per widget. All three day-one widgets have `canSee: () => true`; framework exists to support role-specific widgets in follow-on specs.
-- **Filter framework** — URL-state-backed, SSR-rendered, zero custom islands. Ships with `date-range` and `select` filter types. Fresh 2's `f-client-nav` gives SPA-feel partial re-renders on capable clients; full-nav fallback works without JS.
+- **Filter framework** — URL-state-backed, SSR-rendered, zero custom islands. Ships with `date-range` and `select` filter types. A plain `<form method="get">` changes the URL; the server re-renders. No JS required.
 - **Nav integration** — one entry added to the health-worker sidebar link registry. Visible to all roles (consistent with the existing convention).
 - **Tests** — DB-first tests for model queries; pure-function tests for filter parsers and widget predicates; route test covering role variance and filter plumbing.
 
@@ -99,7 +99,7 @@ GET /app/organizations/:id/dashboard?from=2026-04-24&to=2026-04-24
       1. parse filters from URL (parseDateRange)
       2. filter DASHBOARD_WIDGETS by canSee(organization_employment)
       3. Promise.all(visible.map(w => w.fetch({trx, organization_id, employment}, filters)))
-      4. render FilterBar + grid of widgets inside <Partial name="dashboard-content">
+      4. render FilterBar + grid of widgets
 ```
 
 No new middleware. No new schema. No new background jobs.
@@ -225,8 +225,8 @@ If `DASHBOARD_WIDGETS.filter(w => w.canSee(employment))` yields zero widgets for
 URL query parameters are the source of truth for filter state. The server parses them into typed values; widgets consume the typed values; changes are expressed as form submissions that re-navigate to the same URL with new params.
 
 - **No JavaScript required** — a plain `<form method="get">` works.
-- **With JavaScript** — Fresh 2's `f-client-nav` intercepts the submit and re-renders only the `<Partial name="dashboard-content">`. CSS and app shell are not re-downloaded.
-- **No custom islands.** No signals. No debounce. No client state. The browser and Fresh do all the heavy lifting.
+- **No custom islands.** No signals. No debounce. No client state. The browser and the server do all the work.
+- **Page is small** — a full-nav GET on filter change re-renders only a few cards. Snappier optimizations (Fresh `<Partial>` / `f-client-nav`) are deliberately skipped to avoid introducing a novel pattern for marginal benefit. If the home page grows large later, revisit.
 
 ### `util/dashboard/filters.ts`
 
@@ -250,7 +250,7 @@ export function parseSelect<T extends string>(
 
 ### Components
 
-- **`<FilterBar action={pathname}>`** — renders `<form method="get" action={action} f-client-nav>` with children + an "Apply" submit button.
+- **`<FilterBar action={pathname}>`** — renders `<form method="get" action={action}>` with children + an "Apply" submit button.
 - **`<DateRangeInput value={range} prefix="">`** — two `<input type="date" name="from">` and `name="to"`.
 - **`<SelectInput param="" value={v} options={...}>`** — one `<select name={param}>` with `<option>` children.
 
@@ -276,7 +276,6 @@ The home page renders the filter bar with a date-range input because `encounters
 // routes/app/organizations/[organization_id]/dashboard/index.tsx
 
 import { Fragment } from 'preact'
-import { Partial } from '$fresh/runtime.ts'
 import { HealthWorkerHomePage } from '../../../_middleware.tsx'
 import { OrganizationContext } from '../../../../../types.ts'
 import { DASHBOARD_WIDGETS } from '../../../../../components/dashboard/widgets/index.ts'
@@ -304,14 +303,14 @@ export default HealthWorkerHomePage<OrganizationContext>(
     return {
       title: `${organization.name} Dashboard`,
       children: (
-        <Partial name="dashboard-content">
+        <>
           <FilterBar action={ctx.url.pathname}>
             <DateRangeInput value={filters.date_range} />
           </FilterBar>
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
             {items.map(({ id, element }) => <Fragment key={id}>{element}</Fragment>)}
           </div>
-        </Partial>
+        </>
       ),
     }
   },
@@ -369,7 +368,7 @@ Fabricate `OrganizationEmployment` records for each role (doctor, nurse, pharmac
 
 - **Server-side work**: 3 queries per page load, each one count with an index-friendly `WHERE`. Expected sub-100ms on a warm DB.
 - **Client-side work**: one GET per page load. Page HTML is small (three cards + one form). CSS and JS are cached. No chart library, no SVG-heavy visualizations.
-- **Filter changes**: `f-client-nav` re-fetches only the `<Partial>` block on capable clients; browsers without it do a full GET (still small).
+- **Filter changes**: full-nav GET to the same URL with new params. Page HTML re-renders; CSS/JS are cached. No partial-rendering machinery needed for a 3-card page.
 - **No polling / websockets / realtime.** Freshness is on-refresh.
 
 ---
@@ -379,4 +378,4 @@ Fabricate `OrganizationEmployment` records for each role (doctor, nurse, pharmac
 - Per-org timezone for date-range semantics.
 - How widgets declare filter dependencies (today all widgets receive all filters; fine while there is one filter, may need rethinking at ≥3).
 - Role-aware nav filtering (not needed today — deferred with the admin-only dashboards that will motivate it).
-- Partial vs full-page navigation behavior across slow connections — measure before optimizing.
+- Whether Fresh `<Partial>` / `f-client-nav` pays off once the home page grows past a few cards — measure before optimizing.
