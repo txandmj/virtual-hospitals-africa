@@ -168,6 +168,59 @@ function escapeXml(str: string): string {
 }
 
 /**
+ * Escape a value for use in a CSV cell (RFC 4180).
+ * Wraps in double quotes if the value contains a comma, quote, or newline,
+ * and doubles any embedded quotes.
+ */
+function escapeCsv(value: string): string {
+  if (/[",\n\r]/.test(value)) {
+    return `"${value.replace(/"/g, '""')}"`
+  }
+  return value
+}
+
+/**
+ * Generate a CSV file with metadata for all blog posts (one row per post).
+ */
+function generateMetadataCsv(posts: BlogPostMeta[]): string {
+  const site_url = 'https://za.virtualhospitalsafrica.org'
+  const columns: Array<keyof BlogPostMeta | 'full_url'> = [
+    'full_url',
+    'slug',
+    'title',
+    'subtitle',
+    'author',
+    'author_image',
+    'date',
+    'description',
+    'tags',
+    'word_count',
+    'hero_image',
+    'wide_image',
+  ]
+
+  const header = columns.join(',')
+  const rows = posts.map((post) =>
+    columns
+      .map((col) => {
+        const value = col === 'full_url' ? post['slug'] : post[col]
+        if (value === undefined || value === null) return ''
+        if (Array.isArray(value)) return escapeCsv(value.join(','))
+        let str = String(value)
+        if (col === 'full_url') {
+          str = `${site_url}/blog/${str}`
+        } else if (col === 'author_image' || col === 'hero_image' || col === 'wide_image') {
+          str = `${site_url}${str.startsWith('/') ? '' : '/'}${str}`
+        }
+        return escapeCsv(str)
+      })
+      .join(',')
+  )
+
+  return [header, ...rows].join('\n') + '\n'
+}
+
+/**
  * Generate an RSS 2.0 feed for the blog posts
  */
 function generateRssFeed(posts: BlogPost[]): string {
@@ -402,6 +455,11 @@ async function main() {
   const rss_content = generateRssFeed(posts)
   await Deno.writeTextFile(rss_path, rss_content)
 
+  // Generate the metadata CSV
+  const csv_path = 'static/blog_posts.csv'
+  const csv_content = generateMetadataCsv(posts)
+  await Deno.writeTextFile(csv_path, csv_content)
+
   // Format the generated files
   const fmt_command = new Deno.Command('deno', {
     args: ['fmt', post_route_path, index_route_path, embed_route_path],
@@ -413,7 +471,7 @@ async function main() {
     throw new Error('Failed to format generated files')
   }
 
-  console.log(`\n✓ Generated ${post_route_path}, ${index_route_path}, ${embed_route_path}, and ${rss_path} with ${posts.length} post(s)`)
+  console.log(`\n✓ Generated ${post_route_path}, ${index_route_path}, ${embed_route_path}, ${rss_path}, and ${csv_path} with ${posts.length} post(s)`)
   console.log('Posts:')
   for (const post of posts) {
     console.log(`  - ${post.title} (${post.slug})`)
