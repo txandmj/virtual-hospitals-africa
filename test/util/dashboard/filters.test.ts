@@ -17,7 +17,7 @@ describe('util/dashboard/filters.ts', () => {
     it('parses valid ISO date params (from, to)', () => {
       const r = parseDateRange(url('from=2026-04-01&to=2026-04-24'))
       assertEquals(r.from?.toISOString(), '2026-04-01T00:00:00.000Z')
-      assertEquals(r.to?.toISOString(),   '2026-04-24T00:00:00.000Z')
+      assertEquals(r.to?.toISOString(), '2026-04-24T00:00:00.000Z')
     })
 
     it('accepts only one side of the range', () => {

@@ -29,7 +29,7 @@ export const dashboard_metrics = {
       .selectFrom('patient_encounters')
       .where('organization_id', '=', organization_id)
       .where('created_at', '>=', from)
-      .where('created_at', '<',  end_exclusive)
+      .where('created_at', '<', end_exclusive)
       .select((eb) => eb.fn.countAll<number>().as('count'))
       .executeTakeFirstOrThrow()
     return Number(row.count)

@@ -8,7 +8,7 @@ export const encountersInRangeWidget: WidgetDef<number> = {
   canSee: () => true,
   fetch: ({ trx, organization_id }, { date_range }) => {
     const from = date_range.from ?? todayUtc()
-    const to   = date_range.to   ?? todayUtc()
+    const to = date_range.to ?? todayUtc()
     return dashboard_metrics.encountersInRange(trx, { organization_id, from, to })
   },
   render: (count) => <Card label='Encounters in range' value={count} />,

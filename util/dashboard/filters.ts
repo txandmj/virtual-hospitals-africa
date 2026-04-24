@@ -11,7 +11,7 @@ function parseIsoDate(value: string | null): Date | null {
 export function parseDateRange(url: URL, prefix = ''): DateRange {
   return {
     from: parseIsoDate(url.searchParams.get(`${prefix}from`)),
-    to:   parseIsoDate(url.searchParams.get(`${prefix}to`)),
+    to: parseIsoDate(url.searchParams.get(`${prefix}to`)),
   }
 }
 

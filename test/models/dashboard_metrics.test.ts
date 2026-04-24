@@ -23,24 +23,35 @@ describe('db/models/dashboard_metrics.ts', () => {
 
       // open at ORG_A — counts
       await trx.insertInto('patient_encounters').values({
-        id: generateUUID(), patient_id: p1.id, organization_id: ORG_A,
-        location: 'POINT(0 0)', reason: 'seeking treatment',
+        id: generateUUID(),
+        patient_id: p1.id,
+        organization_id: ORG_A,
+        location: 'POINT(0 0)',
+        reason: 'seeking treatment',
       }).execute()
 
       // closed at ORG_A — does NOT count
       await trx.insertInto('patient_encounters').values({
-        id: generateUUID(), patient_id: p2.id, organization_id: ORG_A,
-        location: 'POINT(0 0)', reason: 'seeking treatment', closed_at: new Date(),
+        id: generateUUID(),
+        patient_id: p2.id,
+        organization_id: ORG_A,
+        location: 'POINT(0 0)',
+        reason: 'seeking treatment',
+        closed_at: new Date(),
       }).execute()
 
       // open at ORG_B — does NOT count for ORG_A
       await trx.insertInto('patient_encounters').values({
-        id: generateUUID(), patient_id: p3.id, organization_id: ORG_B,
-        location: 'POINT(0 0)', reason: 'seeking treatment',
+        id: generateUUID(),
+        patient_id: p3.id,
+        organization_id: ORG_B,
+        location: 'POINT(0 0)',
+        reason: 'seeking treatment',
       }).execute()
 
       const count = await dashboard_metrics.patientsCurrentlyInEncounter(
-        trx, { organization_id: ORG_A },
+        trx,
+        { organization_id: ORG_A },
       )
       assertEquals(count, 1)
     })
@@ -56,19 +67,23 @@ describe('db/models/dashboard_metrics.ts', () => {
 
       const insertAt = (patient_id: string, organization_id: string, created_at: Date) =>
         trx.insertInto('patient_encounters').values({
-          id: generateUUID(), patient_id, organization_id,
-          location: 'POINT(0 0)', reason: 'seeking treatment', created_at,
+          id: generateUUID(),
+          patient_id,
+          organization_id,
+          location: 'POINT(0 0)',
+          reason: 'seeking treatment',
+          created_at,
         }).execute()
 
-      await insertAt(p1.id, ORG_A, new Date('2026-04-20T10:00:00Z'))  // IN range
-      await insertAt(p2.id, ORG_A, new Date('2026-04-24T23:59:00Z'))  // IN range (end of day)
-      await insertAt(p3.id, ORG_A, new Date('2026-04-25T00:00:00Z'))  // OUT (day after)
-      await insertAt(p1.id, ORG_B, new Date('2026-04-22T10:00:00Z'))  // OUT (wrong org)
+      await insertAt(p1.id, ORG_A, new Date('2026-04-20T10:00:00Z')) // IN range
+      await insertAt(p2.id, ORG_A, new Date('2026-04-24T23:59:00Z')) // IN range (end of day)
+      await insertAt(p3.id, ORG_A, new Date('2026-04-25T00:00:00Z')) // OUT (day after)
+      await insertAt(p1.id, ORG_B, new Date('2026-04-22T10:00:00Z')) // OUT (wrong org)
 
       const count = await dashboard_metrics.encountersInRange(trx, {
         organization_id: ORG_A,
         from: new Date('2026-04-20T00:00:00Z'),
-        to:   new Date('2026-04-24T00:00:00Z'),
+        to: new Date('2026-04-24T00:00:00Z'),
       })
       assertEquals(count, 2)
     })

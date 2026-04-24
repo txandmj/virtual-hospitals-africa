@@ -5,7 +5,6 @@ import Card from '../Card.tsx'
 export const staffOnShiftWidget: WidgetDef<number> = {
   id: 'staff_on_shift',
   canSee: () => true,
-  fetch: ({ trx, organization_id }) =>
-    dashboard_metrics.staffOnShift(trx, { organization_id }),
+  fetch: ({ trx, organization_id }) => dashboard_metrics.staffOnShift(trx, { organization_id }),
   render: (count) => <Card label='Staff on shift' value={count} />,
 }
