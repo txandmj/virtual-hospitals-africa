@@ -37,7 +37,6 @@ export function FindingModalInnerContents({
     ...original_node.predefined_attributes,
   ])
   const search_within_finding_site = getPredefinedFindingSite(all_original_attributes)
-  console.log({ augmented_node })
   const all_augmented_attributes = augmented_node ? groupAttributes(augmented_node.attributes) : new Map<string, NonEmptyArray<Lang['attribute']>>()
 
   // const onset = useSignal<{ start_date: string; end_date: string | null } | null>(null)
@@ -49,8 +48,6 @@ export function FindingModalInnerContents({
     assert(s.value.atom === 'snomed_concept')
     return { id: '@@triggersearch', snomed_concept_id: '@@triggersearch', ...s.value }
   }))
-
-  console.log({ original_node, augmented_node, all_original_attributes, initial_finding_sites, search_within_finding_site, zzz: finding_sites.value })
 
   function runOnChange() {
     console.log('runOnChange')
@@ -73,8 +70,6 @@ export function FindingModalInnerContents({
       })
       return !identical_finding_site_already_existed
     })
-
-    console.log({ new_finding_sites })
 
     if (!new_finding_sites.length) {
       return onChange(null)
@@ -103,7 +98,6 @@ export function FindingModalInnerContents({
 
     const s_expression = inverseSExpression(new_node)
     const full_display = formatRecord(findingToDisplayableRecord(new_node)).displays.full
-    console.log({ new_node, s_expression, full_display })
     onChange({
       s_expression,
       full_display,

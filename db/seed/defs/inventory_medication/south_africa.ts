@@ -171,7 +171,6 @@ export function parseMedicationSouthAfrica(
     throw new Error(`No dose sections found: "${ingredient}"`)
   }
 
-  // console.log({dose_sections})
   // // Determine form/routes from the first section's header or product name
   // const first_header_match = dose_sections[0].match(header_regex)
   // if (!first_header_match) {

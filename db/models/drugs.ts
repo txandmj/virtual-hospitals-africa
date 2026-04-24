@@ -131,7 +131,6 @@
 //   top_level_table: 'drugs',
 //   baseQuery: baseQuery({ include_recalled: false }),
 //   formatResult({ medications, ...rest }): DrugSearchResult {
-//     console.log({ medications, ...rest })
 //     return {
 //       all_recalled: medications.every((m) => m.manufacturers.every((m) => m.recalled_at)),
 //       distinct_trade_names: collectSortedUniqStrings(

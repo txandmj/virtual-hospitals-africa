@@ -66,11 +66,11 @@ export default async function PatientRegisteredIntakePage(
   } = ctx
   const patient_id = getRequiredUUIDParam(ctx, 'patient_id')
 
-  const {
+  /* const {
     patient,
     appointments_today_at_this_organization,
     closed_encounters_at_this_organization,
-  } = await promiseProps({
+  } = */ await promiseProps({
     patient: patients.getById(trx, patient_id, { include_incomplete_registration: false }),
 
     appointments_today_at_this_organization: appointments
@@ -89,12 +89,6 @@ export default async function PatientRegisteredIntakePage(
         organization_id: organization.id,
         is_closed: true,
       }),
-  })
-
-  console.log({
-    patient,
-    appointments_today_at_this_organization,
-    closed_encounters_at_this_organization,
   })
 
   return (

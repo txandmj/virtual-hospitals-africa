@@ -98,10 +98,12 @@ export default define([
       .values(due_to_finding_sites.map((e) => ({
         id: due_to_id_by_s_expression.get(e.s_expression)!,
         value_snomed_concept_id: snomedConceptId(e.insert.value_snomed_concept),
+        is_somehow_qualified: e.insert.is_somehow_qualified,
       })))
       .onConflict((oc) =>
         oc.column('id').doUpdateSet({
           value_snomed_concept_id: (eb) => eb.ref('excluded.value_snomed_concept_id'),
+          is_somehow_qualified: (eb) => eb.ref('excluded.is_somehow_qualified'),
         })
       )
       .execute()

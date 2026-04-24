@@ -85,7 +85,7 @@ export const additional_tasks = {
     if (isString(applicable_rules)) return applicable_rules
 
     return pMap(applicable_rules, async ({ rule_effect, ...applicable_rule }) => {
-      if (rule_effect.type !== 'task') return
+      assertEquals(rule_effect.type, 'task')
       const { to_be_done } = getTaskById(applicable_rule.id)
 
       const existing_procedure = await buildExpression(

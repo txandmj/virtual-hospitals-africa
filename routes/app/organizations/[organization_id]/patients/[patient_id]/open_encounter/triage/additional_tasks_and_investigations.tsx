@@ -72,8 +72,6 @@ export const handler = postHandler(
       workflow_step_snomed_concept,
     } = ctx.state
 
-    console.log({ form_values })
-
     assert(patient_age_determination)
     const completed_procedure = completedProcedure(ctx)
 

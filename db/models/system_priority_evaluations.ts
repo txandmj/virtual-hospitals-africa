@@ -28,7 +28,6 @@ export const system_priority_evaluations = {
     }
 
     const all_finding_ids = uniq(rules_result.flatMap((rule_result) => rule_result.matching_finding_ids))
-    console.log({ all_finding_ids, rules_result })
     const findings: {
       id: string
       priority: Priority | null

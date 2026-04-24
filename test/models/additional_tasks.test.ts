@@ -283,8 +283,46 @@ describeParallel('db/models/additional_tasks.ts', () => {
 
     assert(!isString(tasks_to_insert))
     assert(
-      !tasks_to_insert.some((task) => task.description === 'Check for urgent face symptom conditions'),
+      tasks_to_insert.every((task) => task.description !== 'Check for urgent face symptom conditions'),
       'Ear symptom (Otalgia) should not trigger a check for urgent face symptom conditions',
+    )
+  })
+
+  itParallel('does not trigger a check for face symptoms for a nose finding', async () => {
+    const { employee, patient_id, patient_encounter_id } = await insertPatientSeekingTreatmentWithEmployeeAndCompleteRegistrationForTest(db)
+    const inserted_findings = await patient_findings.insertMany(
+      db,
+      {
+        patient_id,
+        patient_encounter_id,
+        patient_encounter_employee_id: employee.patient_encounter_employee_id,
+        employment_id: employee.employee_id,
+        procedure: {
+          create_with_specific_snomed_concept_id: WORKFLOW_STEP_SNOMED_CONCEPTS.triage!.warning_signs.snomed_concept_id,
+        },
+        findings: [
+          `(clinical_finding (snomed_concept "Nose finding" "finding"))`,
+        ],
+      },
+    )
+
+    assert(inserted_findings.finding_ids[0])
+    const due_to_result = await due_to.determineFromNewRecords(db, {
+      patient_id,
+      patient_encounter_id,
+      patient_age_determination: 'adult',
+      records: [{
+        id: inserted_findings.finding_ids[0],
+        existence: 'Yes',
+      }],
+    })
+    assert(!isString(due_to_result))
+    const tasks_to_insert = await additional_tasks.getTasksToInsertUsingPreComputedTables(db, due_to_result)
+
+    assert(!isString(tasks_to_insert))
+    assert(
+      tasks_to_insert.every((task) => task.description !== 'Check for urgent face symptom conditions'),
+      'Nose finding should not trigger a check for urgent face symptom conditions',
     )
   })
 
