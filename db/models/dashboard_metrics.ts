@@ -16,4 +16,22 @@ export const dashboard_metrics = {
       .executeTakeFirstOrThrow()
     return Number(row.count)
   },
+
+  async encountersInRange(
+    trx: TrxOrDb,
+    { organization_id, from, to }: { organization_id: string; from: Date; to: Date },
+  ): Promise<number> {
+    // End bound is the next UTC day at 00:00 so that encounters on `to` itself count.
+    const end_exclusive = new Date(to)
+    end_exclusive.setUTCDate(end_exclusive.getUTCDate() + 1)
+
+    const row = await trx
+      .selectFrom('patient_encounters')
+      .where('organization_id', '=', organization_id)
+      .where('created_at', '>=', from)
+      .where('created_at', '<',  end_exclusive)
+      .select((eb) => eb.fn.countAll<number>().as('count'))
+      .executeTakeFirstOrThrow()
+    return Number(row.count)
+  },
 }

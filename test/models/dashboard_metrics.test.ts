@@ -45,4 +45,32 @@ describe('db/models/dashboard_metrics.ts', () => {
       assertEquals(count, 1)
     })
   })
+
+  describe('encountersInRange', () => {
+    itUsesTrxAnd('counts encounters at this org with created_at in the day-inclusive range', async (trx) => {
+      const [p1, p2, p3] = await Promise.all([
+        patients.insert(trx, { name: 'Patient ' + generateUUID() }),
+        patients.insert(trx, { name: 'Patient ' + generateUUID() }),
+        patients.insert(trx, { name: 'Patient ' + generateUUID() }),
+      ])
+
+      const insertAt = (patient_id: string, organization_id: string, created_at: Date) =>
+        trx.insertInto('patient_encounters').values({
+          id: generateUUID(), patient_id, organization_id,
+          location: 'POINT(0 0)', reason: 'seeking treatment', created_at,
+        }).execute()
+
+      await insertAt(p1.id, ORG_A, new Date('2026-04-20T10:00:00Z'))  // IN range
+      await insertAt(p2.id, ORG_A, new Date('2026-04-24T23:59:00Z'))  // IN range (end of day)
+      await insertAt(p3.id, ORG_A, new Date('2026-04-25T00:00:00Z'))  // OUT (day after)
+      await insertAt(p1.id, ORG_B, new Date('2026-04-22T10:00:00Z'))  // OUT (wrong org)
+
+      const count = await dashboard_metrics.encountersInRange(trx, {
+        organization_id: ORG_A,
+        from: new Date('2026-04-20T00:00:00Z'),
+        to:   new Date('2026-04-24T00:00:00Z'),
+      })
+      assertEquals(count, 2)
+    })
+  })
 })
