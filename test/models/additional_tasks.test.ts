@@ -288,7 +288,7 @@ describeParallel('db/models/additional_tasks.ts', () => {
     )
   })
 
-  itParallel.only('does not trigger a check for face symptoms for a nose finding', async () => {
+  itParallel('does not trigger a check for face symptoms for a nose finding', async () => {
     const { employee, patient_id, patient_encounter_id } = await insertPatientSeekingTreatmentWithEmployeeAndCompleteRegistrationForTest(db)
     const inserted_findings = await patient_findings.insertMany(
       db,
@@ -316,12 +316,10 @@ describeParallel('db/models/additional_tasks.ts', () => {
         existence: 'Yes',
       }],
     })
-    console.log({ due_to_result })
     assert(!isString(due_to_result))
     const tasks_to_insert = await additional_tasks.getTasksToInsertUsingPreComputedTables(db, due_to_result)
 
     assert(!isString(tasks_to_insert))
-    console.log({ tasks_to_insert })
     assert(
       tasks_to_insert.every((task) => task.description !== 'Check for urgent face symptom conditions'),
       'Nose finding should not trigger a check for urgent face symptom conditions',

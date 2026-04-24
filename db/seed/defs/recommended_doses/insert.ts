@@ -57,7 +57,6 @@
 //         indication_snomed_concept_id,
 //       })
 //     }
-//     console.log({ insert_doses, insert_schedules, insert_ingredients, insert_ingredient_strengths, insert_indications })
 //     await insertChunks(trx, 'recommended_doses', insert_doses)
 //     await insertChunks(trx, 'recommended_dose_schedules', insert_schedules)
 //     await insertChunks(trx, 'recommended_dose_ingredients', insert_ingredients)

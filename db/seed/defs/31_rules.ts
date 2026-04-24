@@ -264,9 +264,6 @@ export default define([
   // Insert all rule_due_to rows (deduplicate by rule_id + due_to_id)
   const rule_due_to_rows_by_key = new Map<string, typeof rule_due_to_rows[number]>()
   for (const row of rule_due_to_rows) {
-    if (row.rule_id === 'Check for urgent face symptom conditions') {
-      console.log({ row })
-    }
     const key = `${row.rule_id}:${row.due_to_id}`
     const existing = rule_due_to_rows_by_key.get(key)
     if (!existing) {

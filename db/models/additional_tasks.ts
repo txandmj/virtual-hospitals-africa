@@ -82,7 +82,6 @@ export const additional_tasks = {
     new_records: NewRecordsToConsiderWithSatisfyingDueToIds,
   ): Promise<string | TaskToInsert[]> {
     const applicable_rules = await rules.getApplicableBasedOnNewRecords(trx, new_records, 'task')
-    console.log({ applicable_rules })
     if (isString(applicable_rules)) return applicable_rules
 
     return pMap(applicable_rules, async ({ rule_effect, ...applicable_rule }) => {

@@ -14,7 +14,6 @@ import { assert } from 'std/assert/assert.ts'
 import { activeConditionAsOr } from '../../shared/s_expression_active_condition_as_or.ts'
 import { inverseSExpression } from '../../shared/s_expression_inverse.ts'
 import { diagnosisToEvaluation } from '../../shared/diagnosis.ts'
-import { logToFileIfOnServer } from '../../util/logToFileIfOnServer.ts'
 import { getRuleByDescription } from '../../shared/rules.ts'
 
 export const rules = base({
@@ -137,51 +136,7 @@ export const rules = base({
       certainly_applies: rule.evidence.some((record) => record.always_applies_if_present),
     }))
 
-    logToFileIfOnServer({ parsed_rules }, { file_prefix: 'foox' })
-
-    logToFileIfOnServer(compactMap(parsed_rules, (rule) => {
-      // rule.certainly_applies
-      const result = evaluateEvidence(rule.due_to, rule.evidence)
-      return result.satisfies && {
-        ...rule,
-        matching_finding_ids: result.contributing_records,
-      }
-    }))
-
-    // const [certain, uncertain] = partition(parsed, (t) => t.certainly_applies)
-
-    // As it stands, history just means we don't consider patient_encounter_id
-    // TODO support invalidation
-
-    // const certain_results = certain.map(({ findings, matching_finding_ids, due_to }) => ({
-    //   id: findings[0].rule_id,
-    //   description: findings[0].rule_id,
-    //   rule_effect: findings[0].rule_effect,
-    //   matching_finding_ids,
-    //   due_to,
-    // }))
-
-    // for (const rule of uncertain) {
-    //   evaluateEvidence(rule.due_to, rule.evidence)
-    // }
-
-    // // const due_to_nodes = uncertain.map((t) => t.due_to)
-    // const evidence_results = await s_expression_evidence.evaluateMultiple(trx, { patient_id }, due_to_nodes)
-
-    // const uncertain_results = compactMap(uncertain, ({ findings, due_to }) => {
-    //   const result = exists(evidence_results.get(due_to))
-    //   return result.satisfies && {
-    //     id: findings[0].rule_id,
-    //     description: findings[0].rule_id,
-    //     rule_effect: findings[0].rule_effect,
-    //     matching_finding_ids: result.contributing_records,
-    //     due_to,
-    //   }
-    // })
-
     return compactMap(parsed_rules, (rule) => {
-      // rule.certainly_applies
-      console.log({ x: rule.due_to })
       const result = evaluateEvidence(rule.due_to, rule.evidence)
       return result.satisfies && {
         ...rule,

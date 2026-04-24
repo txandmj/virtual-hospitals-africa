@@ -167,8 +167,6 @@ async function importDataFromCSV(trx: TrxOrDb) {
         longitude: Number(row.Long),
       }
 
-      console.log({ country })
-
       const get_google_maps_address = GET_ADDRESSES_FROM_GOOGLE_MAPS_FOR_COUNTRIES.has(country)
 
       const address = get_google_maps_address ? await getLocationAddress(location) : undefined

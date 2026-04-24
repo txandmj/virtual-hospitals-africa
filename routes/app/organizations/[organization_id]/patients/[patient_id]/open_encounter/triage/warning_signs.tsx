@@ -254,8 +254,6 @@ function* signsMatchedWithPriorRecords(
   warning_signs_for_patient: WarningSign[],
   common_symptoms: CommonSymptom[],
 ): Generator<WarningSignWithMaybeRecord> {
-  // console.log({prior_findings})
-  // logToFileIfOnServer(prior_findings)
   const prior_findings_remaining = new Set(prior_findings)
   const prior_findings_map = new Map<string, SearchResult<typeof patient_findings>>()
   // Findings may add qualifiers or attributes. So we look for any subset of them when looking for matches
