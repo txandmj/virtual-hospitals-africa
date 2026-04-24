@@ -86,7 +86,7 @@ test/
   models/dashboard_metrics.test.ts
   util/dashboard/filters.test.ts
   components/dashboard/widgets.test.ts       — canSee predicates per role
-  routes/app/organizations/dashboard.test.ts
+  web/organizations/[organization_id]/dashboard.test.ts
 ```
 
 ### Request flow
@@ -355,12 +355,12 @@ Pure-function tests, no DB:
 
 Fabricate `OrganizationEmployment` records for each role (doctor, nurse, pharmacist, admin-with-any-role) and assert `canSee` returns the expected boolean for each day-one widget.
 
-### `test/routes/app/organizations/dashboard.test.ts`
+### `test/web/organizations/[organization_id]/dashboard.test.ts`
 
-- Non-admin employee at org: page renders, all three widget ids are present.
-- Admin employee at org: same set of widgets today (framework proven; content parity expected).
-- Employee not of this org: 403 (middleware enforces this already; test exercises the path).
-- `?from=2026-04-20&to=2026-04-22` produces a different "Encounters in range" count than the default (fixture includes an encounter in and out of range).
+- Employed nurse: page renders, all three card labels are present in the HTML.
+- Filter controls render (two `<input type="date">`, one submit button).
+- 403 for non-employees is enforced by the existing org middleware and is covered by every per-org route's test — not duplicated here.
+- Parametrized filter behavior (e.g. `?from=X&to=Y` changing the count) is verified manually in the browser for the shell; add an automated test once the first real sub-dashboard needs parametrized counts.
 
 ---
 
