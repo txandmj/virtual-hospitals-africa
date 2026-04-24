@@ -107,7 +107,7 @@ export const due_to = base({
         'due_to.id as due_to_id',
         'patient_records.id as patient_record_id',
         's_expression',
-        literalBoolean(false).as('is_somehow_qualified'),
+        'is_somehow_qualified',
       ])
 
     const by_measurements_query = trx.selectFrom('due_to_measurements')

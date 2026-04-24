@@ -98,10 +98,12 @@ export default define([
       .values(due_to_finding_sites.map((e) => ({
         id: due_to_id_by_s_expression.get(e.s_expression)!,
         value_snomed_concept_id: snomedConceptId(e.insert.value_snomed_concept),
+        is_somehow_qualified: e.insert.is_somehow_qualified,
       })))
       .onConflict((oc) =>
         oc.column('id').doUpdateSet({
           value_snomed_concept_id: (eb) => eb.ref('excluded.value_snomed_concept_id'),
+          is_somehow_qualified: (eb) => eb.ref('excluded.is_somehow_qualified'),
         })
       )
       .execute()
@@ -262,6 +264,9 @@ export default define([
   // Insert all rule_due_to rows (deduplicate by rule_id + due_to_id)
   const rule_due_to_rows_by_key = new Map<string, typeof rule_due_to_rows[number]>()
   for (const row of rule_due_to_rows) {
+    if (row.rule_id === 'Check for urgent face symptom conditions') {
+      console.log({ row })
+    }
     const key = `${row.rule_id}:${row.due_to_id}`
     const existing = rule_due_to_rows_by_key.get(key)
     if (!existing) {

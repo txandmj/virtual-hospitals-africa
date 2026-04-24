@@ -433,10 +433,26 @@ async function buildAndAppendContent(pageId: string, entry: PageEntry): Promise<
 }
 
 // ---- Main ----
+async function main(page_to_rebuild?: string) {
+  const all_entries = await buildPageEntries()
+  console.log(`Found ${all_entries.length} unique pages in TOC.`)
 
-async function main() {
-  const entries = await buildPageEntries()
-  console.log(`Found ${entries.length} unique pages in TOC.`)
+  let entries = all_entries
+
+  if (page_to_rebuild !== undefined) {
+    const page_number = parseInt(page_to_rebuild, 10)
+    if (!Number.isInteger(page_number)) {
+      throw new Error(`Expected a page number, got: ${page_to_rebuild}`)
+    }
+    const matches = all_entries.filter((e) => e.page_number === page_number)
+    if (matches.length !== 1) {
+      throw new Error(
+        `Expected exactly one page matching ${page_number}, found ${matches.length}: ${matches.map((m) => m.title).join(', ')}`,
+      )
+    }
+    entries = matches
+    console.log(`Rebuilding only page ${page_number}: ${matches[0].title}`)
+  }
 
   console.log('Fetching existing Notion pages...')
   const existing = await fetchExistingPages()
@@ -466,5 +482,6 @@ async function main() {
 }
 
 if (import.meta.main) {
-  main()
+  const arg = Deno.args[0]
+  main(arg)
 }

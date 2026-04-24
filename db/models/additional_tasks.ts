@@ -82,10 +82,11 @@ export const additional_tasks = {
     new_records: NewRecordsToConsiderWithSatisfyingDueToIds,
   ): Promise<string | TaskToInsert[]> {
     const applicable_rules = await rules.getApplicableBasedOnNewRecords(trx, new_records, 'task')
+    console.log({ applicable_rules })
     if (isString(applicable_rules)) return applicable_rules
 
     return pMap(applicable_rules, async ({ rule_effect, ...applicable_rule }) => {
-      if (rule_effect.type !== 'task') return
+      assertEquals(rule_effect.type, 'task')
       const { to_be_done } = getTaskById(applicable_rule.id)
 
       const existing_procedure = await buildExpression(

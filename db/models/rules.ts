@@ -137,7 +137,7 @@ export const rules = base({
       certainly_applies: rule.evidence.some((record) => record.always_applies_if_present),
     }))
 
-    logToFileIfOnServer({ parsed_rules })
+    logToFileIfOnServer({ parsed_rules }, { file_prefix: 'foox' })
 
     logToFileIfOnServer(compactMap(parsed_rules, (rule) => {
       // rule.certainly_applies
@@ -181,6 +181,7 @@ export const rules = base({
 
     return compactMap(parsed_rules, (rule) => {
       // rule.certainly_applies
+      console.log({ x: rule.due_to })
       const result = evaluateEvidence(rule.due_to, rule.evidence)
       return result.satisfies && {
         ...rule,

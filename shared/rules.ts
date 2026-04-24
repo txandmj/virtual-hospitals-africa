@@ -26,7 +26,7 @@ export type DueToInsert =
     type: 'finding_site'
     s_expression: string
     value_snomed_concept: Lang['snomed_concept']
-    is_somehow_qualified?: never
+    is_somehow_qualified: boolean
     always_applies_if_present: boolean
     history: boolean
   }
@@ -55,8 +55,9 @@ export function dueToInsert(due_to: QueryableEvidenceNode): DueToInsert[] {
           type: 'finding_site',
           s_expression: inverseSExpression(due_to),
           value_snomed_concept: due_to.attributes[0].value,
-          always_applies_if_present: true,
+          always_applies_if_present: !due_to.excluding.length,
           history: due_to.history,
+          is_somehow_qualified: !!due_to.excluding.length,
         }]
       }
       assert(due_to.specific_snomed_concept, `Must have a specific_snomed_concept\n${inverseSExpression(due_to)}`)
