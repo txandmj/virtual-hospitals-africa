@@ -1,6 +1,6 @@
 import { describe, it } from 'std/testing/bdd.ts'
 import { assertEquals } from 'std/assert/assert_equals.ts'
-import { parseDateRange } from '../../../util/dashboard/filters.ts'
+import { parseDateRange, parseSelect } from '../../../util/dashboard/filters.ts'
 
 function url(query: string): URL {
   return new URL(`https://example.test/x?${query}`)
@@ -35,6 +35,22 @@ describe('util/dashboard/filters.ts', () => {
     it('honors the prefix', () => {
       const r = parseDateRange(url('encounter_from=2026-04-01'), 'encounter_')
       assertEquals(r.from?.toISOString(), '2026-04-01T00:00:00.000Z')
+    })
+  })
+
+  describe('parseSelect', () => {
+    const allowed = ['a', 'b', 'c'] as const
+
+    it('returns null when param is absent', () => {
+      assertEquals(parseSelect(url(''), 'kind', allowed), null)
+    })
+
+    it('returns the value when it is in the whitelist', () => {
+      assertEquals(parseSelect(url('kind=b'), 'kind', allowed), 'b')
+    })
+
+    it('returns null when value is not in the whitelist', () => {
+      assertEquals(parseSelect(url('kind=zzz'), 'kind', allowed), null)
     })
   })
 })

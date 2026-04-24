@@ -14,3 +14,12 @@ export function parseDateRange(url: URL, prefix = ''): DateRange {
     to:   parseIsoDate(url.searchParams.get(`${prefix}to`)),
   }
 }
+
+export function parseSelect<T extends string>(
+  url: URL,
+  param: string,
+  allowed: readonly T[],
+): T | null {
+  const value = url.searchParams.get(param)
+  return (value !== null && (allowed as readonly string[]).includes(value)) ? value as T : null
+}
