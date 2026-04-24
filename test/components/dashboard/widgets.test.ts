@@ -25,4 +25,15 @@ describe('dashboard widgets: canSee', () => {
       assertEquals(patientsInCareWidget.id, 'patients_in_care')
     })
   })
+
+  describe('encountersInRangeWidget', () => {
+    it('is visible to any employee', async () => {
+      const { encountersInRangeWidget } = await import(
+        '../../../components/dashboard/widgets/EncountersInRange.tsx'
+      )
+      assertEquals(encountersInRangeWidget.canSee(employment({ role: 'nurse' })), true)
+      assertEquals(encountersInRangeWidget.canSee(employment({ role: 'doctor' })), true)
+      assertEquals(encountersInRangeWidget.id, 'encounters_in_range')
+    })
+  })
 })
