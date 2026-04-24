@@ -34,4 +34,18 @@ export const dashboard_metrics = {
       .executeTakeFirstOrThrow()
     return Number(row.count)
   },
+
+  async staffOnShift(
+    trx: TrxOrDb,
+    { organization_id }: { organization_id: string },
+  ): Promise<number> {
+    const row = await trx
+      .selectFrom('employment')
+      .innerJoin('employment_presence', 'employment_presence.id', 'employment.id')
+      .where('employment.organization_id', '=', organization_id)
+      .where('employment_presence.at_work', '=', true)
+      .select((eb) => eb.fn.countAll<number>().as('count'))
+      .executeTakeFirstOrThrow()
+    return Number(row.count)
+  },
 }

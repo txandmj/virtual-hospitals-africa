@@ -73,4 +73,30 @@ describe('db/models/dashboard_metrics.ts', () => {
       assertEquals(count, 2)
     })
   })
+
+  describe('staffOnShift', () => {
+    itUsesTrxAnd('counts employees at this org whose employment_presence.at_work = true', async (trx) => {
+      const { addTestEmployee } = await import('../_helpers/employees.ts')
+
+      const [present_a, absent_a, present_b] = await Promise.all([
+        addTestEmployee(trx, { organization_id: ORG_A, role: 'nurse' }),
+        addTestEmployee(trx, { organization_id: ORG_A, role: 'doctor' }),
+        addTestEmployee(trx, { organization_id: ORG_B, role: 'nurse' }),
+      ])
+
+      // Mark present_a and present_b as at work. Leave absent_a absent.
+      await trx.insertInto('employment_presence')
+        .values({ id: present_a.employee_id, at_work: true })
+        .execute()
+      await trx.insertInto('employment_presence')
+        .values({ id: present_b.employee_id, at_work: true })
+        .execute()
+      await trx.insertInto('employment_presence')
+        .values({ id: absent_a.employee_id, at_work: false })
+        .execute()
+
+      const count = await dashboard_metrics.staffOnShift(trx, { organization_id: ORG_A })
+      assertEquals(count, 1)
+    })
+  })
 })
