@@ -1,8 +1,8 @@
 import { Duration } from '../../types.ts'
-import { assert } from 'std/assert/assert.ts'
 import { NumberInput } from '../form/inputs/number.tsx'
 import { NoLabelButSpaceAsPlaceholder } from '../form/inputs/labelled.tsx'
 import { SelectWithOptions } from '../form/inputs/select_with_options.tsx'
+import assertOneOf from '../../util/assertOneOf.ts'
 
 export function DurationInput(
   { value, onChange }: {
@@ -17,7 +17,7 @@ export function DurationInput(
         label='Duration'
         min={0}
         max={999}
-        inputClassName='w-20'
+        inputClassName='w-6'
         value={value.duration}
         onInput={(e) => {
           onChange({
@@ -33,6 +33,18 @@ export function DurationInput(
         className='max-w-20'
         selectClassName='!pr-2'
         options={[
+          {
+            value: 'seconds',
+            label: value.duration === 1 ? 'second' : 'seconds',
+          },
+          {
+            value: 'minutes',
+            label: value.duration === 1 ? 'minute' : 'minutes',
+          },
+          {
+            value: 'hours',
+            label: value.duration === 1 ? 'hour' : 'hours',
+          },
           {
             value: 'days',
             label: value.duration === 1 ? 'day' : 'days',
@@ -51,11 +63,17 @@ export function DurationInput(
           },
         ]}
         onChange={(e) => {
-          assert(
-            e.currentTarget.value === 'days' ||
-              e.currentTarget.value === 'weeks' ||
-              e.currentTarget.value === 'months' ||
-              e.currentTarget.value === 'years',
+          assertOneOf(
+            e.currentTarget.value,
+            [
+              'seconds' as const,
+              'minutes' as const,
+              'hours' as const,
+              'days' as const,
+              'weeks' as const,
+              'months' as const,
+              'years' as const,
+            ],
           )
           onChange({
             duration: value.duration,

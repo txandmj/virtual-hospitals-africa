@@ -679,3 +679,13 @@ export const ASSOCIATED_FINDING = asConcept({
   name: 'Associated finding',
   category: 'attribute' as const,
 })
+export const TIME_OF_ONSET = asConcept({
+  id: '263501003',
+  name: 'Time of onset',
+  category: 'observable entity' as const,
+})
+export const RESOLVED = asConcept({
+  id: '723506003',
+  name: 'Resolved',
+  category: 'qualifier value' as const,
+})

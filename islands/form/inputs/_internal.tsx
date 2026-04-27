@@ -9,6 +9,7 @@ export type WrapperInputProps<
   El extends HTMLElement,
   Value,
 > = LabeledInputProps<El> & {
+  id?: string
   inputClassName?: string
   value?: Maybe<Value>
   signal?: Signal<Value>
@@ -19,7 +20,7 @@ export type InputProps =
   & WrapperInputProps<HTMLInputElement, string | number>
   & {
     id?: string
-    type?: 'text' | 'email' | 'tel' | 'date'
+    type?: 'text' | 'email' | 'tel' | 'date' | 'datetime-local'
     placeholder?: string
     pattern?: string
     onKeyDown?: (event: KeyboardEvent) => void
@@ -43,7 +44,7 @@ export type InputProps =
       max?: number
     }
     | {
-      type: 'date'
+      type: 'date' | 'datetime-local'
       inputmode?: undefined
       min?: Maybe<string>
       max?: Maybe<string>

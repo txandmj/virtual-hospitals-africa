@@ -1675,6 +1675,9 @@ export type RenderedMedicationIngredient = {
 // }
 
 export type DurationUnit =
+  | 'seconds'
+  | 'minutes'
+  | 'hours'
   | 'days'
   | 'weeks'
   | 'months'

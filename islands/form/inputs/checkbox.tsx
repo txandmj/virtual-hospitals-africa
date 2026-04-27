@@ -12,13 +12,13 @@ export function CheckboxInput({
   checked,
   disabled,
   readonly,
-  // className,
+  className,
   // inputClassName,
   value,
 }:
   & Omit<
     WrapperInputProps<HTMLInputElement, boolean>,
-    'signal' | 'value' | 'className' | 'inputClassName' | 'label'
+    'signal' | 'value' | 'inputClassName' | 'label'
   >
   & {
     label: string
@@ -27,7 +27,7 @@ export function CheckboxInput({
     value?: string
   }) {
   return (
-    <label className='flex items-center gap-2'>
+    <label className={cls('flex items-center gap-2', className)}>
       <input
         type='checkbox'
         {...(name && { name })}
