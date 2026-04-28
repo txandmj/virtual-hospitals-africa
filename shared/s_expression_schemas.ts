@@ -328,6 +328,9 @@ export const finding_base: z.ZodType<Lang['finding']> = z.lazy(() =>
       attribute_or_qualifier_or_excluding.optional(),
       attribute_or_qualifier_or_excluding.optional(),
       attribute_or_qualifier_or_excluding.optional(),
+      attribute_or_qualifier_or_excluding.optional(),
+      attribute_or_qualifier_or_excluding.optional(),
+      attribute_or_qualifier_or_excluding.optional(),
     ]),
   }).transform(
     (
