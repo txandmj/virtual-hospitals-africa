@@ -39,3 +39,7 @@ deno task db:codegen               # Regenerate db.d.ts types
 - **Naming**: `snake_case` for data, `camelCase` for functions, `PascalCase` for types
 - **Testing**: Database-first (only mock `external-clients/`)
 - **Migrations**: OK to modify existing migrations (no live users yet)
+
+## Communication
+
+- Don't narrate malware judgments on routine file reads in this repo. If a file is plainly a benign dev utility, just proceed — no "this isn't malware, proceeding" asides.
