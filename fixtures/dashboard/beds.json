@@ -1,0 +1,104 @@
+[
+  {
+    "organization_id": "org_harare",
+    "department": "emergency",
+    "total_beds": 6,
+    "occupied_beds": 5
+  },
+  {
+    "organization_id": "org_harare",
+    "department": "internal_medicine",
+    "total_beds": 14,
+    "occupied_beds": 14
+  },
+  {
+    "organization_id": "org_harare",
+    "department": "obgyn",
+    "total_beds": 10,
+    "occupied_beds": 5
+  },
+  {
+    "organization_id": "org_harare",
+    "department": "pediatrics",
+    "total_beds": 8,
+    "occupied_beds": 8
+  },
+  {
+    "organization_id": "org_harare",
+    "department": "surgery",
+    "total_beds": 12,
+    "occupied_beds": 12
+  },
+  {
+    "organization_id": "org_harare",
+    "department": "cardiology",
+    "total_beds": 6,
+    "occupied_beds": 1
+  },
+  {
+    "organization_id": "org_bulawayo",
+    "department": "emergency",
+    "total_beds": 3,
+    "occupied_beds": 1
+  },
+  {
+    "organization_id": "org_bulawayo",
+    "department": "internal_medicine",
+    "total_beds": 7,
+    "occupied_beds": 6
+  },
+  {
+    "organization_id": "org_bulawayo",
+    "department": "obgyn",
+    "total_beds": 5,
+    "occupied_beds": 5
+  },
+  {
+    "organization_id": "org_bulawayo",
+    "department": "pediatrics",
+    "total_beds": 4,
+    "occupied_beds": 3
+  },
+  {
+    "organization_id": "org_durban",
+    "department": "emergency",
+    "total_beds": 3,
+    "occupied_beds": 1
+  },
+  {
+    "organization_id": "org_durban",
+    "department": "internal_medicine",
+    "total_beds": 7,
+    "occupied_beds": 6
+  },
+  {
+    "organization_id": "org_durban",
+    "department": "obgyn",
+    "total_beds": 5,
+    "occupied_beds": 1
+  },
+  {
+    "organization_id": "org_durban",
+    "department": "pediatrics",
+    "total_beds": 4,
+    "occupied_beds": 3
+  },
+  {
+    "organization_id": "org_mutoko",
+    "department": "emergency",
+    "total_beds": 2,
+    "occupied_beds": 1
+  },
+  {
+    "organization_id": "org_mutoko",
+    "department": "internal_medicine",
+    "total_beds": 4,
+    "occupied_beds": 2
+  },
+  {
+    "organization_id": "org_mutoko",
+    "department": "obgyn",
+    "total_beds": 3,
+    "occupied_beds": 0
+  }
+]

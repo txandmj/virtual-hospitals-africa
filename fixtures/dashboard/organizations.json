@@ -1,0 +1,55 @@
+[
+  {
+    "id": "org_harare",
+    "name": "Harare Central Hospital",
+    "category": "urban",
+    "country": "Zimbabwe",
+    "city": "Harare",
+    "departments": [
+      "emergency",
+      "internal_medicine",
+      "obgyn",
+      "pediatrics",
+      "surgery",
+      "cardiology"
+    ]
+  },
+  {
+    "id": "org_bulawayo",
+    "name": "Bulawayo Regional Medical Center",
+    "category": "regional",
+    "country": "Zimbabwe",
+    "city": "Bulawayo",
+    "departments": [
+      "emergency",
+      "internal_medicine",
+      "obgyn",
+      "pediatrics"
+    ]
+  },
+  {
+    "id": "org_durban",
+    "name": "Durban Regional Medical Center",
+    "category": "regional",
+    "country": "South Africa",
+    "city": "Durban",
+    "departments": [
+      "emergency",
+      "internal_medicine",
+      "obgyn",
+      "pediatrics"
+    ]
+  },
+  {
+    "id": "org_mutoko",
+    "name": "Mutoko Rural Clinic",
+    "category": "clinic",
+    "country": "Zimbabwe",
+    "city": "Mutoko",
+    "departments": [
+      "emergency",
+      "internal_medicine",
+      "obgyn"
+    ]
+  }
+]
