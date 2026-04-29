@@ -13,7 +13,7 @@ type Data = {
   by_department: DepartmentRow[]
 }
 
-export const occupancyRateWidget: PreviewWidgetDef<Data> = {
+export const occupancy_rate_widget: PreviewWidgetDef<Data> = {
   id: 'occupancy_rate',
   title: 'Bed occupancy',
   span: 4,

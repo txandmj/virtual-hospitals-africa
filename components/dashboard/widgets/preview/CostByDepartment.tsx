@@ -28,7 +28,7 @@ function formatUsd(amount: number): string {
   return `$${Math.round(amount).toLocaleString()}`
 }
 
-export const costByDepartmentWidget: PreviewWidgetDef<Data> = {
+export const cost_by_department_widget: PreviewWidgetDef<Data> = {
   id: 'cost_by_department',
   title: 'Cost distribution by department',
   span: 6,

@@ -2,11 +2,11 @@ import { afterAll, describe } from 'std/testing/bdd.ts'
 import { assertEquals } from 'std/assert/assert_equals.ts'
 import { assert } from 'std/assert/assert.ts'
 import * as cheerio from 'cheerio'
-import db from '../../../../../db/db.ts'
-import { itUsesTrxAnd } from '../../../../_helpers/transaction.ts'
-import { addTestEmployeeWithSession } from '../../../../_helpers/employees.ts'
-import { TEST_ORGANIZATION_UUIDS } from '../../../../_helpers/organizations.ts'
-import { DASHBOARD_WIDGETS } from '../../../../../components/dashboard/widgets/index.ts'
+import db from '../../../../db/db.ts'
+import { itUsesTrxAnd } from '../../../_helpers/transaction.ts'
+import { addTestEmployeeWithSession } from '../../../_helpers/employees.ts'
+import { TEST_ORGANIZATION_UUIDS } from '../../../_helpers/organizations.ts'
+import { DASHBOARD_WIDGETS } from '../../../../backend/dashboard/widgets/index.ts'
 
 const ORG = TEST_ORGANIZATION_UUIDS.ZA.clinic
 

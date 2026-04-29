@@ -41,7 +41,7 @@ function formatUsd(amount: number): string {
   return `$${Math.round(amount)}`
 }
 
-export const performanceTrendsWidget: PreviewWidgetDef<Data> = {
+export const performance_trends_widget: PreviewWidgetDef<Data> = {
   id: 'performance_trends',
   title: 'Performance trends',
   span: 12,

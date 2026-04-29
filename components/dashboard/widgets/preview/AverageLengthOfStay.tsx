@@ -10,7 +10,7 @@ type Data = {
   by_department: Array<{ department: string; days: number; sample: number }>
 }
 
-export const averageLengthOfStayWidget: PreviewWidgetDef<Data> = {
+export const average_length_of_stay_widget: PreviewWidgetDef<Data> = {
   id: 'avg_length_of_stay',
   title: 'Average length of stay',
   span: 4,

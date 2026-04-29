@@ -8,7 +8,7 @@ type Data = {
   scope_label: string
 }
 
-export const currentCensusWidget: PreviewWidgetDef<Data> = {
+export const current_census_widget: PreviewWidgetDef<Data> = {
   id: 'current_census',
   title: 'Patients currently in care',
   span: 4,

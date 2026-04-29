@@ -12,7 +12,7 @@ type Data = {
 }
 
 // Looks at the most recent 7 days within the filter range and counts admits vs discharges per department.
-export const patientMovementWidget: PreviewWidgetDef<Data> = {
+export const patient_movement_widget: PreviewWidgetDef<Data> = {
   id: 'patient_movement',
   title: 'Patient movement (last 7 days)',
   span: 6,

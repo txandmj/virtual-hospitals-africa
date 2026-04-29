@@ -1,7 +1,7 @@
 import { Fragment } from 'preact'
 import { HealthWorkerHomePage } from '../../../_middleware.tsx'
 import type { OrganizationContext } from '../../../../../types.ts'
-import { DASHBOARD_WIDGETS } from '../../../../../components/dashboard/widgets/index.ts'
+import { DASHBOARD_WIDGETS } from '../../../../../backend/dashboard/widgets/index.ts'
 import type { DashboardFilters } from '../../../../../util/dashboard/types.ts'
 import { parseDateRange } from '../../../../../util/dashboard/filters.ts'
 import FilterBar from '../../../../../components/dashboard/FilterBar.tsx'

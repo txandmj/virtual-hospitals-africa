@@ -11,7 +11,7 @@ type Data = {
   by_department: Array<{ department: string; pct: number; sample: number }>
 }
 
-export const readmissionRateWidget: PreviewWidgetDef<Data> = {
+export const readmission_rate_widget: PreviewWidgetDef<Data> = {
   id: 'readmission_rate',
   title: '30-day readmission rate',
   span: 4,

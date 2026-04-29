@@ -6,6 +6,7 @@ import { patients } from '../../db/models/patients.ts'
 import { dashboard_metrics } from '../../db/models/dashboard_metrics.ts'
 import { itUsesTrxAnd } from '../_helpers/transaction.ts'
 import { TEST_ORGANIZATION_UUIDS } from '../_helpers/organizations.ts'
+import { addTestEmployee } from '../_helpers/employees.ts'
 
 const ORG_A = TEST_ORGANIZATION_UUIDS.ZA.clinic
 const ORG_B = TEST_ORGANIZATION_UUIDS.ZA.hospital
@@ -91,8 +92,6 @@ describe('db/models/dashboard_metrics.ts', () => {
 
   describe('staffOnShift', () => {
     itUsesTrxAnd('counts employees at this org whose employment_presence.at_work = true', async (trx) => {
-      const { addTestEmployee } = await import('../_helpers/employees.ts')
-
       const [present_a, absent_a, present_b] = await Promise.all([
         addTestEmployee(trx, { organization_id: ORG_A, role: 'nurse' }),
         addTestEmployee(trx, { organization_id: ORG_A, role: 'doctor' }),

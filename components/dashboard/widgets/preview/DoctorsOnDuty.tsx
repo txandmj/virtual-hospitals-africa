@@ -9,7 +9,7 @@ type Data = {
   by_specialty: Array<{ specialty: string; on_duty: number; total: number }>
 }
 
-export const doctorsOnDutyWidget: PreviewWidgetDef<Data> = {
+export const doctors_on_duty_widget: PreviewWidgetDef<Data> = {
   id: 'doctors_on_duty',
   title: 'Doctors on duty',
   span: 4,
