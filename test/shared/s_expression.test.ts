@@ -1,5 +1,4 @@
 import { describe, it } from 'std/testing/bdd.ts'
-import { assertEquals } from 'std/assert/assert_equals.ts'
 import { normalForm, parseExpressionExpectingAtom, parseWithSchema } from '../../shared/s_expression.ts'
 import * as schemas from '../../shared/s_expression_schemas.ts'
 import { inverseSExpression } from '../../shared/s_expression_inverse.ts'
@@ -7,7 +6,9 @@ import { CLINICAL_FINDING, HEMOGLOBIN_SATURATION_WITH_OXYGEN, STATUS_ATTRIBUTE }
 import { assertMatches } from '../../util/assertMatches.ts'
 import { positive_decimal } from '../../util/validators.ts'
 import { assert } from 'std/assert/assert.ts'
+import { assertEquals } from 'std/assert/assert_equals.ts'
 import assertLength from '../../util/assertLength.ts'
+import { asResult } from '../../util/asResult.ts'
 
 describe('shared/s_expression.ts', () => {
   it('has schemas with proper casing', () => {
@@ -131,5 +132,74 @@ describe('shared/s_expression.ts', () => {
       { role: 'nurse', specialty: 'Primary care' },
       { role: 'nurse', specialty: 'Pediatrics' },
     ])
+  })
+
+  describe('helpful parse errors', () => {
+    it('gives an error message pointing to the atom that is incorrect and what might be expected', () => {
+      const result = asResult(() =>
+        parseWithSchema(
+          `(manage (snomed_concept "Oxygen therapy" "procedure") (not_an_atom (role nurse) (specialty "Primary care")) (permission (role nurse) (specialty "Pediatrics")))`,
+          schemas.manage,
+        )
+      )
+      assert(!result.success)
+      assertEquals(
+        result.error.message,
+        `Error parsing
+  (manage
+    (snomed_concept "Oxygen therapy" "procedure")
+    (not_an_atom
+     ^ Error
+      (role nurse)
+      (specialty "Primary care")
+    )
+    (permission
+      (role nurse)
+      (specialty "Pediatrics")
+    )
+  )
+
+using schema manage
+saw: "not_an_atom"`,
+      )
+    })
+
+    it('gives an error message for a value that is deeply nested', () => {
+      const result = asResult(() =>
+        parseWithSchema(
+          `(task
+  "Check blood pressure"
+  all_ages
+  (and
+    (active_condition 38341003)
+  )
+  (measure
+    (measurement 75367002 mmHg)
+  )
+)
+`,
+          schemas.any_rule,
+        )
+      )
+      assert(!result.success)
+      assertEquals(
+        result.error.message,
+        `Error parsing
+  (task
+    "Check blood pressure"
+    all_ages
+    (and
+      (active_condition 38341003)
+                        ^ Error
+    )
+    (measure
+      (measurement 75367002 mmHg)
+    )
+  )
+
+using schema any_rule
+saw: "38341003"`,
+      )
+    })
   })
 })

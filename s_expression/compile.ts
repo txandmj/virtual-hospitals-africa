@@ -9,7 +9,7 @@ import { groupBy } from '../util/groupBy.ts'
 /**
  * Strip Lisp-style comments (lines starting with ;;) from the input text
  */
-function stripComments(text: string): string {
+export function stripComments(text: string): string {
   return text
     .split('\n')
     .map((line) => {
