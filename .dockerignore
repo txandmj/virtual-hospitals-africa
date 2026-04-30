@@ -8,6 +8,7 @@ temp_files/
 scripts/**
 !scripts/web.sh
 !scripts/fix_fresh_route_order.ts
+!scripts/generate_dashboard_fixtures.ts
 logs/
 
 .env*
