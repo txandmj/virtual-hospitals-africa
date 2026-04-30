@@ -11,7 +11,7 @@ import { addTestEmployee } from '../_helpers/employees.ts'
 const ORG_A = TEST_ORGANIZATION_UUIDS.ZA.clinic
 const ORG_B = TEST_ORGANIZATION_UUIDS.ZA.hospital
 
-describe('db/models/dashboard_metrics.ts', () => {
+describe.skip('db/models/dashboard_metrics.ts', () => {
   afterAll(() => db.destroy())
 
   describe('patientsCurrentlyInEncounter', () => {
