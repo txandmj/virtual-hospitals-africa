@@ -6,13 +6,11 @@ const CM_BASE = 'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16'
 declare const CodeMirror: any
 
 const SAMPLE = `(task
-  "Check blood pressure"
-  all_ages
-  (and
-    (active_condition 38341003)
-  )
-  (measure
-    (measurement 75367002 mmHg)
+  "Raise legs for anaphylaxis patient"
+  adult
+  (active_condition (snomed_concept "Anaphylaxis" "disorder"))
+  (manage
+    (snomed_concept "Elevation of lower limb" "procedure")
   )
 )
 `
