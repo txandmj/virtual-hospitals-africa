@@ -4,6 +4,7 @@ import { any_rule } from '../shared/s_expression_schemas.ts'
 import { json } from '../util/responses.ts'
 import SExpressionPlayground from '../islands/SExpressionPlayground.tsx'
 import { allConceptsToLookFor, conceptDoesNotExist } from '../test/shared/compiled_s_expressions.test.ts'
+import { stripComments } from '../s_expression/compile.ts'
 
 export const handler = {
   async POST(ctx: { req: Request }) {
@@ -12,7 +13,7 @@ export const handler = {
       return json({ ok: false, error: 'Expression is empty' })
     }
     try {
-      const node = parseWithSchema(expression, any_rule)
+      const node = parseWithSchema(stripComments(expression), any_rule)
       for (const concept of allConceptsToLookFor(node)) {
         console.log({ concept })
         if (await conceptDoesNotExist({ concept })) {

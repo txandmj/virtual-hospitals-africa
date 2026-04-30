@@ -134,7 +134,7 @@ describe('shared/s_expression.ts', () => {
     ])
   })
 
-  describe.only('helpful parse errors', () => {
+  describe('helpful parse errors', () => {
     it('gives an error message pointing to the atom that is incorrect and what might be expected', () => {
       const result = asResult(() =>
         parseWithSchema(
