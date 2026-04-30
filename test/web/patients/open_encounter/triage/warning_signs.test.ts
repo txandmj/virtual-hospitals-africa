@@ -61,7 +61,7 @@ describeParallel('triage/warning_signs', () => {
             'BurnChemical',
             'Coughing blood',
             'PoisoningOverdose',
-            'Aggression',
+            'AggressionViolent or agressive behavior',
             'Severe limb ischemiaThreatened limb',
             'BurnCircumferential',
             'Vomiting fresh blood',
