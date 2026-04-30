@@ -255,7 +255,7 @@ export const ADULT_PAC_SYMPTOMS_TABLE_OF_CONTENTS_TO_SNOMED: Dict<TableOfContent
     's_expression': `
       (or 
         (active_condition (snomed_concept "Eye symptom" "finding") possible)
-        (clinical_finding (finding_site (snomed_concept "Structure of eye proper" "body structure"))
+        (clinical_finding (finding_site (snomed_concept "Structure of eye proper" "body structure")))
       )
     `,
     'snomed_concept_id': '308923001',
