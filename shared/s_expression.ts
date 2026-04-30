@@ -231,6 +231,34 @@ export function parseWithSchema<Schema extends Values<typeof schemas>>(
   return second_pass.data as z.infer<Schema>
 }
 
+function findRawSubtree(
+  node: SExpressionSimpleNode,
+  matches: (n: RawSimpleNode) => boolean,
+): RawSimpleNode | null {
+  if (!Array.isArray(node)) return null
+  if (matches(node)) return node
+  for (let i = 1; i < node.length; i++) {
+    const child = node[i]
+    if (Array.isArray(child)) {
+      const found = findRawSubtree(child, matches)
+      if (found) return found
+    }
+  }
+  return null
+}
+
+export function formatExpressionWithErrorAt(
+  expression: string,
+  matches: (raw_node: RawSimpleNode) => boolean,
+): string {
+  const parsed = s_expression(expression) as SExpressionSimpleNode
+  assert(!(parsed instanceof Error))
+  assert(Array.isArray(parsed))
+  const offender_node = findRawSubtree(parsed, matches)
+  assert(offender_node, 'Could not locate matching subtree in expression')
+  return formatSimpleNode(parsed, 2, { kind: 'atom', parent: offender_node }).join('\n')
+}
+
 export function parseArrayWithSchema<Schema extends Values<typeof schemas>>(
   expression: string,
   schema: Schema,
