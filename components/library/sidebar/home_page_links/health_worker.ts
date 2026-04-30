@@ -8,10 +8,16 @@ import {
   IdentificationIcon,
   LightBulbIcon,
   PresentationChartBarIcon,
+  Squares2x2Icon,
 } from '../../icons/heroicons/outline.tsx'
 import { LinkDef } from '../../../../types.ts'
 
 export const practitioner_home_page_nav_links: LinkDef[] = [
+  {
+    route: '/app/organizations/:organization_id/dashboard',
+    title: 'Dashboard',
+    Icon: Squares2x2Icon,
+  },
   {
     route: '/app/organizations/:organization_id/waiting_room',
     title: 'Open Encounters',

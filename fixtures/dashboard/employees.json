@@ -1,0 +1,258 @@
+[
+  {
+    "id": "emp_001",
+    "name": "Dr. Chipo Mthembu",
+    "role": "doctor",
+    "specialty": "emergency",
+    "organization_id": "org_harare",
+    "at_work": true
+  },
+  {
+    "id": "emp_002",
+    "name": "Dr. Tafadzwa Banda",
+    "role": "doctor",
+    "specialty": "emergency",
+    "organization_id": "org_harare",
+    "at_work": false
+  },
+  {
+    "id": "emp_003",
+    "name": "Dr. Rumbidzai Chigumba",
+    "role": "doctor",
+    "specialty": "obgyn",
+    "organization_id": "org_harare",
+    "at_work": true
+  },
+  {
+    "id": "emp_004",
+    "name": "Dr. Farai Phiri",
+    "role": "doctor",
+    "specialty": "internal_medicine",
+    "organization_id": "org_harare",
+    "at_work": true
+  },
+  {
+    "id": "emp_005",
+    "name": "Dr. Nyasha Nyathi",
+    "role": "doctor",
+    "specialty": "pediatrics",
+    "organization_id": "org_harare",
+    "at_work": false
+  },
+  {
+    "id": "emp_006",
+    "name": "Dr. Tatenda Tshuma",
+    "role": "doctor",
+    "specialty": "surgery",
+    "organization_id": "org_harare",
+    "at_work": true
+  },
+  {
+    "id": "emp_007",
+    "name": "Dr. Kudzai Khumalo",
+    "role": "doctor",
+    "specialty": "cardiology",
+    "organization_id": "org_harare",
+    "at_work": true
+  },
+  {
+    "id": "emp_008",
+    "name": "Anesu Mokwena",
+    "role": "nurse",
+    "specialty": null,
+    "organization_id": "org_harare",
+    "at_work": true
+  },
+  {
+    "id": "emp_009",
+    "name": "Sipho Dube",
+    "role": "nurse",
+    "specialty": null,
+    "organization_id": "org_harare",
+    "at_work": true
+  },
+  {
+    "id": "emp_010",
+    "name": "Thandiwe Mokoena",
+    "role": "nurse",
+    "specialty": null,
+    "organization_id": "org_harare",
+    "at_work": false
+  },
+  {
+    "id": "emp_011",
+    "name": "Sibusiso Sibanda",
+    "role": "nurse",
+    "specialty": null,
+    "organization_id": "org_harare",
+    "at_work": true
+  },
+  {
+    "id": "emp_012",
+    "name": "Nokuthula Mabaso",
+    "role": "admin",
+    "specialty": null,
+    "organization_id": "org_harare",
+    "at_work": true
+  },
+  {
+    "id": "emp_013",
+    "name": "Dr. Mandla Ndlovu",
+    "role": "doctor",
+    "specialty": "emergency",
+    "organization_id": "org_bulawayo",
+    "at_work": true
+  },
+  {
+    "id": "emp_014",
+    "name": "Dr. Lindiwe Zulu",
+    "role": "doctor",
+    "specialty": "obgyn",
+    "organization_id": "org_bulawayo",
+    "at_work": false
+  },
+  {
+    "id": "emp_015",
+    "name": "Dr. Bongani Moyo",
+    "role": "doctor",
+    "specialty": "internal_medicine",
+    "organization_id": "org_bulawayo",
+    "at_work": true
+  },
+  {
+    "id": "emp_016",
+    "name": "Dr. Zanele Mthembu",
+    "role": "doctor",
+    "specialty": "pediatrics",
+    "organization_id": "org_bulawayo",
+    "at_work": true
+  },
+  {
+    "id": "emp_017",
+    "name": "Nkosi Banda",
+    "role": "nurse",
+    "specialty": null,
+    "organization_id": "org_bulawayo",
+    "at_work": true
+  },
+  {
+    "id": "emp_018",
+    "name": "Thabo Chigumba",
+    "role": "nurse",
+    "specialty": null,
+    "organization_id": "org_bulawayo",
+    "at_work": false
+  },
+  {
+    "id": "emp_019",
+    "name": "Naledi Phiri",
+    "role": "nurse",
+    "specialty": null,
+    "organization_id": "org_bulawayo",
+    "at_work": true
+  },
+  {
+    "id": "emp_020",
+    "name": "Lerato Nyathi",
+    "role": "admin",
+    "specialty": null,
+    "organization_id": "org_bulawayo",
+    "at_work": true
+  },
+  {
+    "id": "emp_021",
+    "name": "Dr. Mpho Tshuma",
+    "role": "doctor",
+    "specialty": "emergency",
+    "organization_id": "org_durban",
+    "at_work": false
+  },
+  {
+    "id": "emp_022",
+    "name": "Dr. Kagiso Khumalo",
+    "role": "doctor",
+    "specialty": "obgyn",
+    "organization_id": "org_durban",
+    "at_work": true
+  },
+  {
+    "id": "emp_023",
+    "name": "Dr. Refilwe Mokwena",
+    "role": "doctor",
+    "specialty": "internal_medicine",
+    "organization_id": "org_durban",
+    "at_work": true
+  },
+  {
+    "id": "emp_024",
+    "name": "Dr. Tshepo Dube",
+    "role": "doctor",
+    "specialty": "pediatrics",
+    "organization_id": "org_durban",
+    "at_work": true
+  },
+  {
+    "id": "emp_025",
+    "name": "Boitumelo Mokoena",
+    "role": "nurse",
+    "specialty": null,
+    "organization_id": "org_durban",
+    "at_work": true
+  },
+  {
+    "id": "emp_026",
+    "name": "Sello Sibanda",
+    "role": "nurse",
+    "specialty": null,
+    "organization_id": "org_durban",
+    "at_work": true
+  },
+  {
+    "id": "emp_027",
+    "name": "Karabo Mabaso",
+    "role": "nurse",
+    "specialty": null,
+    "organization_id": "org_durban",
+    "at_work": false
+  },
+  {
+    "id": "emp_028",
+    "name": "Palesa Ndlovu",
+    "role": "admin",
+    "specialty": null,
+    "organization_id": "org_durban",
+    "at_work": true
+  },
+  {
+    "id": "emp_029",
+    "name": "Dr. Themba Zulu",
+    "role": "doctor",
+    "specialty": "emergency",
+    "organization_id": "org_mutoko",
+    "at_work": true
+  },
+  {
+    "id": "emp_030",
+    "name": "Dr. Tendai Moyo",
+    "role": "doctor",
+    "specialty": "internal_medicine",
+    "organization_id": "org_mutoko",
+    "at_work": false
+  },
+  {
+    "id": "emp_031",
+    "name": "Chipo Mthembu",
+    "role": "nurse",
+    "specialty": null,
+    "organization_id": "org_mutoko",
+    "at_work": true
+  },
+  {
+    "id": "emp_032",
+    "name": "Tafadzwa Banda",
+    "role": "admin",
+    "specialty": null,
+    "organization_id": "org_mutoko",
+    "at_work": false
+  }
+]
