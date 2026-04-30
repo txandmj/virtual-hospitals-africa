@@ -158,8 +158,47 @@ describe('shared/s_expression.ts', () => {
       (specialty "Pediatrics")
     )
   )
+
 using schema manage
 saw: "not_an_atom"`,
+      )
+    })
+
+    it('gives an error message for a value that is deeply nested', () => {
+      const result = asResult(() =>
+        parseWithSchema(
+          `(task
+  "Check blood pressure"
+  all_ages
+  (and
+    (active_condition 38341003)
+  )
+  (measure
+    (measurement 75367002 mmHg)
+  )
+)
+`,
+          schemas.any_rule,
+        )
+      )
+      assert(!result.success)
+      assertEquals(
+        result.error.message,
+        `Error parsing
+  (task
+    "Check blood pressure"
+    all_ages
+    (and
+      (active_condition 38341003)
+                        ^ Error
+    )
+    (measure
+      (measurement 75367002 mmHg)
+    )
+  )
+
+using schema any_rule
+saw: "38341003"`,
       )
     })
   })

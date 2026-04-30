@@ -13,7 +13,7 @@ import { assertEquals } from 'std/assert/assert_equals.ts'
 import { Values } from '../types.ts'
 import { wrapError } from '../util/wrapError.ts'
 
-import { safeParseWithValues } from '../util/assertMatches.ts'
+import { getAtPath, safeParseWithValues } from '../util/assertMatches.ts'
 import { humanReadableJson } from '../util/humanReadableJson.ts'
 import isKeyOf from '../util/isKeyOf.ts'
 
@@ -39,6 +39,167 @@ function recursiveTreePass(parsed: SExpressionSimpleNode): SExpressionNode {
 
 type SExpressionSimpleNode = string | SExpressionSimpleNode[]
 
+function formatSimpleStringArg(s: unknown): string {
+  // The s-expression library returns quoted strings as `new String(...)` (object) and
+  // unquoted atoms as plain string primitives. Preserve that distinction in output.
+  return typeof s === 'object' ? `"${s}"` : String(s)
+}
+
+// deno-lint-ignore no-explicit-any
+type RawSimpleNode = any[]
+
+type Offender =
+  | { kind: 'atom'; parent: RawSimpleNode }
+  | { kind: 'arg'; parent: RawSimpleNode; argIndex: number }
+
+function isLeafSimpleNode(node: RawSimpleNode): boolean {
+  for (let i = 1; i < node.length; i++) {
+    if (Array.isArray(node[i])) return false
+  }
+  return true
+}
+
+function findOffender(
+  root: SExpressionSimpleNode,
+  path: ReadonlyArray<PropertyKey>,
+): Offender | null {
+  if (!Array.isArray(root)) return null
+  let last_array: RawSimpleNode = root
+  let last_numeric_key: number | null = null
+  let current: unknown = root
+  for (const key of path) {
+    if (key === 'args') continue
+    if (typeof key === 'number') {
+      if (!Array.isArray(current)) break
+      // args[i] in the tree corresponds to current[i + 1] (current[0] is the atom)
+      const next: unknown = current[key + 1]
+      if (next === undefined) break
+      current = next
+      if (Array.isArray(current)) {
+        last_array = current
+        last_numeric_key = null
+      } else {
+        last_numeric_key = key
+      }
+      continue
+    }
+    if (key === 'atom' && Array.isArray(current)) {
+      return { kind: 'atom', parent: current }
+    }
+    break
+  }
+  if (last_numeric_key !== null) {
+    return { kind: 'arg', parent: last_array, argIndex: last_numeric_key }
+  }
+  return { kind: 'atom', parent: last_array }
+}
+
+function formatSimpleNode(
+  node: unknown,
+  indent: number,
+  offender: Offender | null,
+): string[] {
+  const pad = ' '.repeat(indent)
+  if (!Array.isArray(node)) {
+    return [`${pad}${formatSimpleStringArg(node)}`]
+  }
+  const atom_str = String(node[0])
+
+  if (isLeafSimpleNode(node)) {
+    const arg_strs: string[] = []
+    for (let i = 1; i < node.length; i++) {
+      arg_strs.push(formatSimpleStringArg(node[i]))
+    }
+    const suffix = arg_strs.length ? ` ${arg_strs.join(' ')}` : ''
+    const lines = [`${pad}(${atom_str}${suffix})`]
+    if (offender && offender.parent === node) {
+      if (offender.kind === 'atom') {
+        lines.push(`${' '.repeat(indent + 1)}^ Error`)
+      } else {
+        let column = indent + 1 + atom_str.length
+        for (let k = 0; k < offender.argIndex; k++) {
+          column += 1 + arg_strs[k].length
+        }
+        column += 1
+        lines.push(`${' '.repeat(column)}^ Error`)
+      }
+    }
+    return lines
+  }
+
+  const lines: string[] = [`${pad}(${atom_str}`]
+  if (offender && offender.parent === node && offender.kind === 'atom') {
+    lines.push(`${' '.repeat(indent + 1)}^ Error`)
+  }
+  for (let i = 1; i < node.length; i++) {
+    const child = node[i]
+    lines.push(...formatSimpleNode(child, indent + 2, offender))
+    if (
+      offender &&
+      offender.parent === node &&
+      offender.kind === 'arg' &&
+      offender.argIndex === i - 1 &&
+      !Array.isArray(child)
+    ) {
+      lines.push(`${' '.repeat(indent + 2)}^ Error`)
+    }
+  }
+  lines.push(`${pad})`)
+  return lines
+}
+
+function collectAllIssues(
+  issues: ReadonlyArray<z.core.$ZodIssue>,
+  base_path: ReadonlyArray<PropertyKey>,
+): Array<{ path: PropertyKey[]; issue: z.core.$ZodIssue }> {
+  const result: Array<{ path: PropertyKey[]; issue: z.core.$ZodIssue }> = []
+  for (const issue of issues) {
+    const full_path: PropertyKey[] = [...base_path, ...issue.path]
+    result.push({ path: full_path, issue })
+    // deno-lint-ignore no-explicit-any
+    const a = issue as any
+    const errors = a.errors as ReadonlyArray<ReadonlyArray<z.core.$ZodIssue>> | undefined
+    if (errors) {
+      for (const branch of errors) {
+        result.push(...collectAllIssues(branch, full_path))
+      }
+    }
+    const union_errors = a.unionErrors as ReadonlyArray<{ issues: ReadonlyArray<z.core.$ZodIssue> }> | undefined
+    if (union_errors) {
+      for (const branch of union_errors) {
+        result.push(...collectAllIssues(branch.issues, full_path))
+      }
+    }
+  }
+  return result
+}
+
+function pickDeepestIssue(
+  issues: ReadonlyArray<z.core.$ZodIssue>,
+  resolved_target: unknown,
+): { path: PropertyKey[]; issue: z.core.$ZodIssue } {
+  const all = collectAllIssues(issues, [])
+  let best = all[0]
+  let best_depth = best.path.length
+  let best_is_primitive = isPrimitive(getAtPath(resolved_target, best.path))
+  for (const candidate of all) {
+    const depth = candidate.path.length
+    const value = getAtPath(resolved_target, candidate.path)
+    const cand_is_primitive = isPrimitive(value)
+    // Prefer deeper paths; at equal depth prefer ones landing on a primitive
+    if (depth > best_depth || (depth === best_depth && cand_is_primitive && !best_is_primitive)) {
+      best = candidate
+      best_depth = depth
+      best_is_primitive = cand_is_primitive
+    }
+  }
+  return best
+}
+
+function isPrimitive(v: unknown): boolean {
+  return v !== undefined && v !== null && typeof v !== 'object'
+}
+
 export function parseWithSchema<Schema extends Values<typeof schemas>>(
   expression: string | SExpressionSimpleNode,
   schema: Schema,
@@ -52,11 +213,14 @@ export function parseWithSchema<Schema extends Values<typeof schemas>>(
   const first_pass = recursiveTreePass(parsed)
   const second_pass = safeParseWithValues(schema, first_pass)
   if (!second_pass.success) {
-    const issue = second_pass.error.issues[0]
-
+    const picked = pickDeepestIssue(second_pass.error.issues, first_pass)
+    const offender = findOffender(parsed, picked.path)
+    const formatted = formatSimpleNode(parsed, 2, offender).join('\n')
+    const actual_value = getAtPath(first_pass, picked.path)
     throw new Error(
-      // deno-lint-ignore no-explicit-any
-      `Error parsing ${expression} using schema ${schema.description}\npath: ${issue.path}\nsaw: ${humanReadableJson((issue as any).actual_value)}`,
+      `Error parsing\n${formatted}\n\nusing schema ${schema.description}\nsaw: ${
+        humanReadableJson(actual_value === undefined ? '<undefined>' : actual_value).trimEnd()
+      }`,
     )
   }
 
