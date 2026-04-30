@@ -12,28 +12,28 @@
     (excluding (clinical_finding (finding_site (snomed_concept "Tooth, gum, and/or supporting structure" "body structure"))))
   )
   (check_for
-    (clinical_finding (snomed_concept "Weakness of face muscles" "finding") (qualifier (snomed_concept "Sudden onset" "qualifier value")) (qualifier (snomed_concept "New" "qualifier value")) (qualifier (snomed_concept "Asymmetry" "qualifier value")))
-    (clinical_finding (snomed_concept "Muscle weakness of upper limb" "finding") (qualifier (snomed_concept "Sudden onset" "qualifier value")) (qualifier (snomed_concept "New" "qualifier value")) (qualifier (snomed_concept "Asymmetry" "qualifier value")))
-    (clinical_finding (snomed_concept "Weakness of muscle of lower limb" "finding") (qualifier (snomed_concept "Sudden onset" "qualifier value")) (qualifier (snomed_concept "New" "qualifier value")) (qualifier (snomed_concept "Asymmetry" "qualifier value")))
+    (clinical_finding (snomed_concept "Weakness of face muscles" "finding") (qualifier (snomed_concept "Sudden" "qualifier value")) (qualifier (snomed_concept "New" "qualifier value")) (qualifier (snomed_concept "Asymmetry" "qualifier value")))
+    (clinical_finding (snomed_concept "Muscle weakness of upper limb" "finding") (qualifier (snomed_concept "Sudden" "qualifier value")) (qualifier (snomed_concept "New" "qualifier value")) (qualifier (snomed_concept "Asymmetry" "qualifier value")))
+    (clinical_finding (snomed_concept "Weakness of muscle of lower limb" "finding") (qualifier (snomed_concept "Sudden" "qualifier value")) (qualifier (snomed_concept "New" "qualifier value")) (qualifier (snomed_concept "Asymmetry" "qualifier value")))
     (clinical_finding (snomed_concept "Numbness of face" "finding"))
     (clinical_finding (snomed_concept "Numbness of limbs" "finding"))
     (clinical_finding (snomed_concept "Difficulty talking" "finding"))
     (clinical_finding (snomed_concept "Visual disturbance" "disorder"))
-    (clinical_finding (snomed_concept "Swelling" "finding") (finding_site (snomed_concept "Face structure" "body structure")) (qualifier (snomed_concept "Sudden onset" "qualifier value")))
-    (clinical_finding (snomed_concept "Swelling" "finding") (finding_site (snomed_concept "Tongue structure" "body structure")) (qualifier (snomed_concept "Sudden onset" "qualifier value")))
+    (clinical_finding (snomed_concept "Swelling" "finding") (finding_site (snomed_concept "Face structure" "body structure")) (qualifier (snomed_concept "Red color" "qualifier value")) (qualifier (snomed_concept "Pain" "finding")))
+    (clinical_finding (snomed_concept "Swelling" "finding") (finding_site (snomed_concept "Face structure" "body structure")) (qualifier (snomed_concept "Sudden" "qualifier value")))
+    (clinical_finding (snomed_concept "Swelling" "finding") (finding_site (snomed_concept "Face structure" "body structure")) (qualifier (snomed_concept "New" "qualifier value")))
+    (clinical_finding (snomed_concept "Swelling" "finding") (finding_site (snomed_concept "Face structure" "body structure")))
+    (clinical_finding (snomed_concept "Swelling" "finding") (finding_site (snomed_concept "Tongue structure" "body structure")) (qualifier (snomed_concept "Sudden" "qualifier value")))
     (clinical_finding (snomed_concept "Difficulty breathing" "finding"))
-    (clinical_finding (snomed_concept "Dizziness" "finding") (qualifier (snomed_concept "Sudden onset" "qualifier value")) (qualifier (snomed_concept "Severe (severity modifier)" "qualifier value")))
+    (clinical_finding (snomed_concept "Dizziness" "finding") (qualifier (snomed_concept "Sudden" "qualifier value")) (qualifier (snomed_concept "Severe (severity modifier)" "qualifier value")))
     (clinical_finding (snomed_concept "Collapse" "finding"))
     (clinical_finding (snomed_concept "Abdominal pain" "finding"))
     (clinical_finding (snomed_concept "Vomiting" "disorder"))
-    (clinical_finding (snomed_concept "Swelling" "finding") (finding_site (snomed_concept "Face structure" "body structure")) (qualifier (snomed_concept "Sudden onset" "qualifier value")))
     (clinical_finding (snomed_concept "Blood in urine" "finding"))
     (clinical_finding (snomed_concept "Proteinuria" "finding"))
-    (clinical_finding (snomed_concept "Swelling" "finding") (finding_site (snomed_concept "Face structure" "body structure")) (qualifier (snomed_concept "New" "qualifier value")))
-    (clinical_finding (snomed_concept "Swelling" "finding") (finding_site (snomed_concept "Face structure" "body structure")))
-    (clinical_finding (snomed_concept "Cellulitis of face" "disorder"))
   )
-);; Page 32 - Face: Facial cellulitis likely with painful swelling and fever
+)
+;; Page 32 - Face: Facial cellulitis likely with painful red facial swelling and fever
 (system_diagnosis_rule
   "Diagnose probable facial cellulitis"
   (diagnosis
@@ -42,8 +42,41 @@
   )
   adult
   (and
-    (clinical_finding (snomed_concept "Swelling" "finding") (finding_site (snomed_concept "Face structure" "body structure")))
+    (clinical_finding (snomed_concept "Swelling" "finding") (finding_site (snomed_concept "Face structure" "body structure")) (qualifier (snomed_concept "Red color" "qualifier value")) (qualifier (snomed_concept "Pain" "finding")))
     (>= (measurement (snomed_concept "Body temperature" "observable entity") °C) 38)
+  )
+)
+(task
+  "Check for orbital cellulitis"
+  adult
+  (active_condition (snomed_concept "Cellulitis of face" "disorder"))
+  (check_for
+    (clinical_finding 
+      (snomed_concept "Swelling" "finding") 
+      (finding_site (snomed_concept "Eyelid" "body structure")) 
+      (qualifier (snomed_concept "Whole" "qualifier value"))
+      (qualifier (snomed_concept "Red color" "qualifier value"))
+      (qualifier (snomed_concept "Pain" "finding"))
+    )
+  )
+)
+;; Page 32 - Face: Facial cellulitis likely with painful red facial swelling and fever
+(system_diagnosis_rule
+  "Diagnose probable orbital cellulitis"
+  (diagnosis
+    (snomed_concept "Orbital cellulitis" "disorder")
+    probable
+  )
+  adult
+  (and
+    (active_condition (snomed_concept "Cellulitis of face" "disorder"))
+    (clinical_finding 
+      (snomed_concept "Swelling" "finding") 
+      (finding_site (snomed_concept "Eyelid" "body structure")) 
+      (qualifier (snomed_concept "Whole" "qualifier value"))
+      (qualifier (snomed_concept "Red color" "qualifier value"))
+      (qualifier (snomed_concept "Pain" "finding"))
+    )
   )
 )
 ;; Page 32 - Face: Kidney disease likely with facial swelling and blood/protein in urine
@@ -55,33 +88,24 @@
   )
   adult
   (and
-    (clinical_finding (snomed_concept "Swelling" "finding") (finding_site (snomed_concept "Face structure" "body structure")))
+    (clinical_finding (snomed_concept "Swelling" "finding") (finding_site (snomed_concept "Face structure" "body structure")) (qualifier (snomed_concept "New" "qualifier value")))
     (or
       (clinical_finding (snomed_concept "Blood in urine" "finding"))
       (clinical_finding (snomed_concept "Proteinuria" "finding"))
     )
   )
 )
-;; Page 32 - Face: Facial cellulitis with fever
+;; Page 32 - Face: Facial cellulitis
 (system_priority_evaluation
-  "Urgent: facial cellulitis with fever"
+  "Urgent: facial cellulitis"
   adult
   Urgent
-  (and
-    (clinical_finding (snomed_concept "Cellulitis of face" "disorder"))
-    (>= (measurement (snomed_concept "Body temperature" "observable entity") °C) 38)
-  )
+  (active_condition (snomed_concept "Cellulitis of face" "disorder"))
 )
 ;; Page 32 - Face: Kidney disease signs with facial swelling
 (system_priority_evaluation
-  "Urgent: facial swelling with renal signs"
+  "Urgent: Kidney disease"
   adult
   Urgent
-  (and
-    (clinical_finding (snomed_concept "Swelling" "finding") (finding_site (snomed_concept "Face structure" "body structure")))
-    (or
-      (clinical_finding (snomed_concept "Blood in urine" "finding"))
-      (clinical_finding (snomed_concept "Proteinuria" "finding"))
-    )
-  )
+  (active_condition (snomed_concept "Kidney disease" "disorder"))
 )
