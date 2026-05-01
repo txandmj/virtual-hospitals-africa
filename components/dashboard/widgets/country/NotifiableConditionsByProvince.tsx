@@ -7,6 +7,7 @@ import type { CountryWidgetDef } from '../../../../util/dashboard/country.ts'
 import { hashCount, NOTIFIABLE_CONDITIONS, type NotifiableCategory, PREVALENCE_WEIGHT } from '../../../../util/dashboard/notifiable_conditions.ts'
 import { type Province, PROVINCE_POPULATION_WEIGHT, PROVINCES } from '../../../../util/dashboard/provinces.ts'
 import WidgetCard from '../../WidgetCard.tsx'
+import NotifiableConditionsByProvinceIsland from '../../../../islands/dashboard/NotifiableConditionsByProvinceIsland.tsx'
 
 export type ProvinceCell = { province: Province; confirmed: number; suspected: number }
 
@@ -71,9 +72,9 @@ export const notifiable_conditions_by_province_widget: CountryWidgetDef<Province
   render: (data) => (
     <WidgetCard
       title='Conditions by province'
-      subtitle={`${data.rows.length} conditions × ${data.provinces.length} provinces`}
+      subtitle={`${data.rows.length} conditions × ${data.provinces.length} provinces — toggle category and metric`}
     >
-      <div class='text-sm text-gray-500'>Island wired up in Task 14.</div>
+      <NotifiableConditionsByProvinceIsland data={data} />
     </WidgetCard>
   ),
 }
