@@ -1,6 +1,6 @@
 import { describe, it } from 'std/testing/bdd.ts'
 import { assertEquals } from 'std/assert/assert_equals.ts'
-import { type Province, PROVINCE_LABELS, PROVINCE_POPULATION_WEIGHT, PROVINCES } from '../../../util/dashboard/provinces.ts'
+import { type Province, PROVINCE_LABELS, PROVINCE_POPULATION_WEIGHT, PROVINCES, provinceForOrganization } from '../../../util/dashboard/provinces.ts'
 
 describe('util/dashboard/provinces.ts', () => {
   it('PROVINCES contains all 9 SA provinces in display order', () => {
@@ -26,5 +26,15 @@ describe('util/dashboard/provinces.ts', () => {
       sum += w
     }
     assertEquals(Math.abs(sum - 1) < 0.001, true)
+  })
+})
+
+describe('provinceForOrganization', () => {
+  it('returns the province for a known org id', () => {
+    assertEquals(provinceForOrganization('org_durban'), 'KZN')
+  })
+
+  it('returns null for an unknown org id', () => {
+    assertEquals(provinceForOrganization('org_does_not_exist'), null)
   })
 })
