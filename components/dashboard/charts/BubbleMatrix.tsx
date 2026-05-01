@@ -14,13 +14,13 @@ export type BubbleMatrixProps = {
   reference_sizes?: readonly number[]
 }
 
-const ROW_HEIGHT = 32
-const COL_WIDTH = 64
-const PADDING_LEFT = 220
-const PADDING_TOP = 56
-const PADDING_RIGHT = 140
-const PADDING_BOTTOM = 24
-const CELL_RADIUS_MAX = 14
+const ROW_HEIGHT = 36
+const COL_WIDTH = 72
+const PADDING_LEFT = 240
+const PADDING_TOP = 96
+const PADDING_RIGHT = 32
+const LEGEND_HEIGHT = 64
+const CELL_RADIUS_MAX = 18
 
 export default function BubbleMatrix(
   { col_keys, col_labels, rows, reference_sizes }: BubbleMatrixProps,
@@ -30,7 +30,9 @@ export default function BubbleMatrix(
   }
 
   const width = PADDING_LEFT + col_keys.length * COL_WIDTH + PADDING_RIGHT
-  const height = PADDING_TOP + rows.length * ROW_HEIGHT + PADDING_BOTTOM
+  const grid_top = PADDING_TOP
+  const grid_bottom = grid_top + rows.length * ROW_HEIGHT
+  const height = grid_bottom + LEGEND_HEIGHT
 
   let max = 0
   for (const row of rows) for (const cell of row.cells) if (cell.value > max) max = cell.value
@@ -57,27 +59,42 @@ export default function BubbleMatrix(
 
   return (
     <svg viewBox={`0 0 ${width} ${height}`} class='w-full' role='img' aria-label='Bubble matrix'>
+      {rows.map((_row, row_idx) => (
+        row_idx % 2 === 0
+          ? (
+            <rect
+              key={`stripe-${row_idx}`}
+              x={PADDING_LEFT}
+              y={grid_top + row_idx * ROW_HEIGHT}
+              width={col_keys.length * COL_WIDTH}
+              height={ROW_HEIGHT}
+              fill='#fafafa'
+            />
+          )
+          : null
+      ))}
       {col_keys.map((key, i) => {
         const cx = PADDING_LEFT + i * COL_WIDTH + COL_WIDTH / 2
+        const ly = grid_top - 12
         return (
           <text
             key={`col-${key}`}
             x={cx}
-            y={PADDING_TOP - 16}
+            y={ly}
             textAnchor='start'
-            transform={`rotate(-45 ${cx} ${PADDING_TOP - 16})`}
-            class='fill-gray-600 text-[11px]'
+            transform={`rotate(-45 ${cx} ${ly})`}
+            class='fill-gray-700 text-[11px] font-medium'
           >
             {col_labels[i] ?? key}
           </text>
         )
       })}
       {rows.map((row, row_idx) => {
-        const cy = PADDING_TOP + row_idx * ROW_HEIGHT + ROW_HEIGHT / 2
+        const cy = grid_top + row_idx * ROW_HEIGHT + ROW_HEIGHT / 2
         const cells_by_col = new Map(row.cells.map((c) => [c.col_key, c.value]))
         return (
           <g key={row.key}>
-            <text x={PADDING_LEFT - 12} y={cy + 4} textAnchor='end' class='fill-gray-700 text-[11px]'>
+            <text x={PADDING_LEFT - 12} y={cy + 4} textAnchor='end' class='fill-gray-800 text-[11px]'>
               {row.label}
             </text>
             {col_keys.map((col, col_idx) => {
@@ -102,15 +119,26 @@ export default function BubbleMatrix(
           </g>
         )
       })}
+      <line
+        x1={PADDING_LEFT}
+        x2={PADDING_LEFT + col_keys.length * COL_WIDTH}
+        y1={grid_bottom + 12}
+        y2={grid_bottom + 12}
+        stroke='#e5e7eb'
+        strokeWidth={1}
+      />
+      <text x={PADDING_LEFT} y={grid_bottom + 32} class='fill-gray-500 text-[10px] uppercase tracking-wide'>
+        Bubble size
+      </text>
       {legend_sizes.map((size, i) => {
         const r = radius(size)
-        const x = width - PADDING_RIGHT + 24 + i * 38
-        const y = PADDING_TOP + rows.length * ROW_HEIGHT - 16
+        const x = PADDING_LEFT + 88 + i * 80
+        const y = grid_bottom + 36
         return (
           <g key={`legend-${i}`}>
             <circle cx={x} cy={y} r={r} fill='#9ca3af' fillOpacity={0.4} stroke='#6b7280' strokeWidth={0.5} />
-            <text x={x} y={y + r + 12} textAnchor='middle' class='fill-gray-500 text-[10px]'>
-              n = {size.toLocaleString()}
+            <text x={x + r + 6} y={y + 4} class='fill-gray-600 text-[10px] tabular-nums'>
+              {size.toLocaleString()}
             </text>
           </g>
         )

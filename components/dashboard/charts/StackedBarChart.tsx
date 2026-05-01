@@ -22,17 +22,14 @@ export default function StackedBarChart({ rows, format, legend }: StackedBarChar
   if (max === 0) return <div class='text-sm text-gray-500'>No data</div>
 
   return (
-    <div class='space-y-3'>
-      <div class='space-y-2'>
+    <div class='space-y-4'>
+      <div class='space-y-2.5'>
         {rows.map((row) => {
           const total = row.segments.reduce((s, seg) => s + seg.value, 0)
           return (
-            <div key={row.label} class='space-y-1'>
-              <div class='flex justify-between text-xs text-gray-600'>
-                <span>{row.label}</span>
-                <span class='font-medium text-gray-900'>{fmt(total)}</span>
-              </div>
-              <div class='flex h-3 w-full overflow-hidden rounded-full bg-gray-100'>
+            <div key={row.label} class='grid grid-cols-[12rem_1fr_4rem] items-center gap-3'>
+              <div class='truncate text-xs text-gray-700' title={row.label}>{row.label}</div>
+              <div class='flex h-2.5 w-full overflow-hidden rounded-full bg-gray-100'>
                 {row.segments.map((seg) => {
                   const pct = max === 0 ? 0 : (seg.value / max) * 100
                   if (pct === 0) return null
@@ -45,13 +42,14 @@ export default function StackedBarChart({ rows, format, legend }: StackedBarChar
                   )
                 })}
               </div>
+              <div class='text-right text-xs font-medium tabular-nums text-gray-900'>{fmt(total)}</div>
             </div>
           )
         })}
       </div>
       {legend
         ? (
-          <ul class='flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-600'>
+          <ul class='flex flex-wrap gap-x-4 gap-y-1 border-t border-gray-100 pt-3 text-xs text-gray-600'>
             {legend.map((entry) => (
               <li key={entry.key} class='flex items-center gap-1.5'>
                 <span class='inline-block h-2.5 w-2.5 rounded-sm' style={{ backgroundColor: entry.color }} />

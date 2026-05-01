@@ -32,18 +32,31 @@ export default function DashboardCountry({ url }: PageProps) {
   }))
 
   return (
-    <div class='min-h-screen bg-gray-50 p-6'>
-      <div class='mx-auto max-w-7xl'>
-        <h1 class='mb-1 text-2xl font-semibold text-gray-900'>Country-wide surveillance</h1>
-        <p class='mb-4 text-sm text-gray-500'>
-          Standalone preview of the country-wide notifiable-conditions dashboard. Data is loaded from <code>fixtures/dashboard/*.json</code> — regenerate with
-          {' '}
-          <code>deno run -A scripts/generate_dashboard_fixtures.ts</code>.
-        </p>
+    <div class='min-h-screen bg-gray-50'>
+      <header class='border-b border-gray-200 bg-white'>
+        <div class='mx-auto flex max-w-7xl flex-wrap items-end justify-between gap-3 px-6 py-5'>
+          <div>
+            <div class='flex items-center gap-2'>
+              <span class='inline-flex items-center rounded-full bg-red-50 px-2 py-0.5 text-[11px] font-medium uppercase tracking-wide text-red-700'>
+                Preview
+              </span>
+              <span class='text-xs text-gray-500'>South Africa · Notifiable Medical Conditions</span>
+            </div>
+            <h1 class='mt-1 text-2xl font-semibold tracking-tight text-gray-900'>Country-wide surveillance</h1>
+          </div>
+          <p class='max-w-md text-xs text-gray-500'>
+            Synthetic fixtures for layout review. Regenerate with{' '}
+            <code class='rounded bg-gray-100 px-1.5 py-0.5 font-mono text-[11px] text-gray-700'>
+              deno run -A scripts/generate_dashboard_fixtures.ts
+            </code>.
+          </p>
+        </div>
+      </header>
+      <div class='mx-auto max-w-7xl px-6 py-6'>
         <FilterBar action={url.pathname}>
           <DateRangeInput value={date_range} />
         </FilterBar>
-        <div class='mt-4 grid grid-cols-12 gap-4'>
+        <div class='mt-6 grid grid-cols-12 gap-5'>
           {items.map(({ id, span, element }) => (
             <div key={id} class={spanClass(span)}>
               <Fragment>{element}</Fragment>

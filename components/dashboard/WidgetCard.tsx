@@ -8,10 +8,10 @@ export type WidgetCardProps = {
 
 export default function WidgetCard({ title, subtitle, children }: WidgetCardProps) {
   return (
-    <div class='rounded-md border border-gray-200 bg-white p-4 shadow-sm'>
-      <div class='mb-3'>
-        <div class='text-sm font-medium text-gray-700'>{title}</div>
-        {subtitle ? <div class='text-xs text-gray-500'>{subtitle}</div> : null}
+    <div class='rounded-lg border border-gray-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-md'>
+      <div class='mb-4'>
+        <div class='text-base font-semibold tracking-tight text-gray-900'>{title}</div>
+        {subtitle ? <div class='mt-0.5 text-xs text-gray-500'>{subtitle}</div> : null}
       </div>
       {children}
     </div>

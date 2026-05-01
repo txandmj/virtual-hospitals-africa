@@ -4,7 +4,6 @@
 
 import type { CountryWidgetDef } from '../../../../util/dashboard/country.ts'
 import {
-  hashCount,
   NOTIFIABLE_CONDITIONS,
   type NotifiableCategory,
   PREVALENCE_WEIGHT,
@@ -64,14 +63,23 @@ export const notifiable_conditions_trends_widget: CountryWidgetDef<TrendsData> =
     const weeks = isoWeekLabels(end, WEEKS)
     const rows: TrendsRow[] = NOTIFIABLE_CONDITIONS.map((condition) => {
       const weight = PREVALENCE_WEIGHT[condition.key] ?? 0.6
+      // Two seasonal phases (annual + ~quarterly) per condition keep the curves smooth and
+      // visually distinguishable instead of devolving into per-week noise.
+      const phase_year = syntheticHash01(0, condition.key, 1009) * Math.PI * 2
+      const phase_quarter = syntheticHash01(0, condition.key, 2017) * Math.PI * 2
+      const baseline_amp = weight * 0.45 + 1.5
       const confirmed: number[] = []
       const suspected: number[] = []
       for (let i = 0; i < weeks.length; i++) {
-        const ceiling = Math.max(2, Math.round(weight * 0.6))
-        const c = hashCount(i, condition.key, ceiling + 1)
-        const noise = 0.25 + syntheticHash01(i, condition.key, 7919)
+        const seasonal = 1
+          + 0.55 * Math.sin((2 * Math.PI * i) / 52 + phase_year)
+          + 0.25 * Math.sin((2 * Math.PI * i) / 13 + phase_quarter)
+        const noise = (syntheticHash01(i, condition.key, 7919) - 0.5) * 0.4
+        const c_raw = baseline_amp * Math.max(0, seasonal + noise)
+        const c = Math.max(0, Math.round(c_raw))
+        const susp_factor = 0.25 + syntheticHash01(i, condition.key, 4861) * 0.5
         confirmed.push(c)
-        suspected.push(Math.round(c * noise))
+        suspected.push(Math.round(c * susp_factor))
       }
       return {
         condition_key: condition.key,

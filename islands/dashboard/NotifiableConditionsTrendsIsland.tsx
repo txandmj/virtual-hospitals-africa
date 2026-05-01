@@ -3,7 +3,7 @@ import SmallMultiplesLineChart from '../../components/dashboard/charts/SmallMult
 import type { TrendsData } from '../../components/dashboard/widgets/country/NotifiableConditionsTrends.tsx'
 
 const CONFIRMED_COLOR = '#dc2626'
-const SUSPECTED_COLOR = '#f87171'
+const SUSPECTED_COLOR = '#d97706'
 
 export type NotifiableConditionsTrendsIslandProps = {
   data: TrendsData
@@ -45,13 +45,13 @@ export default function NotifiableConditionsTrendsIsland(
 
   return (
     <div class='space-y-3'>
-      <div class='flex flex-wrap items-center gap-2'>
+      <div class='flex flex-wrap items-center gap-3'>
         <input
           type='search'
           placeholder='Search conditions…'
           value={query.value}
           onInput={(e) => (query.value = (e.target as HTMLInputElement).value)}
-          class='w-64 rounded border border-gray-300 px-2 py-1 text-sm'
+          class='w-64 rounded-md border border-gray-300 bg-white px-2.5 py-1 text-sm shadow-sm focus:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-500'
         />
         <span class='text-xs text-gray-500'>
           {selected_keys.value.length} of {all_rows.length} shown
@@ -63,6 +63,17 @@ export default function NotifiableConditionsTrendsIsland(
         >
           Reset
         </button>
+        <div class='ml-auto flex items-center gap-3 text-xs text-gray-600'>
+          <span class='inline-flex items-center gap-1.5'>
+            <span class='h-0.5 w-4' style={{ backgroundColor: CONFIRMED_COLOR }} /> Confirmed
+          </span>
+          <span class='inline-flex items-center gap-1.5'>
+            <svg width='16' height='4' aria-hidden='true'>
+              <line x1='0' y1='2' x2='16' y2='2' stroke={SUSPECTED_COLOR} strokeWidth='1.5' strokeDasharray='3 3' />
+            </svg>
+            Suspected
+          </span>
+        </div>
       </div>
 
       {matches.length > 0 && (

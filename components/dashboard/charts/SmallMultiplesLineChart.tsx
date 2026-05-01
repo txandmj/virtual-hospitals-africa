@@ -14,13 +14,14 @@ export type SmallMultiplesProps = {
   row_height?: number
 }
 
-const PADDING_LEFT = 120
-const PADDING_RIGHT = 12
-const PADDING_TOP = 8
-const X_AXIS_HEIGHT = 24
+const PADDING_LEFT = 140
+const PADDING_RIGHT = 24
+const PADDING_TOP = 12
+const ROW_GAP = 14
+const X_AXIS_HEIGHT = 28
 
 export default function SmallMultiplesLineChart(
-  { x_labels, rows, format, row_height = 64 }: SmallMultiplesProps,
+  { x_labels, rows, format, row_height = 72 }: SmallMultiplesProps,
 ) {
   if (rows.length === 0 || x_labels.length === 0) {
     return <div class='text-sm text-gray-500'>No data</div>
@@ -37,13 +38,13 @@ export default function SmallMultiplesLineChart(
     return PADDING_LEFT + (i / max_x) * inner_w
   }
 
-  const x_tick_indices = max_x <= 1 ? [0, max_x] : [0, Math.floor(max_x / 2), max_x]
+  const x_tick_indices = max_x <= 1 ? [0, max_x] : [0, Math.floor(max_x / 4), Math.floor(max_x / 2), Math.floor((max_x * 3) / 4), max_x]
 
   return (
     <svg viewBox={`0 0 ${width} ${height}`} class='w-full' role='img' aria-label='Small multiples line chart'>
       {rows.map((row, row_idx) => {
         const top = PADDING_TOP + row_idx * row_height
-        const inner_h = row_height - 8
+        const inner_h = row_height - ROW_GAP
         const all_values = [
           ...row.series.flatMap((s) => s.points),
           ...(row.expected_band ? [...row.expected_band.upper] : []),
@@ -51,7 +52,7 @@ export default function SmallMultiplesLineChart(
         const max = all_values.reduce((m, v) => Math.max(m, v), 0) || 1
 
         function yCoord(v: number): number {
-          return top + (1 - v / max) * inner_h
+          return top + 4 + (1 - v / max) * (inner_h - 4)
         }
 
         const band_path = row.expected_band
@@ -68,11 +69,19 @@ export default function SmallMultiplesLineChart(
 
         return (
           <g key={row.key}>
+            <rect
+              x={PADDING_LEFT}
+              y={top + 2}
+              width={inner_w}
+              height={inner_h}
+              fill={row_idx % 2 === 0 ? '#fafafa' : '#ffffff'}
+              stroke='none'
+            />
             <text
-              x={PADDING_LEFT - 8}
+              x={PADDING_LEFT - 12}
               y={top + inner_h / 2 + 4}
               textAnchor='end'
-              class='fill-gray-700 text-[11px] font-medium'
+              class='fill-gray-800 text-[11px] font-medium'
             >
               {row.label}
             </text>
@@ -84,7 +93,20 @@ export default function SmallMultiplesLineChart(
               stroke='#e5e7eb'
               strokeWidth={1}
             />
-            <text x={PADDING_LEFT - 4} y={top + 8} textAnchor='end' class='fill-gray-400 text-[9px]'>
+            <text
+              x={PADDING_LEFT - 4}
+              y={top + inner_h}
+              textAnchor='end'
+              class='fill-gray-400 text-[9px] tabular-nums'
+            >
+              0
+            </text>
+            <text
+              x={PADDING_LEFT - 4}
+              y={top + 12}
+              textAnchor='end'
+              class='fill-gray-500 text-[9px] tabular-nums'
+            >
               {fmt(max)}
             </text>
             {band_path && <path d={band_path} fill='#fde68a' fillOpacity={0.4} stroke='none' />}
@@ -97,8 +119,11 @@ export default function SmallMultiplesLineChart(
                   key={s.key}
                   d={path}
                   stroke={s.color}
-                  strokeWidth={1.4}
+                  strokeWidth={i === 1 ? 1.2 : 1.6}
+                  strokeOpacity={i === 1 ? 0.7 : 1}
                   strokeDasharray={i === 1 ? '3 3' : undefined}
+                  strokeLinejoin='round'
+                  strokeLinecap='round'
                   fill='none'
                 />
               )
@@ -113,7 +138,7 @@ export default function SmallMultiplesLineChart(
           <text
             key={`x-${i}`}
             x={xCoord(i)}
-            y={height - 6}
+            y={height - 8}
             textAnchor='middle'
             class='fill-gray-500 text-[10px]'
           >
