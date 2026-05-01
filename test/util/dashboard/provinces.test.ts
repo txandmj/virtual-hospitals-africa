@@ -1,6 +1,6 @@
 import { describe, it } from 'std/testing/bdd.ts'
 import { assertEquals } from 'std/assert/assert_equals.ts'
-import { type Province, PROVINCE_LABELS, PROVINCE_POPULATION_WEIGHT, PROVINCES, provinceForOrganization } from '../../../util/dashboard/provinces.ts'
+import { type Province, PROVINCE_LABELS, PROVINCE_POPULATION_WEIGHT, provinceForOrganization, PROVINCES } from '../../../util/dashboard/provinces.ts'
 
 describe('util/dashboard/provinces.ts', () => {
   it('PROVINCES contains all 9 SA provinces in display order', () => {
