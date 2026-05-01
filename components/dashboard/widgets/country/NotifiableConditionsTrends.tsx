@@ -5,6 +5,7 @@
 import type { CountryWidgetDef } from '../../../../util/dashboard/country.ts'
 import { hashCount, NOTIFIABLE_CONDITIONS, type NotifiableCategory, PREVALENCE_WEIGHT } from '../../../../util/dashboard/notifiable_conditions.ts'
 import WidgetCard from '../../WidgetCard.tsx'
+import NotifiableConditionsTrendsIsland from '../../../../islands/dashboard/NotifiableConditionsTrendsIsland.tsx'
 
 const WEEKS = 156
 
@@ -91,9 +92,9 @@ export const notifiable_conditions_trends_widget: CountryWidgetDef<TrendsData> =
   render: (data) => (
     <WidgetCard
       title='Weekly trends'
-      subtitle={`${data.rows.length} notifiable conditions over ${data.weeks.length} weeks`}
+      subtitle={`${data.rows.length} notifiable conditions over ${data.weeks.length} weeks — search to add or remove`}
     >
-      <div class='text-sm text-gray-500'>Island wired up in Task 11.</div>
+      <NotifiableConditionsTrendsIsland data={data} />
     </WidgetCard>
   ),
 }
