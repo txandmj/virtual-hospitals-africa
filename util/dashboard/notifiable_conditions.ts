@@ -162,6 +162,18 @@ export const PREVALENCE_WEIGHT: Record<string, number> = {
   tb_xdr: 1,
 }
 
+// FNV-1a-derived value in [0, 1) — used by trends/by-province widgets to pick a noise factor
+// for the suspected/confirmed split. The salt argument lets a single (seed, key) pair produce
+// independent values per call site.
+export function syntheticHash01(seed: number, key: string, salt: number): number {
+  let hash = 0x811c9dc5 ^ (seed + salt)
+  for (let i = 0; i < key.length; i++) {
+    hash ^= key.charCodeAt(i)
+    hash = Math.imul(hash, 0x01000193)
+  }
+  return ((hash >>> 0) % 1000) / 1000
+}
+
 // Expected case count for the bar-chart widget. Scales with encounter pool size.
 export function expectedCount(seed: number, condition: NotifiableCondition): number {
   const weight = PREVALENCE_WEIGHT[condition.key] ?? 0.6

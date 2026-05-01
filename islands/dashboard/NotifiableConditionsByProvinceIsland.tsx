@@ -60,6 +60,7 @@ export default function NotifiableConditionsByProvinceIsland(
             { value: 'all', label: 'All' },
           ]}
           onChange={(v) => (category.value = v as '1' | '2' | 'all')}
+          aria_label='Category filter'
         />
         <Segment
           value={metric.value}
@@ -68,6 +69,7 @@ export default function NotifiableConditionsByProvinceIsland(
             { value: 'suspected', label: 'Suspected' },
           ]}
           onChange={(v) => (metric.value = v as 'confirmed' | 'suspected')}
+          aria_label='Metric'
         />
       </div>
       <BubbleMatrix
@@ -83,11 +85,12 @@ type SegmentProps = {
   value: string
   options: ReadonlyArray<{ value: string; label: string }>
   onChange: (value: string) => void
+  aria_label: string
 }
 
-function Segment({ value, options, onChange }: SegmentProps) {
+function Segment({ value, options, onChange, aria_label }: SegmentProps) {
   return (
-    <div class='inline-flex rounded border border-gray-300 bg-white text-xs'>
+    <div class='inline-flex rounded border border-gray-300 bg-white text-xs' role='group' aria-label={aria_label}>
       {options.map((opt, i) => {
         const active = opt.value === value
         return (
@@ -95,6 +98,7 @@ function Segment({ value, options, onChange }: SegmentProps) {
             key={opt.value}
             type='button'
             onClick={() => onChange(opt.value)}
+            aria-pressed={active}
             class={`px-3 py-1 ${active ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-50'} ${i > 0 ? 'border-l border-gray-300' : ''}`}
           >
             {opt.label}

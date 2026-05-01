@@ -37,4 +37,8 @@ describe('provinceForOrganization', () => {
   it('returns null for an unknown org id', () => {
     assertEquals(provinceForOrganization('org_does_not_exist'), null)
   })
+
+  it('returns null for an org with province: null', () => {
+    assertEquals(provinceForOrganization('org_harare'), null)
+  })
 })

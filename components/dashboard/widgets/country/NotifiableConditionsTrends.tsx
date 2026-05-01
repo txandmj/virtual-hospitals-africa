@@ -3,7 +3,13 @@
 // island that owns search + chip-toggle UI; chart row count is filtered client-side.
 
 import type { CountryWidgetDef } from '../../../../util/dashboard/country.ts'
-import { hashCount, NOTIFIABLE_CONDITIONS, type NotifiableCategory, PREVALENCE_WEIGHT } from '../../../../util/dashboard/notifiable_conditions.ts'
+import {
+  hashCount,
+  NOTIFIABLE_CONDITIONS,
+  type NotifiableCategory,
+  PREVALENCE_WEIGHT,
+  syntheticHash01,
+} from '../../../../util/dashboard/notifiable_conditions.ts'
 import WidgetCard from '../../WidgetCard.tsx'
 import NotifiableConditionsTrendsIsland from '../../../../islands/dashboard/NotifiableConditionsTrendsIsland.tsx'
 
@@ -47,15 +53,6 @@ function isoWeekParts(d: Date): { year: number; week: number } {
   const year_start = new Date(Date.UTC(target.getUTCFullYear(), 0, 1))
   const week = Math.ceil((((target.getTime() - year_start.getTime()) / 86400000) + 1) / 7)
   return { year: target.getUTCFullYear(), week }
-}
-
-function syntheticHash01(seed: number, key: string, salt: number): number {
-  let hash = 0x811c9dc5 ^ (seed + salt)
-  for (let i = 0; i < key.length; i++) {
-    hash ^= key.charCodeAt(i)
-    hash = Math.imul(hash, 0x01000193)
-  }
-  return ((hash >>> 0) % 1000) / 1000
 }
 
 export const notifiable_conditions_trends_widget: CountryWidgetDef<TrendsData> = {

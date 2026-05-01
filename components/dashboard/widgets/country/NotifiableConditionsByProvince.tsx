@@ -4,7 +4,13 @@
 // purely categorical here; real attribution is deferred to the encounter/SNOMED wiring effort.
 
 import type { CountryWidgetDef } from '../../../../util/dashboard/country.ts'
-import { hashCount, NOTIFIABLE_CONDITIONS, type NotifiableCategory, PREVALENCE_WEIGHT } from '../../../../util/dashboard/notifiable_conditions.ts'
+import {
+  hashCount,
+  NOTIFIABLE_CONDITIONS,
+  type NotifiableCategory,
+  PREVALENCE_WEIGHT,
+  syntheticHash01,
+} from '../../../../util/dashboard/notifiable_conditions.ts'
 import { type Province, PROVINCE_POPULATION_WEIGHT, PROVINCES } from '../../../../util/dashboard/provinces.ts'
 import WidgetCard from '../../WidgetCard.tsx'
 import NotifiableConditionsByProvinceIsland from '../../../../islands/dashboard/NotifiableConditionsByProvinceIsland.tsx'
@@ -21,15 +27,6 @@ export type ProvinceRow = {
 export type ProvinceData = {
   provinces: readonly Province[]
   rows: readonly ProvinceRow[]
-}
-
-function syntheticHash01(seed: number, key: string, salt: number): number {
-  let hash = 0x811c9dc5 ^ (seed + salt)
-  for (let i = 0; i < key.length; i++) {
-    hash ^= key.charCodeAt(i)
-    hash = Math.imul(hash, 0x01000193)
-  }
-  return ((hash >>> 0) % 1000) / 1000
 }
 
 export const notifiable_conditions_by_province_widget: CountryWidgetDef<ProvinceData> = {

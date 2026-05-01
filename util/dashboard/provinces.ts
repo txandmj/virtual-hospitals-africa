@@ -2,10 +2,10 @@
 // Population weights mirror real SA distribution and are reused by widget synthesis
 // (e.g. NotifiableConditionsByProvince) so per-province bubble sizes look plausible.
 
-import type { Organization } from '../../scripts/generate_dashboard_fixtures.ts'
+import type { Organization, Province } from '../../scripts/generate_dashboard_fixtures.ts'
 import { ORGANIZATIONS } from './fixtures.ts'
 
-export type Province = 'EC' | 'FS' | 'GP' | 'KZN' | 'LP' | 'MP' | 'NC' | 'NW' | 'WC'
+export type { Province }
 
 export const PROVINCES: readonly Province[] = ['EC', 'FS', 'GP', 'KZN', 'LP', 'MP', 'NC', 'NW', 'WC'] as const
 
@@ -34,8 +34,8 @@ export const PROVINCE_POPULATION_WEIGHT: Record<Province, number> = {
 }
 
 const ORG_PROVINCE_INDEX = new Map<string, Province>(
-  (ORGANIZATIONS as readonly Organization[])
-    .filter((o): o is Organization & { province: Province } => typeof (o as Partial<{ province: Province }>).province === 'string')
+  ORGANIZATIONS
+    .filter((o): o is Organization & { province: Province } => o.province !== null)
     .map((o) => [o.id, o.province]),
 )
 
