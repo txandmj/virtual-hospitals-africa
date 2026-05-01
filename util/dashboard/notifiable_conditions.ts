@@ -111,3 +111,60 @@ export const NOTIFIABLE_CONDITIONS: readonly NotifiableCondition[] = [
     nmc_category: 2,
   },
 ] as const
+
+// FNV-1a hash so synthesized counts are stable per (seed, key).
+export function hashCount(seed: number, key: string, ceiling: number): number {
+  let hash = 0x811c9dc5 ^ seed
+  for (let i = 0; i < key.length; i++) {
+    hash ^= key.charCodeAt(i)
+    hash = Math.imul(hash, 0x01000193)
+  }
+  return ceiling <= 0 ? 0 : (hash >>> 0) % ceiling
+}
+
+// Prevalence weight per condition. Conditions with broad surveillance (TB, Malaria, Hep B)
+// skew higher; rare ones (Diphtheria, Cholera) sit near the floor. Used to scale ceilings
+// in expectedCount and downstream synthesis (trends, by-province).
+export const PREVALENCE_WEIGHT: Record<string, number> = {
+  // Cat 1
+  cholera: 0.5,
+  covid_19: 5,
+  diphtheria: 1,
+  malaria: 25,
+  measles: 4,
+  mpox: 1,
+  pertussis: 3,
+  rubella: 1,
+  // Cat 2
+  agricultural_or_stock_remedy_poisoning: 0.8,
+  bilharzia: 12,
+  brucellosis: 0.6,
+  congenital_rubella_syndrome: 0.4,
+  congenital_syphilis: 6,
+  haemophilus_influenzae_type_b: 0.7,
+  hepatitis_a: 8,
+  hepatitis_b: 14,
+  hepatitis_c: 4,
+  hepatitis_e: 0.6,
+  lead_poisoning: 0.6,
+  legionellosis: 0.5,
+  leprosy: 0.4,
+  maternal_death: 1,
+  mercury_poisoning: 0.4,
+  sth_ascariasis: 2,
+  sth_trichuriasis: 1.5,
+  sth_ancylostoma: 1,
+  sth_necator: 0.8,
+  tetanus: 0.5,
+  tb_pulmonary: 60,
+  tb_extrapulmonary: 18,
+  tb_mdr: 4,
+  tb_xdr: 1,
+}
+
+// Expected case count for the bar-chart widget. Scales with encounter pool size.
+export function expectedCount(seed: number, condition: NotifiableCondition): number {
+  const weight = PREVALENCE_WEIGHT[condition.key] ?? 0.6
+  const ceiling = Math.max(2, Math.round(seed * weight / 100))
+  return hashCount(seed + condition.snomed_id.length, condition.key, ceiling + 1)
+}
