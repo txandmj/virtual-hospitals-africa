@@ -1,5 +1,5 @@
-import type { PreviewWidgetDef } from '../../../../util/dashboard/preview.ts'
-import { filterEncounters } from '../../../../util/dashboard/fixtures.ts'
+import type { CountryWidgetDef } from '../../../../util/dashboard/country.ts'
+import { ENCOUNTERS } from '../../../../util/dashboard/fixtures.ts'
 import { expectedCount, NOTIFIABLE_CONDITIONS, type NotifiableCondition } from '../../../../util/dashboard/notifiable_conditions.ts'
 import WidgetCard from '../../WidgetCard.tsx'
 import StackedBarChart from '../../charts/StackedBarChart.tsx'
@@ -14,23 +14,33 @@ const CATEGORY_LABELS: Record<1 | 2, string> = {
   2: 'NMC Category 2 (endemic / chronic)',
 }
 
-type Row = {
-  condition: NotifiableCondition
-  count: number
+type Row = { condition: NotifiableCondition; count: number }
+type Data = { rows: readonly Row[]; total: number }
+
+function filteredEncounterCount(filters: { date_range: { from: Date | null; to: Date | null } }): number {
+  const from_iso = filters.date_range.from?.toISOString() ?? null
+  const to_iso = filters.date_range.to ? endOfDayIso(filters.date_range.to) : null
+  let count = 0
+  for (const enc of ENCOUNTERS) {
+    if (from_iso && enc.created_at < from_iso) continue
+    if (to_iso && enc.created_at >= to_iso) continue
+    count++
+  }
+  return count
 }
 
-type Data = {
-  rows: readonly Row[]
-  total: number
+function endOfDayIso(d: Date): string {
+  const next = new Date(d)
+  next.setUTCDate(next.getUTCDate() + 1)
+  return next.toISOString()
 }
 
-export const notifiable_conditions_widget: PreviewWidgetDef<Data> = {
+export const notifiable_conditions_widget: CountryWidgetDef<Data> = {
   id: 'notifiable_conditions',
   title: 'Notifiable conditions',
   span: 12,
   fetch: (filters) => {
-    const { encounters } = filterEncounters(filters)
-    const seed = encounters.length
+    const seed = filteredEncounterCount(filters)
     const rows: Row[] = NOTIFIABLE_CONDITIONS
       .map((condition) => ({ condition, count: expectedCount(seed, condition) }))
       .sort((a, b) => b.count - a.count)

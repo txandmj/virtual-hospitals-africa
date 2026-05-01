@@ -9,7 +9,6 @@ import { cost_per_treatment_widget } from './CostPerTreatment.tsx'
 import { income_by_source_widget } from './IncomeBySource.tsx'
 import { cost_by_department_widget } from './CostByDepartment.tsx'
 import { performance_trends_widget } from './PerformanceTrends.tsx'
-import { notifiable_conditions_widget } from './NotifiableConditions.tsx'
 
 // Render order, top-to-bottom. Span values determine grid layout in the preview route.
 export const PREVIEW_DASHBOARD_WIDGETS: ReadonlyArray<PreviewWidgetDef<unknown>> = [
@@ -23,5 +22,4 @@ export const PREVIEW_DASHBOARD_WIDGETS: ReadonlyArray<PreviewWidgetDef<unknown>>
   income_by_source_widget,
   cost_by_department_widget,
   performance_trends_widget,
-  notifiable_conditions_widget,
 ] as ReadonlyArray<PreviewWidgetDef<unknown>>
