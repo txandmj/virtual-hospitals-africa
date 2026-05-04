@@ -21,12 +21,15 @@ type Role = 'doctor' | 'nurse' | 'admin'
 
 type Payer = 'insurance' | 'government' | 'self_pay' | 'ngo'
 
+type Province = 'EC' | 'FS' | 'GP' | 'KZN' | 'LP' | 'MP' | 'NC' | 'NW' | 'WC'
+
 type Organization = {
   id: string
   name: string
   category: 'urban' | 'regional' | 'clinic'
   country: string
   city: string
+  province: Province | null
   departments: Department[]
 }
 
@@ -125,6 +128,7 @@ const ORGANIZATIONS: Organization[] = [
     category: 'urban',
     country: 'Zimbabwe',
     city: 'Harare',
+    province: null,
     departments: ['emergency', 'internal_medicine', 'obgyn', 'pediatrics', 'surgery', 'cardiology'],
   },
   {
@@ -133,6 +137,7 @@ const ORGANIZATIONS: Organization[] = [
     category: 'regional',
     country: 'Zimbabwe',
     city: 'Bulawayo',
+    province: null,
     departments: ['emergency', 'internal_medicine', 'obgyn', 'pediatrics'],
   },
   {
@@ -141,6 +146,7 @@ const ORGANIZATIONS: Organization[] = [
     category: 'regional',
     country: 'South Africa',
     city: 'Durban',
+    province: 'KZN',
     departments: ['emergency', 'internal_medicine', 'obgyn', 'pediatrics'],
   },
   {
@@ -149,6 +155,7 @@ const ORGANIZATIONS: Organization[] = [
     category: 'clinic',
     country: 'Zimbabwe',
     city: 'Mutoko',
+    province: null,
     departments: ['emergency', 'internal_medicine', 'obgyn'],
   },
 ]
@@ -614,7 +621,7 @@ async function main(): Promise<void> {
 
 // Export the metadata used by the dashboard preview so widgets share label maps.
 export { DEPARTMENT_ALOS_DAYS, DEPARTMENT_BASE_CHARGE_USD, DEPARTMENT_LABELS, DEPARTMENT_MIX, PAYER_MIX }
-export type { BedCapacity, BillingLine, Department, Employee, Encounter, Organization, Patient, Payer, Role }
+export type { BedCapacity, BillingLine, Department, Employee, Encounter, Organization, Patient, Payer, Province, Role }
 
 if (import.meta.main) {
   await main()
