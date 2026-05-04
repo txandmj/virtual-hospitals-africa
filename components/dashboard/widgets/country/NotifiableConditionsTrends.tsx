@@ -3,12 +3,7 @@
 // island that owns search + chip-toggle UI; chart row count is filtered client-side.
 
 import type { CountryWidgetDef } from '../../../../util/dashboard/country.ts'
-import {
-  NOTIFIABLE_CONDITIONS,
-  type NotifiableCategory,
-  PREVALENCE_WEIGHT,
-  syntheticHash01,
-} from '../../../../util/dashboard/notifiable_conditions.ts'
+import { NOTIFIABLE_CONDITIONS, type NotifiableCategory, PREVALENCE_WEIGHT, syntheticHash01 } from '../../../../util/dashboard/notifiable_conditions.ts'
 import WidgetCard from '../../WidgetCard.tsx'
 import NotifiableConditionsTrendsIsland from '../../../../islands/dashboard/NotifiableConditionsTrendsIsland.tsx'
 
@@ -71,9 +66,9 @@ export const notifiable_conditions_trends_widget: CountryWidgetDef<TrendsData> =
       const confirmed: number[] = []
       const suspected: number[] = []
       for (let i = 0; i < weeks.length; i++) {
-        const seasonal = 1
-          + 0.55 * Math.sin((2 * Math.PI * i) / 52 + phase_year)
-          + 0.25 * Math.sin((2 * Math.PI * i) / 13 + phase_quarter)
+        const seasonal = 1 +
+          0.55 * Math.sin((2 * Math.PI * i) / 52 + phase_year) +
+          0.25 * Math.sin((2 * Math.PI * i) / 13 + phase_quarter)
         const noise = (syntheticHash01(i, condition.key, 7919) - 0.5) * 0.4
         const c_raw = baseline_amp * Math.max(0, seasonal + noise)
         const c = Math.max(0, Math.round(c_raw))
