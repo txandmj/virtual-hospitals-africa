@@ -4,9 +4,10 @@ set -euo pipefail
 cmd="$1"
 shift
 
-if ! diff .env .env.docker >/dev/null; then
+n=$(awk 'END{print NR}' .env.docker)
+diff <(head -n "$n" .env | awk '{sub(/[[:space:]]+$/,""); print}') <(awk '{sub(/[[:space:]]+$/,""); print}' .env.docker) >/dev/null || {
   deno task switch:docker
-fi
+}
 
 if [[ "$cmd" == db:* ]]; then
   cmd="${cmd#db:}"

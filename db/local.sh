@@ -9,7 +9,8 @@ fi
 script=$1
 shift
 
-diff .env .env.local >/dev/null || {
+n=$(awk 'END{print NR}' .env.local)
+diff <(head -n "$n" .env | awk '{sub(/[[:space:]]+$/,""); print}') <(awk '{sub(/[[:space:]]+$/,""); print}' .env.local) >/dev/null || {
   echo "ERROR: .env and .env.local differ. Please run 'deno task switch:local' and try again"
   exit 1
 }

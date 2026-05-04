@@ -9,7 +9,8 @@ fi
 script=$1
 shift
 
-diff .env .env.docker >/dev/null || {
+n=$(awk 'END{print NR}' .env.docker)
+diff <(head -n "$n" .env | awk '{sub(/[[:space:]]+$/,""); print}') <(awk '{sub(/[[:space:]]+$/,""); print}' .env.docker) >/dev/null || {
   echo "ERROR: .env and .env.docker differ. Please run 'deno task switch:docker' and try again"
   exit 1
 }
