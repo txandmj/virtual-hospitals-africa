@@ -32,8 +32,8 @@ function Hero() {
             <span class='text-indigo-200'>the first mile of care</span>
           </h1>
           <p class='mt-6 text-lg leading-8 text-indigo-50 sm:text-xl max-w-2xl'>
-            Virtual Hospitals Africa turns isolated rural clinics into high-performance nodes of a distributed national hospital system. Your gift directly funds
-            the software, hardware, and connectivity that gets specialist-grade decision support to nurses on the frontline.
+            Virtual Hospitals Africa turns isolated rural clinics into high-performance nodes of a distributed national hospital system. Your gift directly
+            funds the software, hardware, and connectivity that gets specialist-grade decision support to nurses on the frontline.
           </p>
           <div class='mt-10 flex flex-wrap gap-4'>
             <Button href='#donate' variant='secondary' size='xl'>
@@ -66,7 +66,7 @@ const giftLevels = [
     usd: '$200',
     zar: 'R3,800',
     title: 'A tablet for a nurse',
-    body: 'A ruggedized tablet placed in a nurse\'s hands — the device they use to triage, chart, and consult specialists.',
+    body: "A ruggedized tablet placed in a nurse's hands — the device they use to triage, chart, and consult specialists.",
     featured: true,
   },
   {
