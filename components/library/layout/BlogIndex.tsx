@@ -1,6 +1,6 @@
 import cls from '../../../util/cls.ts'
 import MarketingFooter from '../../MarketingFooter.tsx'
-import BlogHeader from './BlogHeader.tsx'
+import MarketingHeader from './MarketingHeader.tsx'
 
 type BlogPostMeta = {
   title: string
@@ -160,7 +160,7 @@ export function BlogIndexContent({ posts, embed }: LayoutBlogIndexProps) {
 export default function LayoutBlogIndex({ posts }: LayoutBlogIndexProps) {
   return (
     <div className='min-h-screen flex flex-col bg-white'>
-      <BlogHeader />
+      <MarketingHeader />
       <main className='flex-1'>
         <BlogIndexContent posts={posts} />
       </main>

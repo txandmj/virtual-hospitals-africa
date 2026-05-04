@@ -20,15 +20,26 @@ function GitHubIcon() {
   )
 }
 
-function NavLink({ href, text }: { href: string; text: string }) {
+function NavLink({ href, text, active }: { href: string; text: string; active: boolean }) {
   return (
-    <a href={href} className='h-12 flex justify-center items-center px-2 rounded cursor-pointer text-base font-medium whitespace-nowrap text-[#6f7788]'>
+    <a
+      href={href}
+      className={`h-12 flex justify-center items-center px-2 rounded cursor-pointer text-base font-medium whitespace-nowrap text-[#6f7788] ${
+        active ? 'underline underline-offset-8 decoration-2' : ''
+      }`}
+    >
       {text}
     </a>
   )
 }
 
-export default function BlogHeader() {
+function isActive(href: string, url?: URL): boolean {
+  if (!url) return false
+  const item_url = new URL(href, url.origin)
+  return item_url.host === url.host && item_url.pathname === url.pathname
+}
+
+export default function MarketingHeader({ url }: { url?: URL }) {
   return (
     <header className='w-full bg-white border-b border-slate-100'>
       <div className='flex justify-between items-center px-3 md:px-6 relative h-16'>
@@ -38,7 +49,7 @@ export default function BlogHeader() {
 
         {/*  */}
         <div className='left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-4 absolute invisible md:visible'>
-          {NORMAL_NAV_ITEMS.map((item) => <NavLink key={item.href} {...item} />)}
+          {NORMAL_NAV_ITEMS.map((item) => <NavLink key={item.href} {...item} active={isActive(item.href, url)} />)}
         </div>
 
         <div className='flex items-center gap-2'>
