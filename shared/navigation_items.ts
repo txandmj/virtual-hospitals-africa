@@ -10,6 +10,7 @@ export const NORMAL_NAV_ITEMS: NavItem[] = [
   { href: 'https://virtualhospitalsafrica.org/team', text: 'Team' },
   { href: '/blog', text: 'Blog' },
   { href: '/donate', text: 'Donate' },
+  { href: '/partner', text: 'Partner' },
 ]
 
 export const NAV_ITEMS: NavItem[] = [
