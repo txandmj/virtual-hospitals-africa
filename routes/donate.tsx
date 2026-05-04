@@ -49,7 +49,7 @@ function Hero() {
   )
 }
 
-const giftLevels = [
+const gift_levels = [
   {
     usd: '$5',
     zar: 'R95',
@@ -100,7 +100,7 @@ function GiftLevels() {
         </div>
 
         <div class='mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-5'>
-          {giftLevels.map((g) => (
+          {gift_levels.map((g) => (
             <div
               class={`flex flex-col rounded-2xl p-6 ring-1 ${
                 g.featured ? 'bg-indigo-900 text-white ring-indigo-900 shadow-2xl lg:scale-[1.04]' : 'bg-white text-gray-900 ring-gray-200 shadow-sm'
