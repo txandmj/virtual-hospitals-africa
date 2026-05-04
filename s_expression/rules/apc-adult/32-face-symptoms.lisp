@@ -51,10 +51,10 @@
   adult
   (active_condition (snomed_concept "Cellulitis of face" "disorder"))
   (check_for
-    (clinical_finding 
-      (snomed_concept "Swelling" "finding") 
-      (finding_site (snomed_concept "Eyelid" "body structure")) 
-      (qualifier (snomed_concept "Whole" "qualifier value"))
+    (clinical_finding
+      (snomed_concept "Swelling" "finding")
+      (finding_site (snomed_concept "Eyelid" "body structure"))
+      (qualifier (snomed_concept "Entire" "qualifier value"))
       (qualifier (snomed_concept "Red color" "qualifier value"))
       (qualifier (snomed_concept "Pain" "finding"))
     )
@@ -70,13 +70,23 @@
   adult
   (and
     (active_condition (snomed_concept "Cellulitis of face" "disorder"))
-    (clinical_finding 
-      (snomed_concept "Swelling" "finding") 
-      (finding_site (snomed_concept "Eyelid" "body structure")) 
-      (qualifier (snomed_concept "Whole" "qualifier value"))
+    (clinical_finding
+      (snomed_concept "Swelling" "finding")
+      (finding_site (snomed_concept "Eyelid" "body structure"))
+      (qualifier (snomed_concept "Entire" "qualifier value"))
       (qualifier (snomed_concept "Red color" "qualifier value"))
       (qualifier (snomed_concept "Pain" "finding"))
     )
+  )
+)
+;; Page 32 - Face: Check for urgent kidney disease complications
+(task
+  "Check for urgent kidney disease complications"
+  adult
+  (clinical_finding (snomed_concept "Swelling" "finding") (finding_site (snomed_concept "Face structure" "body structure")) (qualifier (snomed_concept "New" "qualifier value")))
+  (check_for
+    (clinical_finding (snomed_concept "Blood in urine" "finding"))
+    (clinical_finding (snomed_concept "Proteinuria" "finding"))
   )
 )
 ;; Page 32 - Face: Kidney disease likely with facial swelling and blood/protein in urine
@@ -84,7 +94,7 @@
   "Diagnose possible kidney disease"
   (diagnosis
     (snomed_concept "Kidney disease" "disorder")
-    possible
+    probable
   )
   adult
   (and

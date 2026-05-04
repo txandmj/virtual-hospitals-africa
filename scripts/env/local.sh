@@ -4,9 +4,10 @@ set -euo pipefail
 cmd="$1"
 shift
 
-if ! diff .env .env.local >/dev/null; then
+n=$(awk 'END{print NR}' .env.local)
+diff <(head -n "$n" .env | awk '{sub(/[[:space:]]+$/,""); print}') <(awk '{sub(/[[:space:]]+$/,""); print}' .env.local) >/dev/null || {
   deno task switch:local
-fi
+}
 
 if [[ "$cmd" == db:* ]]; then
   cmd="${cmd#db:}"
