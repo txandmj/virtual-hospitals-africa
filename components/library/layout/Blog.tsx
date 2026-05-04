@@ -1,6 +1,6 @@
 import { ComponentChildren } from 'preact'
 import MarketingFooter from '../../MarketingFooter.tsx'
-import BlogHeader from './BlogHeader.tsx'
+import MarketingHeader from './MarketingHeader.tsx'
 
 type BlogPostMeta = {
   title: string
@@ -123,7 +123,7 @@ export default function LayoutBlogPost(
   const banner_image = wide_image ?? hero_image
   return (
     <div className='min-h-screen flex flex-col bg-white'>
-      <BlogHeader />
+      <MarketingHeader />
       <main className='flex-1'>
         <article>
           {banner_image && (
