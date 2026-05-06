@@ -131,4 +131,30 @@ describeParallel('/app/snomed/warning-signs', () => {
       },
     )
   })
+
+  itParallel(
+    'responds to a search for runny nose returning nasal discharge',
+    async () => {
+      const clinic = await createTestOrganization(db)
+      const { fetchJSON } = await addTestEmployeeWithSession(db, {
+        role: 'nurse',
+        organization_id: clinic.id,
+      })
+
+      const { results } = await fetchJSON(
+        `/app/snomed/warning-signs?age_determination=adult&pregnancy=true&search=runny+nose`,
+      )
+
+      assertMatches(results[0], {
+        'clinical_finding_s_expression': '(clinical_finding (snomed_concept "Nasal discharge" "finding"))',
+        'snomed_concept_id': '64531003',
+        'name': 'Nasal discharge',
+        'description': 'finding',
+        'priority': null,
+        'priority_by_virtue_of_matching_warning_sign': null,
+        'best_similarity': z.number(),
+        'category': 'Search Results',
+      })
+    },
+  )
 })

@@ -3,7 +3,7 @@ import { IdSelectable, TrxOrDbOrQueryCreator } from '../../types.ts'
 import { base, identity } from './_base.ts'
 import { SnomedCategory } from '../../db.d.ts'
 import { idSelection } from '../helpers.ts'
-import { CHRONIC, CLINICAL_COURSE, FINDING_CONTEXT, KNOWN_ABSENT } from '../../shared/snomed_concepts.ts'
+import { ASSOCIATED_FINDING, CHRONIC, CLINICAL_COURSE, FINDING_CONTEXT, KNOWN_ABSENT } from '../../shared/snomed_concepts.ts'
 
 type SearchTerms = {
   snomed_concept_id?: IdSelectable
@@ -66,6 +66,15 @@ function baseQuery(trx: TrxOrDbOrQueryCreator, terms: SearchTerms) {
           )
           : join.on(sql<boolean>`false`),
     )
+    .leftJoin(
+      'snomed_relationship as associated_finding_relationship',
+      (join) =>
+        join
+          .on('snomed_inferred_canonical_name_and_category.category', '=', 'situation')
+          .onRef('associated_finding_relationship.source_id', '=', 'snomed_inferred_canonical_name_and_category.id')
+          .on('associated_finding_relationship.type_id', '=', ASSOCIATED_FINDING.id),
+    )
+    .leftJoin('snomed_inferred_canonical_name_and_category as associated_finding', 'associated_finding.id', 'associated_finding_relationship.destination_id')
     .where('preferred_category_of_same_name.id', 'is', null)
     .where((eb) =>
       eb.not(eb.exists(
@@ -75,13 +84,13 @@ function baseQuery(trx: TrxOrDbOrQueryCreator, terms: SearchTerms) {
           .where('snomed_relationship.destination_id', '=', KNOWN_ABSENT.id),
       ))
     )
-    .select([
-      'snomed_inferred_canonical_name_and_category.id',
-      'snomed_inferred_canonical_name_and_category.name',
-      'snomed_inferred_canonical_name_and_category.category',
+    .select((eb) => [
+      eb.fn.coalesce('associated_finding.id', 'snomed_inferred_canonical_name_and_category.id').as('id'),
+      eb.fn.coalesce('associated_finding.name', 'snomed_inferred_canonical_name_and_category.name').as('name'),
+      eb.fn.coalesce('associated_finding.category', 'snomed_inferred_canonical_name_and_category.category').as('category'),
       best_similarity.as('best_similarity'),
     ])
-    .groupBy(['snomed_concept_finding_like.id', 'snomed_inferred_canonical_name_and_category.id'])
+    .groupBy(['snomed_concept_finding_like.id', 'snomed_inferred_canonical_name_and_category.id', 'associated_finding.id'])
 
   if (terms.snomed_concept_id) {
     query = query.where(

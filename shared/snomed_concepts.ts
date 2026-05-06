@@ -674,3 +674,8 @@ export const PATIENT_CONDITION_RESOLVED = asConcept({
   name: 'Patient condition resolved',
   category: 'finding' as const,
 })
+export const ASSOCIATED_FINDING = asConcept({
+  id: '246090004',
+  name: 'Associated finding',
+  category: 'attribute' as const,
+})
