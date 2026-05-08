@@ -20,6 +20,20 @@ type BlogPostMeta = {
 
 const BLOG_POSTS: BlogPostMeta[] = [
   {
+    title: 'Why we must reimagine care in Africa',
+    subtitle: undefined,
+    author: 'Dr. Sikhululiwe Ngwenya',
+    author_image: '/blog/images/authors/skhu.png',
+    slug: 'why-we-must-reimagine-care-in-africa',
+    date: '2026/05/12',
+    description:
+      "A blog post from Chief Medical Officer Dr. Sikhululiwe Ngwenya exploring how Virtual Hospitals Africa's digital health system can reduce overwhelm for health workers",
+    tags: ['medicine', 'africa'],
+    word_count: 2413,
+    hero_image: '/blog/images/why-we-must-reimagine-care-in-africa/skhu-portrait.jpg',
+    wide_image: '/blog/images/why-we-must-reimagine-care-in-africa/skhu-wide.png',
+  },
+  {
     title: 'How Health Workers Can Love Their Devices',
     subtitle: 'Learning from Dr. Atul Gawande and letting practitioners focus on care',
     author: 'Will Weiss',
