@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0"
-     xmlns:atom="http://www.w3.org/2005/Atom"
-     xmlns:content="http://purl.org/rss/1.0/modules/content/"
-     xmlns:dc="http://purl.org/dc/elements/1.1/">
+  xmlns:atom="http://www.w3.org/2005/Atom"
+  xmlns:content="http://purl.org/rss/1.0/modules/content/"
+  xmlns:dc="http://purl.org/dc/elements/1.1/">
   <channel>
     <title>Virtual Hospitals Africa Blog</title>
     <link>https://virtualhospitalsafrica.org/blog</link>
-    <atom:link href="https://virtualhospitalsafrica.org/blog/rss.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="https://virtualhospitalsafrica.org/blog/rss.xml" rel="self"
+      type="application/rss+xml" />
     <description>Writing from the team building Virtual Hospitals Africa</description>
     <language>en-us</language>
     <lastBuildDate>Fri, 08 May 2026 14:47:26 GMT</lastBuildDate>
@@ -14,7 +15,8 @@
     <item>
       <title>Why we must reimagine care in Africa</title>
       <link>https://virtualhospitalsafrica.org/blog/why-we-must-reimagine-care-in-africa</link>
-      <guid isPermaLink="true">https://virtualhospitalsafrica.org/blog/why-we-must-reimagine-care-in-africa</guid>
+      <guid isPermaLink="true">
+        https://virtualhospitalsafrica.org/blog/why-we-must-reimagine-care-in-africa</guid>
       <pubDate>Tue, 12 May 2026 04:00:00 GMT</pubDate>
       <description><![CDATA[A blog post from Chief Medical Officer Dr. Sikhululiwe Ngwenya exploring how Virtual Hospitals Africa's digital health system can reduce overwhelm for health workers]]></description>
       <dc:creator><![CDATA[Dr. Sikhululiwe Ngwenya]]></dc:creator>
@@ -28,7 +30,7 @@
 <h2>System Problems and Delays</h2>
 <p>In a small mission hospital in rural Zimbabwe, these realities became impossible to ignore. Every day, patients arrived with advanced conditions. It was easy to say they came late and sometimes they did. But that was not the full story. We rarely pause to ask: how did the system contribute to that delay? We do not always ask how difficult it was to access timely, accurate care, receive the right diagnosis, or to be referred and followed up effectively? How well do we support patients after they leave the facility? </p>
 <p>I recall feeling overwhelmed, working in a setting that often felt like a specialist clinic, despite limited resources. Patients came with complex medical, surgical, cardiology and neurology concerns, looking for answers that required coordinated care beyond what one provider could offer. And I remember how often referrals were written but never completed. Patients would return again and again, unable to access the next level of care, their journeys interrupted not by choice, but by barriers we had not addressed. Without shared records or clear communication from prior consultations, every encounter felt like piecing together a puzzle with missing parts. It was a struggle to determine the best course forward without full visibility of prior decisions.</p>
-<p>There were moments that left a lasting mark. Cases that raised difficult questions, not just about individual decisions, but about the system as a whole. When preventable patterns repeat, it signals something deeper that needs attention. These moments made one thing clear. These are not failures of individual providers. They are reflections of systems that do not adequately support them. The problem was not a lack of effort. It was a lack of connection between providers, between levels of care, and between decisions.</p>
+<p>There were moments that left a lasting mark. Cases that raised difficult questions, not just about individual decisions, but about the system as a whole. When preventable patterns repeat, it signals something deeper that needs attention. These moments made one thing clear: these are not failures of individual providers. They are reflections of systems that do not adequately support them. The problem was not a lack of effort. It was a lack of connection between providers, between levels of care, and between decisions.</p>
 <h2>A Frustration Shared Across the World</h2>
 <p>Over time, I began to notice something striking. Across conversations with healthcare providers, whether in well-resourced settings or under-resourced ones, the sentiment is remarkably similar.  There is a shared frustration with regards to fragmented care pathways, limited consultation and overwhelming demand, decisions made without complete information, little coordination between levels of care and patients lost between levels of care. </p>
 <p>There are moments in medicine that stay with you.  Moments where you realise that there was time to intervene but something, somewhere, didn’t happen. A young woman losing her baby for the second time, in both cases under circumstances that were preventable but somehow played out the same way. A patient in their twenties facing end-stage complications of poorly controlled chronic illness. Cases where patients return again and again, without significant progress or improvement. Families navigating loss that might have been preventable. These are not isolated stories. They are reflections of missed opportunities to intervene and systemic gaps. It can be challenging to ensure continuity, especially when information is incomplete or inaccessible.</p>
@@ -64,7 +66,8 @@
     <item>
       <title>How Health Workers Can Love Their Devices</title>
       <link>https://virtualhospitalsafrica.org/blog/how-health-workers-can-love-their-devices</link>
-      <guid isPermaLink="true">https://virtualhospitalsafrica.org/blog/how-health-workers-can-love-their-devices</guid>
+      <guid isPermaLink="true">
+        https://virtualhospitalsafrica.org/blog/how-health-workers-can-love-their-devices</guid>
       <pubDate>Tue, 21 Apr 2026 04:00:00 GMT</pubDate>
       <description><![CDATA[A blog post from Chief Technology Officer Will Weiss exploring how Virtual Hospitals Africa's digital health system can reduce overwhelm for health workers]]></description>
       <dc:creator><![CDATA[Will Weiss]]></dc:creator>
