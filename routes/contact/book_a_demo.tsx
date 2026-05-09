@@ -12,9 +12,9 @@ export default function BookADemoPage({ url }: PageProps) {
         <>
           See Virtual Hospitals Africa in action — a live walkthrough of
           <ul class='text-lg list-disc list-inside'>
-            <li>the WhatsApp patient triage and consultation flow</li>
             <li>the web app your health workers use day-to-day</li>
             <li>how clinical data is captured, stored, and acted on</li>
+            <li>guidance during triage, consultation, and referral</li>
           </ul>
         </>
       }
