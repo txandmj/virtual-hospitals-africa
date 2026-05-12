@@ -496,7 +496,7 @@ function Brief() {
             </p>
           </div>
           <a
-            href='/marketing/Virtual Hospitals Africa.pdf'
+            href='/marketing/virtual-hospitals-africa.pdf'
             download
             class='inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow transition hover:bg-indigo-700'
           >
