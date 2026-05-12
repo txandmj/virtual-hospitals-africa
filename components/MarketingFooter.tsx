@@ -33,7 +33,7 @@ const primary_links = [
     text: 'Careers',
     external: true,
   },
-  { href: 'https://virtualhospitalsafrica.org/contact-general-inquiry', text: 'Contact' },
+  { href: 'https://virtualhospitalsafrica.org/contact/general_inquiry', text: 'Contact' },
 ]
 
 const secondary_links = [

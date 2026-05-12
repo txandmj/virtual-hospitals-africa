@@ -18,5 +18,5 @@ export const NAV_ITEMS: NavItem[] = [
     href: 'https://github.com/Virtual-Hospitals-Africa/virtual-hospitals-africa',
     text: 'GitHub',
   },
-  { href: '/contact-general-inquiry', text: 'Get in Touch', cta: true },
+  { href: '/contact/general_inquiry', text: 'Get in Touch', cta: true },
 ]

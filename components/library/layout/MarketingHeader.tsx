@@ -63,7 +63,7 @@ export default function MarketingHeader({ url }: { url?: URL }) {
             </div>
           </a>
           <a
-            href='/contact-general-inquiry'
+            href='/contact/general_inquiry'
             className='hidden md:flex items-center justify-center rounded-lg px-3 cursor-pointer text-white font-medium text-base whitespace-nowrap bg-[#473fce] min-w-20 h-10'
           >
             Get in Touch
