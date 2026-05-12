@@ -36,9 +36,11 @@ const primary_links = [
   { href: 'https://virtualhospitalsafrica.org/contact-general-inquiry', text: 'Contact' },
 ]
 
-const legal_links = [
+const secondary_links = [
   { href: 'https://virtualhospitalsafrica.org/privacy-policy', text: 'Privacy Policy' },
   { href: 'https://virtualhospitalsafrica.org/terms-of-service', text: 'Terms of Service' },
+  { href: 'https://za.virtualhospitalsafrica.org/donate', text: 'Donate' },
+  { href: 'https://za.virtualhospitalsafrica.org/partner', text: 'Partner' },
 ]
 
 function FooterLink({ href, text, external }: { href: string; text: string; external?: boolean }) {
@@ -66,7 +68,7 @@ export default function MarketingFooter() {
               {primary_links.map((link) => <FooterLink key={link.text} {...link} />)}
             </div>
             <div className='flex flex-col gap-4 sm:w-[120px]'>
-              {legal_links.map((link) => <FooterLink key={link.text} {...link} />)}
+              {secondary_links.map((link) => <FooterLink key={link.text} {...link} />)}
             </div>
           </div>
         </div>

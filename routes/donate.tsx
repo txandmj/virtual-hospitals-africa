@@ -3,7 +3,7 @@ import { Button } from '../components/library/Button.tsx'
 import MarketingLayout from '../components/library/MarketingLayout.tsx'
 import DonateFaqs from '../components/landing-page/DonateFaqs.tsx'
 
-const HERO_IMAGE =
+export const DONATE_HERO_IMAGE =
   `https://images.unsplash.com/photo-1666886573264-38075cc56104?q=80&w=3870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D`
 
 function Hero() {
@@ -11,7 +11,7 @@ function Hero() {
     <section class='relative overflow-hidden bg-gradient-to-br from-indigo-900 via-indigo-800 to-indigo-700 text-white'>
       <div class='absolute inset-0 opacity-30'>
         <img
-          src={HERO_IMAGE}
+          src={DONATE_HERO_IMAGE}
           sizes='100vw'
           alt=''
           class='h-full w-full object-cover'
