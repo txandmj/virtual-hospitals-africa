@@ -1,20 +1,17 @@
 import { Context } from 'fresh'
 import { Button } from '../components/library/Button.tsx'
 import MarketingLayout from '../components/library/MarketingLayout.tsx'
+import DonateFaqs from '../components/landing-page/DonateFaqs.tsx'
 
-const HERO_SEED = 'vha-clinic'
-
-function placeholder(seed: string, w: number, h: number) {
-  return `https://picsum.photos/seed/${seed}/${w}/${h}`
-}
+const HERO_IMAGE =
+  `https://images.unsplash.com/photo-1666886573264-38075cc56104?q=80&w=3870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D`
 
 function Hero() {
   return (
     <section class='relative overflow-hidden bg-gradient-to-br from-indigo-900 via-indigo-800 to-indigo-700 text-white'>
       <div class='absolute inset-0 opacity-30'>
         <img
-          src={placeholder(HERO_SEED, 1280, 720)}
-          srcset={`${placeholder(HERO_SEED, 640, 480)} 640w, ${placeholder(HERO_SEED, 1024, 640)} 1024w, ${placeholder(HERO_SEED, 1920, 960)} 1920w`}
+          src={HERO_IMAGE}
           sizes='100vw'
           alt=''
           class='h-full w-full object-cover'
@@ -25,15 +22,15 @@ function Hero() {
       <div class='relative mx-auto max-w-7xl px-6 py-16 sm:py-24 lg:px-8 lg:py-32'>
         <div class='max-w-3xl'>
           <p class='text-sm font-semibold uppercase tracking-widest text-indigo-200 mb-4'>
-            Support frontline care
+            Support integrated care
           </p>
           <h1 class='text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl'>
-            Every dollar funds<br />
-            <span class='text-indigo-200'>the first mile of care</span>
+            Connecting the<br />
+            <span class='text-indigo-200'>first mile of care</span>
           </h1>
           <p class='mt-6 text-lg leading-8 text-indigo-50 sm:text-xl max-w-2xl'>
             Virtual Hospitals Africa turns isolated rural clinics into high-performance nodes of a distributed national hospital system. Your gift directly
-            funds the software, hardware, and connectivity that gets specialist-grade decision support to nurses on the frontline.
+            funds the network, infrastructure, and people that gets specialist-grade decision support to nurses on the frontline.
           </p>
           <div class='mt-10 flex flex-wrap gap-4'>
             <Button href='#donate' variant='secondary' size='xl'>
@@ -54,32 +51,32 @@ const gift_levels = [
     usd: '$5',
     zar: 'R95',
     title: 'Keep the lights on',
-    body: 'Covers hosting fees for 1,000 patient encounters per month — the digital backbone every triage runs on.',
+    body: 'Covers hosting fees for 1,000 patient encounters per month',
   },
   {
     usd: '$50',
     zar: 'R950',
-    title: 'A month of connectivity',
-    body: 'Mobile data and connectivity for one rural clinic for a month, keeping the platform online 24/7.',
+    title: 'Always-on power',
+    body: 'A power backup module for each router so triage and emergency workflows never go dark during a load-shedding window',
   },
   {
-    usd: '$200',
-    zar: 'R3,800',
-    title: 'A tablet for a nurse',
-    body: "A ruggedized tablet placed in a nurse's hands — the device they use to triage, chart, and consult specialists.",
+    usd: '$100',
+    zar: 'R1900',
+    title: 'A month of connectivity',
+    body: 'Wired + mobile data for one rural clinic for a month, keeping the platform online 24/7',
     featured: true,
   },
   {
-    usd: '$500',
-    zar: 'R9,500',
-    title: 'Always-on power',
-    body: 'A solar backup module so triage and emergency workflows never go dark during a load-shedding window.',
+    usd: '$300',
+    zar: 'R5700',
+    title: 'A tablet for a nurse',
+    body: "A ruggedized tablet + accessories placed in a nurse's hands, the device they use to triage, chart, and consult specialists",
   },
   {
     usd: '$1,000',
-    zar: 'R19,000',
-    title: 'A clinic for a month',
-    body: 'Funds a full month of frontline operations at one pilot clinic — software, devices, connectivity, and training.',
+    zar: 'R19000',
+    title: 'Equip a clinic for a month',
+    body: 'Funds a full month of operations at a rural clinic — software, devices, connectivity, and training',
   },
 ]
 
@@ -95,7 +92,7 @@ function GiftLevels() {
             Real impact at every level
           </h2>
           <p class='mt-4 text-lg leading-8 text-gray-600'>
-            Funds go directly to triage software, devices, connectivity, solar backup and frontline training — not overhead.
+            Funds go directly to connecting patients with the care they need.
           </p>
         </div>
 
@@ -167,19 +164,20 @@ function Donate() {
               <li class='flex gap-3'>
                 <span class='mt-1 h-2 w-2 flex-none rounded-full bg-indigo-600' />
                 <span>
-                  Two pilot clinics are ready to deploy — every dollar shortens the timeline.
+                  Ensure that patients in remote settings have access to the care they need.
                 </span>
               </li>
               <li class='flex gap-3'>
                 <span class='mt-1 h-2 w-2 flex-none rounded-full bg-indigo-600' />
                 <span>
-                  Funds go to triage software, devices, connectivity, solar backup and frontline training — not overhead.
+                  Support an extremely cost-effective intervention: enabling the public health system to do more with less.
                 </span>
               </li>
               <li class='flex gap-3'>
                 <span class='mt-1 h-2 w-2 flex-none rounded-full bg-indigo-600' />
                 <span>
-                  Backed by University of Limpopo, the Limpopo Department of Health, UCT and the Knowledge Translation Unit.
+                  Backed by leading figures in public health from the University of Limpopo, the Limpopo Department of Health, University of Cape Town, and the
+                  Knowledge Translation Unit.
                 </span>
               </li>
             </ul>
@@ -317,6 +315,7 @@ export default async function DonatePage(ctx: Context<unknown>) {
       <Hero />
       <GiftLevels />
       <Donate />
+      <DonateFaqs />
       <ClosingCTA />
     </MarketingLayout>
   )
