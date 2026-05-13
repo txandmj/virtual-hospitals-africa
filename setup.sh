@@ -15,6 +15,7 @@ ensure_you_have "deno"
 ensure_you_have "npm"
 ensure_you_have "node"
 ensure_you_have "docker"
+ensure_you_have "pg_restore" "postgresql"
 
 [[ -f db/dumps/snomed ]] || {
   echo "Did not detect a file db/dumps/snomed"
