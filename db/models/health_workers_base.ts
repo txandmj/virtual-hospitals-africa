@@ -4,6 +4,7 @@ import { base, identity } from './_base.ts'
 import isString from '../../util/isString.ts'
 import { health_worker_licences } from './health_worker_licences.ts'
 import { addresses } from './addresses.ts'
+import { assertOr400 } from '../../util/assertOr.ts'
 
 export type HealthWorkerSearch = {
   search?: Maybe<string>
@@ -63,16 +64,16 @@ export const health_workers_base = base({
     }
 
     // TODO: look this up via active licences
-    // if (opts.roles) {
-    //   assertOr400(opts.roles.length > 0, 'roles must not be empty')
-    //   qb = qb.where(
-    //     'health_workers.id',
-    //     'in',
-    //     trx.selectFrom('employment')
-    //       .where('profession', 'in', opts.roles)
-    //       .select('health_worker_id'),
-    //   )
-    // }
+    if (opts.roles) {
+      assertOr400(opts.roles.length > 0, 'roles must not be empty')
+      qb = qb.where(
+        'health_workers.id',
+        'in',
+        trx.selectFrom('employment')
+          .where('role', 'in', opts.roles)
+          .select('health_worker_id'),
+      )
+    }
 
     if (opts.organization_id) {
       qb = qb.where(
