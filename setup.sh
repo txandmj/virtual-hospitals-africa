@@ -30,6 +30,8 @@ if ! nc -z localhost 5432; then
   exit 1
 fi
 
+deno install --allow-scripts
+
 deno task switch:docker
 
 echo "Now let's migrate your local database..."
