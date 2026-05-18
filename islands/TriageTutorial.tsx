@@ -112,6 +112,11 @@ export function TriageTutorial({ url, route, patient, employee }: Props) {
     )
   }
 
+  const is_urgent = [
+    'assign_priority',
+    'route_patient',
+    'complete',
+  ].includes(current_step)
   // Render triage workflow for all other steps
   return (
     <>
@@ -123,7 +128,16 @@ export function TriageTutorial({ url, route, patient, employee }: Props) {
         params={{}}
         nav_links={TUTORIAL_NAV_LINKS}
         patient={patient}
-        priority={null}
+        priority={is_urgent
+          ? {
+            name: 'Urgent',
+            value_snomed_concept_id: '',
+            target_treatment_time: null,
+            records: [],
+            created_at: '',
+            based_on_system_priority_evaluation_description: null,
+          }
+          : null}
         priority_evaluation={null}
         organization_id='tutorial-org'
         this_visit_findings={sidebar_findings}
