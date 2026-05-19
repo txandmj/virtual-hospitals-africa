@@ -49,7 +49,7 @@ const SPEAKERS = [
 // MailerLite (see instructions printed at the end of this file's task notes).
 
 const MAILERLITE_API_TOKEN = Deno.env.get('MAILERLITE_API_TOKEN')
-const ROUNDTABLE_MAILERLITE_GROUP_ID = Deno.env.get('ROUNDTABLE_MAILERLITE_GROUP_ID')
+const ROUNDTABLE_MAILERLITE_GROUP_ID = '187910070338586224'
 
 async function subscribeToRoundtable(
   recipient: { name: string; email: string; organization?: string },
