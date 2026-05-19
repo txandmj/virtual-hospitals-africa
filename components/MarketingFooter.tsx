@@ -60,7 +60,7 @@ export default function MarketingFooter() {
     <footer className='w-full bg-[#2f2a89]'>
       <div className='mx-auto w-full max-w-[1200px] px-6 py-20 flex flex-col gap-20'>
         <div className='flex flex-col gap-10 lg:flex-row lg:justify-between lg:items-start'>
-          <a href='/' aria-label='VHA logo' className='block' style='width: 170.667px'>
+          <a href='https://virtualhospitalsafrica.org' aria-label='VHA logo' className='block' style='width: 170.667px'>
             <LogoWithFullText variant='white' className='w-full h-auto' />
           </a>
           <div className='flex flex-col gap-10 sm:flex-row sm:gap-20'>
