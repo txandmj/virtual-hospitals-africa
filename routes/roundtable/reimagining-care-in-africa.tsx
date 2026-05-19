@@ -366,6 +366,7 @@ export default async function ReimaginingCareInAfricaPage(ctx: Context<unknown>)
     <MarketingLayout
       url={ctx.url}
       title={`${EVENT.title} | Virtual Hospitals Africa`}
+      ogImage='/images/ogimage-roundtable-reimagining.png'
     >
       <Hero />
       <About />
