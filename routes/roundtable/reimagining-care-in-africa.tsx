@@ -138,7 +138,7 @@ function Hero() {
             {EVENT.title}
           </h1>
           <p class='mt-6 text-lg leading-8 text-indigo-50 sm:text-xl max-w-2xl'>
-            Join leading practitioners, researchers, and technologists working to discuss a vision of connected care, what that means for practitioners on the
+            Join leading clinicians, researchers, and technologists working to discuss a vision of connected care, what that means for practitioners on the
             frontline, and how that will affect patient outcomes.
           </p>
 
