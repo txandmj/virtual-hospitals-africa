@@ -5,7 +5,7 @@ type NavItem = {
 }
 
 export const NORMAL_NAV_ITEMS: NavItem[] = [
-  { href: '/', text: 'Home' },
+  { href: 'https://virtualhospitalsafrica.org', text: 'Home' },
   { href: '/tutorial', text: 'Try it out' },
   { href: 'https://virtualhospitalsafrica.org/team', text: 'Team' },
   { href: '/blog', text: 'Blog' },
