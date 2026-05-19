@@ -368,8 +368,8 @@ export default async function ReimaginingCareInAfricaPage(ctx: Context<unknown>)
       title={`${EVENT.title} | Virtual Hospitals Africa`}
     >
       <Hero />
-      <Speakers />
       <About />
+      <Speakers />
       <Register />
       <Essay />
       <ClosingCTA />
