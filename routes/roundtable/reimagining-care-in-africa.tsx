@@ -16,7 +16,7 @@ const EVENT = {
   title: 'Reimagining Care in Africa',
   tagline: 'A virtual roundtable on closing the gaps in frontline care',
   // TODO: confirm exact date before launch
-  date: 'Thursday, 18 June 2026',
+  date: 'Thursday, 28 May 2026',
   time: '3:30 PM SAST (South African Standard Time)',
   duration: 'one hour',
   format: 'Online · link emailed to registrants',
@@ -138,7 +138,7 @@ function Hero() {
             {EVENT.title}
           </h1>
           <p class='mt-6 text-lg leading-8 text-indigo-50 sm:text-xl max-w-2xl'>
-            Join leading clinicians, researchers, and technologists working to discuss a vision of connected care, what that means for practitioners on the
+            Join leading practitioners, researchers, and technologists working to discuss a vision of connected care, what that means for practitioners on the
             frontline, and how that will affect patient outcomes.
           </p>
 
