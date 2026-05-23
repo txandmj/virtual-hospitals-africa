@@ -2,11 +2,12 @@ import { useSignal } from '@preact/signals'
 import { AugmentedSign, BySExpressionResult, Maybe, NonEmptyArray, RenderedSnomedConcept } from '../../types.ts'
 import { FindingSite } from './FindingSite.tsx'
 import { groupBy } from '../../util/groupBy.ts'
-import { ATTRIBUTE, FINDING_SITE } from '../../shared/snomed_concepts.ts'
+import { ATTRIBUTE, EVENT, FINDING_SITE, RESOLVED, TIME_OF_ONSET } from '../../shared/snomed_concepts.ts'
 import { Lang, SnomedConceptAttribute } from '../../shared/s_expression_schemas.ts'
 import { assert } from 'std/assert/assert.ts'
 import { findingToDisplayableRecord, formatRecord } from '../../shared/patient_records.ts'
 import { inverseSExpression } from '../../shared/s_expression_inverse.ts'
+import { OnsetRow } from './Onset.tsx'
 
 function groupAttributes(attributes: Lang['attribute'][]) {
   return groupBy(attributes, (attr) => attr.specific_snomed_concept.name)
@@ -39,7 +40,7 @@ export function FindingModalInnerContents({
   const search_within_finding_site = getPredefinedFindingSite(all_original_attributes)
   const all_augmented_attributes = augmented_node ? groupAttributes(augmented_node.attributes) : new Map<string, NonEmptyArray<Lang['attribute']>>()
 
-  // const onset = useSignal<{ start_date: string; end_date: string | null } | null>(null)
+  const dates = useSignal<{ onset: string; resolved: string | null } | null>(null)
   let initial_finding_sites = all_augmented_attributes.get(FINDING_SITE.name) || []
   if (!initial_finding_sites.length && search_within_finding_site) {
     initial_finding_sites = [search_within_finding_site]
@@ -61,6 +62,7 @@ export function FindingModalInnerContents({
     */
 
     const new_node = structuredClone(original_node)
+    let any_updates = false
 
     const new_finding_sites = finding_sites.value.filter((finding_site) => {
       assert(finding_site.category === 'body structure')
@@ -71,11 +73,12 @@ export function FindingModalInnerContents({
       return !identical_finding_site_already_existed
     })
 
-    if (!new_finding_sites.length) {
-      return onChange(null)
-    }
+    // if (!new_finding_sites.length) {
+    //   return onChange(null)
+    // }
 
     for (const site of new_finding_sites) {
+      any_updates = true
       new_node.attributes.push({
         atom: 'attribute' as const,
         root_snomed_concept: {
@@ -96,6 +99,52 @@ export function FindingModalInnerContents({
       })
     }
 
+    if (dates.value) {
+      any_updates = true
+      new_node.attributes.push({
+        atom: 'attribute' as const,
+        root_snomed_concept: {
+          atom: 'snomed_concept' as const,
+          name: EVENT.name,
+          category: EVENT.category,
+        },
+        specific_snomed_concept: {
+          atom: 'snomed_concept' as const,
+          name: TIME_OF_ONSET.name,
+          category: TIME_OF_ONSET.category,
+        },
+        value: {
+          atom: 'event' as const,
+          datetime: dates.value.onset,
+          location: null,
+        },
+      })
+      if (dates.value.resolved) {
+        new_node.attributes.push({
+          atom: 'attribute' as const,
+          root_snomed_concept: {
+            atom: 'snomed_concept' as const,
+            name: EVENT.name,
+            category: EVENT.category,
+          },
+          specific_snomed_concept: {
+            atom: 'snomed_concept' as const,
+            name: RESOLVED.name,
+            category: RESOLVED.category,
+          },
+          value: {
+            atom: 'event' as const,
+            datetime: dates.value.resolved,
+            location: null,
+          },
+        })
+      }
+    }
+
+    if (!any_updates) {
+      return onChange(null)
+    }
+
     const s_expression = inverseSExpression(new_node)
     const full_display = formatRecord(findingToDisplayableRecord(new_node)).displays.full
     onChange({
@@ -107,21 +156,17 @@ export function FindingModalInnerContents({
   return (
     <>
       <div className='overflow-y-auto flex-1 px-6 pb-4 flex flex-col gap-5'>
-        {
-          /* <OnsetRow
-          today={new Date().toISOString().slice(0, 10)}
+        <OnsetRow
           onChange={(value) => {
-            onset.value = value
+            dates.value = value
             runOnChange()
           }}
-        /> */
-        }
+        />
         <FindingSite
           search_within={search_within_finding_site}
           value={finding_sites.value}
           // value={null}
           onChange={(value) => {
-            console.log('lewklwlkwekle', value)
             finding_sites.value = value
             runOnChange()
           }}

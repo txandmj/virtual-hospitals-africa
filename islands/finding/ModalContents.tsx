@@ -1,4 +1,4 @@
-import { Dialog } from '@headlessui/react'
+import { DialogTitle } from '@headlessui/react'
 import { useSignal } from '@preact/signals'
 import { useEffect } from 'preact/hooks'
 import { Button } from '../../components/library/Button.tsx'
@@ -14,7 +14,6 @@ export function FindingModalContents(
     onClose: () => void
   },
 ) {
-  console.log('vvlkwelkwekllwe', finding)
   const original_node = useSignal<BySExpressionResult | null>(null)
   const augmented_node = useSignal<BySExpressionResult | null>(null)
   const augmented = useSignal<Maybe<AugmentedSign>>(finding.augmented)
@@ -63,9 +62,9 @@ export function FindingModalContents(
         >
           <XMarkIcon className='h-5 w-5' />
         </button>
-        <Dialog.Title className='text-xl font-bold text-gray-900'>
+        <DialogTitle className='text-xl font-bold text-gray-900'>
           {finding.name}
-        </Dialog.Title>
+        </DialogTitle>
         <p className='mt-1 text-sm text-gray-500'>
           Clinical information related to the {finding.name.toLowerCase()}
         </p>

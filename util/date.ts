@@ -6,7 +6,7 @@ import isString from './isString.ts'
 import isObjectLike from './isObjectLike.ts'
 import { assertNotEquals } from 'std/assert/assert_not_equals.ts'
 import { exists } from './exists.ts'
-import { padMonth, padMonthDay } from './pad.ts'
+import { padMonth, padMonthDay, padTime } from './pad.ts'
 import assertLength from './assertLength.ts'
 
 export const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
@@ -189,6 +189,18 @@ export function tomorrowISOInJohannesburg() {
   const date = new Date()
   date.setDate(date.getDate() + 1)
   return stringifyJustDate(parseDateTime(date))
+}
+
+export function nowDatetimeLocalInJohannesburg(): string {
+  const { year, month, day, hour, minute } = parseDateTime(new Date())
+  return `${year}-${padMonth(month)}-${padMonthDay(day)}T${padTime(parseInt(hour))}:${padTime(parseInt(minute))}`
+}
+
+export function yesterdayAtNoonInJohannesburg(): string {
+  const date = new Date()
+  date.setDate(date.getDate() - 1)
+  const { year, month, day } = parseDateTime(date)
+  return `${year}-${padMonth(month)}-${padMonthDay(day)}T12:00`
 }
 
 export function formatJohannesburg(

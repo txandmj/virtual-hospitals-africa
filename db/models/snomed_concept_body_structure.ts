@@ -18,7 +18,7 @@ function baseQuery(trx: TrxOrDbOrQueryCreator, terms: SearchTerms) {
 
   const best_similarity = sql<number>`max(similarity(term, ${terms.search}))`
 
-  let query = trx
+  return trx
     .selectFrom('snomed_concept_body_structure')
     .innerJoin(
       'snomed_inferred_canonical_name_and_category',
@@ -26,6 +26,32 @@ function baseQuery(trx: TrxOrDbOrQueryCreator, terms: SearchTerms) {
       'snomed_concept_body_structure.id',
     )
     .where(sql<boolean>`term % ${terms.search}`)
+    .$if(!!terms.descendant_of_snomed_concept_id, (qb) =>
+      qb.innerJoin(
+        'snomed_concept_active_descendants_realized as ancestor_filter',
+        (join) =>
+          join
+            .onRef('ancestor_filter.descendant_id', '=', 'snomed_concept_body_structure.id')
+            .on('ancestor_filter.ancestor_id', '=', terms.descendant_of_snomed_concept_id!),
+      ))
+    .$if(!!terms.descendant_of_snomed_concept_name, (qb) => {
+      assert(terms.descendant_of_snomed_concept_category)
+      return qb
+        .innerJoin(
+          'snomed_inferred_canonical_name_and_category as named_ancestor',
+          (join) =>
+            join
+              .on('named_ancestor.name', '=', terms.descendant_of_snomed_concept_name!)
+              .on('named_ancestor.category', '=', terms.descendant_of_snomed_concept_category!),
+        )
+        .innerJoin(
+          'snomed_concept_active_descendants_realized as named_ancestor_filter',
+          (join) =>
+            join
+              .onRef('named_ancestor_filter.descendant_id', '=', 'snomed_concept_body_structure.id')
+              .onRef('named_ancestor_filter.ancestor_id', '=', 'named_ancestor.id'),
+        )
+    })
     .select((eb) => [
       'snomed_inferred_canonical_name_and_category.id',
       'snomed_inferred_canonical_name_and_category.name',
@@ -45,48 +71,14 @@ function baseQuery(trx: TrxOrDbOrQueryCreator, terms: SearchTerms) {
           .where('snomed_relationship.type_id', '=', '116680003')
           .select(['desc_info.id', 'desc_info.name', 'desc_info.category']),
       ).as('immediate_descendants'),
-      eb.selectFrom(
-        sql<{ descendant_id: bigint; ancestor_ids: bigint[] }>`active_descendant_snomed_concepts(${eb.ref('snomed_inferred_canonical_name_and_category.id')})`
-          .as('d'),
-      )
-        .where(sql<boolean>`cardinality(d.ancestor_ids) >= 1`)
+      eb.selectFrom('snomed_concept_active_descendants_realized as descendants_count')
+        .whereRef('descendants_count.ancestor_id', '=', 'snomed_inferred_canonical_name_and_category.id')
+        .whereRef('descendants_count.descendant_id', '!=', 'descendants_count.ancestor_id')
         .select((eb2) => eb2.fn.countAll<number>().as('count'))
         .as('total_descendants'),
     ])
     .groupBy('snomed_inferred_canonical_name_and_category.id')
     .orderBy(best_similarity, 'desc')
-
-  if (terms.descendant_of_snomed_concept_id) {
-    const ancestor_id = terms.descendant_of_snomed_concept_id
-    query = query.where((eb) =>
-      eb(
-        'snomed_concept_body_structure.id',
-        'in',
-        eb.selectFrom(
-          sql<{ descendant_id: string }>`active_descendant_snomed_concepts(${ancestor_id})`.as('d'),
-        ).select('d.descendant_id'),
-      )
-    )
-  }
-
-  if (terms.descendant_of_snomed_concept_name) {
-    assert(terms.descendant_of_snomed_concept_category)
-    const name = terms.descendant_of_snomed_concept_name
-    const category = terms.descendant_of_snomed_concept_category
-    query = query.where((eb) =>
-      eb(
-        'snomed_concept_body_structure.id',
-        'in',
-        eb.selectFrom(
-          sql<{ descendant_id: string }>`active_descendant_snomed_concepts(
-            (select id from snomed_inferred_canonical_name_and_category where name = ${name} and category = ${category} limit 1)
-          )`.as('d'),
-        ).select('d.descendant_id'),
-      )
-    )
-  }
-
-  return query
 }
 
 export const snomed_concept_body_structure = base({
