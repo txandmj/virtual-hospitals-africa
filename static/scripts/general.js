@@ -382,7 +382,7 @@ Notification.requestPermission().then(function (result) {
     return console.log('Permissions not granted', result)
   }
 
-  var wsUri = 'wss://' + self.location.host + '/app/notifications-websocket'
+  var wsUri = 'ws://' + self.location.host + '/app/notifications-websocket'
   var websocket = new WebSocket(wsUri)
 
   websocket.onopen = function () {
@@ -413,6 +413,7 @@ Notification.requestPermission().then(function (result) {
         }
       }
     */
+   console.log(notification_data.title)
     var notification = new Notification(notification_data.title, {
       body: notification_data.description,
       icon: notification_data.avatar_url,

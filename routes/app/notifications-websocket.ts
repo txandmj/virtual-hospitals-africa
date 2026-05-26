@@ -13,18 +13,18 @@ export default upgradeWebsocket((
 
   async function loop() {
     console.log('notifications-websocket loop')
-    const new_notifs = await notifications.ofHealthWorker(
-      ctx.state.trx,
-      ctx.state.health_worker.id,
-    )
-    for (const new_notif of new_notifs) {
-      console.log('new_notif weklewkl', new_notif)
-      if (!past_ts || (new_notif.created_at > past_ts)) {
-        socket.send(JSON.stringify(new_notif))
-      }
-      past_ts = new_notif.created_at
-    }
-    timeout = setTimeout(loop, 150)
+    // const new_notifs = await notifications.ofHealthWorker(
+    //   ctx.state.trx,
+    //   ctx.state.health_worker.id,
+    // )
+    // for (const new_notif of new_notifs) {
+    //   console.log('new_notif weklewkl', new_notif)
+    //   if (!past_ts || (new_notif.created_at > past_ts)) {
+    //     socket.send(JSON.stringify(new_notif))
+    //   }
+    //   past_ts = new_notif.created_at
+    // }
+    // timeout = setTimeout(loop, 150)
   }
 
   socket.onopen = async () => {

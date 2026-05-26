@@ -7,12 +7,12 @@
  * creates a Notion database row with:
  *   - Page title (e.g. "21-burns")
  *   - PDF Page URL
- *   - GitHub links for tasks, priority evaluations, and diagnosis rules lisp files
+ *   - GitHub link to the consolidated rules lisp file
  *
  * Each Notion page's content includes:
  *   - The full-size PDF thumbnail image
  *   - Task test-result images (with task name captions)
- *   - Lisp code blocks for tasks, priority evaluations, and diagnosis rules
+ *   - Lisp code block for tasks, priority evaluations, and diagnosis rules
  *
  * Usage:
  *   deno task run:trusted scripts/populateNotionAPCDatabase.ts
@@ -38,9 +38,7 @@ const NOTION_VERSION_FILE_UPLOAD = '2026-03-11'
 const PDF_BASE = 'https://knowledgehub.health.gov.za/system/files/elibdownloads/2023-10/APC_2023_Clinical_tool-PRINT.pdf'
 const GITHUB_BLOB_BASE = 'https://github.com/Virtual-Hospitals-Africa/virtual-hospitals-africa/blob/main'
 
-const TASKS_DIR = 's_expression/tasks/apc-adult'
-const PRIORITY_DIR = 's_expression/system_priority_evaluations/apc-adult'
-const DIAGNOSIS_DIR = 's_expression/system_diagnosis_rules/apc-adult'
+const RULES_DIR = 's_expression/rules/apc-adult'
 const THUMBNAILS_DIR = 'static/medical-resources/za/primary-care/adult/thumbnails/full-size'
 const TEST_RESULTS_DIR = 'apc-test-results'
 const RED_BOXES_DIR = 'red_boxes/apc-adult'
@@ -249,15 +247,11 @@ async function buildPageEntries(): Promise<PageEntry[]> {
     }
   }
 
-  // Build a combined page-number → slug map from all lisp directories
-  const [taskSlugs, prioritySlugs, diagnosisSlugs] = await Promise.all([
-    readLispFilenames(TASKS_DIR),
-    readLispFilenames(PRIORITY_DIR),
-    readLispFilenames(DIAGNOSIS_DIR),
-  ])
+  // Build a page-number → slug map from the consolidated rules directory
+  const rules_slugs = await readLispFilenames(RULES_DIR)
 
   const lisp_slug_for_page = (n: number): string | undefined => {
-    const full = taskSlugs.get(n) ?? prioritySlugs.get(n) ?? diagnosisSlugs.get(n)
+    const full = rules_slugs.get(n)
     return full ? full.replace(/^\d+-/, '') : undefined
   }
 
@@ -319,15 +313,7 @@ async function clearPageContent(pageId: string): Promise<void> {
 }
 
 async function createPageRow(entry: PageEntry): Promise<string> {
-  const task_lisp = `${TASKS_DIR}/${entry.title}.lisp`
-  const priority_lisp = `${PRIORITY_DIR}/${entry.title}.lisp`
-  const diagnosis_lisp = `${DIAGNOSIS_DIR}/${entry.title}.lisp`
-
-  const [hasTask, hasPriority, hasDiagnosis] = await Promise.all([
-    fileExists(task_lisp),
-    fileExists(priority_lisp),
-    fileExists(diagnosis_lisp),
-  ])
+  const rules_lisp = `${RULES_DIR}/${entry.title}.lisp`
 
   const properties: Record<string, unknown> = {
     'Page': {
@@ -338,19 +324,9 @@ async function createPageRow(entry: PageEntry): Promise<string> {
     },
   }
 
-  if (hasTask) {
-    properties['Tasks Definition Link'] = {
-      url: `${GITHUB_BLOB_BASE}/${task_lisp}`,
-    }
-  }
-  if (hasPriority) {
-    properties['Priority Evaluation Link'] = {
-      url: `${GITHUB_BLOB_BASE}/${priority_lisp}`,
-    }
-  }
-  if (hasDiagnosis) {
-    properties['Diagnosis Rules Link'] = {
-      url: `${GITHUB_BLOB_BASE}/${diagnosis_lisp}`,
+  if (await fileExists(rules_lisp)) {
+    properties['Rules Definition Link'] = {
+      url: `${GITHUB_BLOB_BASE}/${rules_lisp}`,
     }
   }
 
@@ -406,25 +382,11 @@ async function buildAndAppendContent(pageId: string, entry: PageEntry): Promise<
     blocks.push(...paragraphBlocks(content))
   }
 
-  // 4. Tasks lisp
-  const task_lisp = `${TASKS_DIR}/${entry.title}.lisp`
-  if (await fileExists(task_lisp)) {
-    blocks.push(heading2Block('Tasks'))
-    blocks.push(codeBlock(await Deno.readTextFile(task_lisp)))
-  }
-
-  // 5. Priority evaluations lisp
-  const priority_lisp = `${PRIORITY_DIR}/${entry.title}.lisp`
-  if (await fileExists(priority_lisp)) {
-    blocks.push(heading2Block('Priority Evaluations'))
-    blocks.push(codeBlock(await Deno.readTextFile(priority_lisp)))
-  }
-
-  // 6. Diagnosis rules lisp
-  const diagnosis_lisp = `${DIAGNOSIS_DIR}/${entry.title}.lisp`
-  if (await fileExists(diagnosis_lisp)) {
-    blocks.push(heading2Block('Diagnosis Rules'))
-    blocks.push(codeBlock(await Deno.readTextFile(diagnosis_lisp)))
+  // 4. Rules lisp (tasks, priority evaluations, and diagnosis rules)
+  const rules_lisp = `${RULES_DIR}/${entry.title}.lisp`
+  if (await fileExists(rules_lisp)) {
+    blocks.push(heading2Block('Rules'))
+    blocks.push(codeBlock(await Deno.readTextFile(rules_lisp)))
   }
 
   if (blocks.length > 0) {
