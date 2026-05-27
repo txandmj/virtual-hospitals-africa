@@ -1,8 +1,66 @@
 import { sql } from 'kysely'
 import { PostgresInterval, RenderedNotification, TrxOrDbOrQueryCreator } from '../../types.ts'
 import { timeAgoDisplay } from '../../util/timeAgoDisplay.ts'
+import { base } from './_base.ts'
+import { assertOr400 } from '../../util/assertOr.ts'
 
-export const notifications = {
+type Terms = {
+  health_worker_id: string
+  past_ts?: number | Date
+  only_unread?: boolean
+  recent_first?: boolean
+}
+
+export const notifications = base({
+  top_level_table: 'health_worker_web_notifications',
+  baseQuery(trx, terms: Terms) {
+    assertOr400(terms.health_worker_id)
+    return trx
+      .selectFrom('health_worker_web_notifications')
+      .selectAll('health_worker_web_notifications')
+      .select(
+        sql<
+          PostgresInterval
+        >`(current_timestamp - health_worker_web_notifications.created_at)::interval`
+          .as('wait_time'),
+      )
+      .where('health_worker_id', '=', terms.health_worker_id)
+      .orderBy(
+        'health_worker_web_notifications.created_at',
+        terms?.recent_first ? 'desc' : 'asc',
+      )
+      .$if(
+        !!terms?.past_ts,
+        (qb) =>
+          qb.where(
+            'health_worker_web_notifications.created_at',
+            '>',
+            new Date(terms?.past_ts!),
+          ),
+      )
+      .$if(
+        !!terms?.only_unread,
+        (qb) =>
+          qb.where(
+            'health_worker_web_notifications.seen_at',
+            'is',
+            null,
+          ),
+      )
+  },
+  formatResult({ id, wait_time, action_title, action_href, ...n }): RenderedNotification {
+    return (
+      {
+        ...n,
+        notification_id: id,
+        time_display: timeAgoDisplay(wait_time),
+        action: {
+          title: action_title,
+          href: action_href,
+        },
+      }
+    )
+  },
   insert(
     trx: TrxOrDbOrQueryCreator,
     { health_worker_id, employment_id, ...notification }:
@@ -35,45 +93,4 @@ export const notifications = {
       .returning('id')
       .executeTakeFirstOrThrow()
   },
-  async ofHealthWorker(
-    trx: TrxOrDbOrQueryCreator,
-    health_worker_id: string,
-    opts?: {
-      past_ts: number | Date
-    },
-  ): Promise<RenderedNotification[]> {
-    const notifications = await trx
-      .selectFrom('health_worker_web_notifications')
-      .selectAll('health_worker_web_notifications')
-      .select(
-        sql<
-          PostgresInterval
-        >`(current_timestamp - health_worker_web_notifications.created_at)::interval`
-          .as('wait_time'),
-      )
-      .where('health_worker_id', '=', health_worker_id)
-      .orderBy('health_worker_web_notifications.created_at', 'asc')
-      .$if(
-        !!opts?.past_ts,
-        (qb) =>
-          qb.where(
-            'health_worker_web_notifications.created_at',
-            '>',
-            new Date(opts?.past_ts!),
-          ),
-      )
-      .execute()
-
-    return notifications.map((
-      { id, wait_time, action_title, action_href, ...n },
-    ) => ({
-      ...n,
-      notification_id: id,
-      time_display: timeAgoDisplay(wait_time),
-      action: {
-        title: action_title,
-        href: action_href,
-      },
-    }))
-  },
-}
+})

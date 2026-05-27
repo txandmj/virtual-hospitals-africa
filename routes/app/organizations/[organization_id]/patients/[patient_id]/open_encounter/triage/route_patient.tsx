@@ -24,7 +24,7 @@ import { assertArrayNonEmpty } from '../../../../../../../../util/arraySize.ts'
 export const TriageRoutePatientSchema = z.object({
   next_step: z.enum(TRIAGE_ROUTE_PATIENT_NEXT_STEPS),
   notes: z.string().nullish(),
-  health_worker_ids_to_be_notified: z.string().uuid().array(),
+  health_worker_ids_to_be_notified: z.string().uuid().array().optional().default([]),
 })
 
 export const handler = postHandler(
@@ -90,11 +90,9 @@ export const handler = postHandler(
               notification_type: 'case_referral',
               title: 'Case Referral',
               health_worker_id: to_notify_id,
-          })
+            },
+          )
         }
-        // add the referral_placed workflow and redirect you there
-        // Notify other staff member
-
         return redirect(redirect_to)
       }
       // case 'stabilize_patient': {

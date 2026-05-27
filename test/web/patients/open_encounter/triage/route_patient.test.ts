@@ -14,6 +14,8 @@ import { patient_triage } from '../../../../../db/models/patient_triage.ts'
 import findMatching from '../../../../../util/findMatching.ts'
 import isObjectLike from '../../../../../util/isObjectLike.ts'
 import { assertMatches } from '../../../../../util/assertMatches.ts'
+import { notifications } from '../../../../../db/models/notifications.ts'
+import assertLength from '../../../../../util/assertLength.ts'
 
 describeParallel('triage/additional_tasks_and_investigations', () => {
   before(waitUntilTestServerUp)
@@ -24,7 +26,7 @@ describeParallel('triage/additional_tasks_and_investigations', () => {
   afterAll(() => events.closeAllProcessedPubSub({ graceful: false }))
 
   itParallel(
-    'routes to the referral placed page after referring an anaphylaxis case, ',
+    'routes to the referral placed page after referring an anaphylaxis case, creating a notification for another health worker',
     async () => {
       const insect_bite_s_expr = '(clinical_finding (snomed_concept "Itching" "finding"))'
       const { $: $additional_tasks, patient_encounter_id, shcp, postStep } = await setupTriageNewPatient({
@@ -109,11 +111,86 @@ describeParallel('triage/additional_tasks_and_investigations', () => {
         'notes': null,
       }, { strict: true })
 
+      const notifications_of_shcp_prior = await notifications.findAll(db, {
+        health_worker_id: shcp.id,
+      })
+      assertLength(notifications_of_shcp_prior, 0)
+
       const $referral_placed = await postStep({
         route_patient: route_patient_form_values,
       })
 
       assert($referral_placed.url.endsWith('/open_encounter/referral_placed/confirm_handoff'))
+
+      const notifications_of_shcp_post = await notifications.findAll(db, {
+        health_worker_id: shcp.id,
+      })
+      assertLength(notifications_of_shcp_post, 1)
+    },
+  )
+
+  itParallel(
+    'routes to the waiting room page when next step is await_consultation',
+    async () => {
+      const { $: $route_patient, patient_encounter_id, postStep } = await setupTriageNewPatient({
+        patient_demographics: randomDemographics('ZA', 'female', 'adult'),
+        warning_signs: asWarningSignsAdult([], { pregnant: false }),
+        brief_history: {
+          common_conditions: {
+            diabetes: { existence: 'No' },
+            pregnancy: { existence: 'No' },
+          },
+        },
+        height_and_weight: {
+          measurements: {
+            height: {
+              value: 160,
+              units: 'cm',
+            },
+            weight: {
+              value: 80,
+              units: 'kg',
+            },
+          },
+        },
+        measure_vitals: {
+          measurements: asVitalMeasurementFormValues({
+            respiratory_rate: 12, // 9-14 -> score 0
+            heart_rate: 60, // 51-100 -> score 0
+            blood_pressure_systolic: 120,
+            blood_pressure_diastolic: 80,
+            temperature: 37.6,
+          }),
+          assessments: asVitalAssessmentFormValues({
+            mobility_assessment: 'Walking',
+            consciousness: 'Alert',
+            trauma_presence: 'No',
+          }),
+        },
+        additional_tasks_and_investigations: {},
+        assign_priority: {},
+      })
+
+      await events.allProcessedForEncounter(db, { patient_encounter_id })
+
+      const encounter = await patient_encounters.getById(db, patient_encounter_id)
+      assertEquals(encounter.priority!.name, 'Non-urgent')
+
+      const route_patient_form_values = getFormValues($route_patient)
+      const _route_patient_form_labels = getFormLabels($route_patient)
+      const _route_patient_form_options = getFormOptions($route_patient)
+
+      assertMatches(route_patient_form_values, {
+        'next_step': 'await_consultation' as const,
+        'health_worker_ids_to_be_notified': [],
+        'notes': null,
+      }, { strict: true })
+
+      const $await_consultation = await postStep({
+        route_patient: route_patient_form_values,
+      })
+
+      assert(new URL($await_consultation.url).pathname.endsWith('/waiting_room'))
     },
   )
 })

@@ -1596,6 +1596,7 @@ export type LinkProps = {
   href: string
   title: string
   active: boolean
+  count?: number
   Icon?: (
     props: Omit<JSX.SVGAttributes<SVGSVGElement>, 'className'> & {
       active: boolean
@@ -1607,6 +1608,7 @@ export type LinkProps = {
 export type LinkDef = {
   route: string
   title: string
+  count?: number
   Icon?: (
     props: Omit<JSX.SVGAttributes<SVGSVGElement>, 'className'> & {
       active: boolean

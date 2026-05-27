@@ -46,7 +46,7 @@ function asWaitingRoomAction(
   const workflow_to_start = current_workflow_status?.workflow ||
     next_workflow_status?.workflow
 
-  assert(workflow_to_start)
+  assert(workflow_to_start, 'asWaitingRoomAction: expected workflow_to_start to be set')
 
   const my_patient_encounter_employee_id = patient_encounter.all_employees_seen.find(matching({ employee_id: organization_employment.employment_id }))
     ?.patient_encounter_employee_id
@@ -129,14 +129,14 @@ function asWaitingRoom(
 
   let workflow_status_display: string
   if (current_workflow_status) {
-    assertNotEquals(department_name, 'Waiting room')
-    assertEquals(current_workflow_status.workflow, current_workflow)
-    assertNotEquals(current_workflow_status.status, 'completed')
+    assertNotEquals(department_name, 'Waiting room', 'asWaitingRoom: department_name should not be Waiting room when there is a current_workflow_status')
+    assertEquals(current_workflow_status.workflow, current_workflow, 'asWaitingRoom: current_workflow_status.workflow should match current_workflow')
+    assertNotEquals(current_workflow_status.status, 'completed', 'asWaitingRoom: current_workflow_status.status should not be completed')
     workflow_status_display = `${current_workflow_status.workflow} ${current_workflow_status.status}`
   } else {
-    assertEquals(department_name, 'Waiting room')
-    assert(next_workflow_status)
-    assertArrayEmpty(present_with_patient_encounter_employee_ids)
+    assertEquals(department_name, 'Waiting room', 'asWaitingRoom: department_name should be Waiting room when there is no current_workflow_status')
+    assert(next_workflow_status, 'asWaitingRoom: expected next_workflow_status when there is no current_workflow_status')
+    assertArrayEmpty(present_with_patient_encounter_employee_ids, 'asWaitingRoom: no employees should be present with patient when in Waiting room')
     workflow_status_display = `Awaiting ${next_workflow_status.workflow}`
   }
 
@@ -180,6 +180,7 @@ export const waiting_room = {
       assertEquals(
         encounter.organization_id,
         organization_employment.id,
+        'waiting_room.get: encounter.organization_id should match organization_employment.id',
       )
     })
 
@@ -242,13 +243,14 @@ export const waiting_room = {
             .present_with_patient_encounter_employee_ids[0],
     )
 
-    assert(employee_present_with_patient)
+    assert(employee_present_with_patient, 'waiting_room.moveTo: expected to find employee_present_with_patient in all_employees_seen')
 
     const non_admin_employment_id = organization_employment.employment_id
-    assert(non_admin_employment_id)
+    assert(non_admin_employment_id, 'waiting_room.moveTo: expected organization_employment.employment_id to be set')
     assertEquals(
       employee_present_with_patient.employee_id,
       non_admin_employment_id,
+      'waiting_room.moveTo: employee_present_with_patient.employee_id should match organization_employment.employment_id',
     )
 
     const employment_presence: InsertObject<DB, 'employment_presence'> = {

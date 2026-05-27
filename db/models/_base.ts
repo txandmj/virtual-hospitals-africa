@@ -410,6 +410,8 @@ class BaseModel<
       search_terms,
       (qb) =>
         qb.clearSelect()
+          .clearOrderBy()
+          .clearLimit()
           .select((eb) => eb.fn.countAll().as('count')) as unknown as SelectQueryBuilder<
             Tables,
             SelectingFrom,

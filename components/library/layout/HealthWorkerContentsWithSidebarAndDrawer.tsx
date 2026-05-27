@@ -1,6 +1,7 @@
 import { ComponentChild, ComponentChildren } from 'preact'
 import { Header } from '../Header.tsx'
 import { AlertListener } from '../../../islands/alert/AlertListener.tsx'
+import { Notifications } from '../../../islands/Notifications.tsx'
 
 export type HealthWorkerContentsWithSidebarAndDrawerProps<T> = {
   title: string
@@ -35,6 +36,7 @@ export default function HealthWorkerContentsWithSidebarAndDrawer<T>(
         </section>
         {drawer}
       </div>
+      <Notifications />
     </div>
   )
 }

@@ -8,7 +8,7 @@ type Chatbot = 'patient' | 'pharmacist'
 export type Responder = { start(): void; exit(): void }
 
 export function createChatbot(chatbot_name: Chatbot): Responder {
-  let timer: number
+  let timer: ReturnType<typeof setTimeout>
 
   console.log('chatbot_name', chatbot_name)
 

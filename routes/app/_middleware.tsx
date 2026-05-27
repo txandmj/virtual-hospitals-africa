@@ -180,13 +180,16 @@ export function HealthWorkerHomePage<
       title = undefined as any
     }
 
-    let { rendered /*, health_worker_notifications*/ } = await promiseProps({
+    let { rendered, health_worker_notification_count } = await promiseProps({
       rendered: Promise.resolve(
         render!(ctx),
       ),
-      health_worker_notifications: notifications.ofHealthWorker(
+      health_worker_notification_count: notifications.countAll(
         trx,
-        health_worker.id,
+        {
+          health_worker_id: health_worker.id,
+          only_unread: true,
+        },
       ),
     })
 
@@ -217,6 +220,7 @@ export function HealthWorkerHomePage<
           ...ctx.params,
           organization_id: defaultOrganizationId(ctx.state.health_worker),
         }}
+        health_worker_notification_count={health_worker_notification_count}
         drawer={drawer}
       >
         {rendered}

@@ -16,7 +16,8 @@ export default function useAsyncSearch<
   const [search, setSearch] = useState({
     query: value?.name ?? '',
     page: 1,
-    delay: null as null | number,
+    // deno-lint-ignore no-explicit-any
+    delay: null as any, // TODO: resolve Timeout vs. number type issue
     active_request: null as null | XMLHttpRequest,
     pages: [] as { results: T[]; page: number }[],
     has_next_page: false,
