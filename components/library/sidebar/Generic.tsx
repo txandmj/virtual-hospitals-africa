@@ -1,9 +1,5 @@
 import { matchActiveLink } from '../../../util/matchActiveLink.ts'
 import capitalize from '../../../util/capitalize.ts'
-import {} from '../icons/heroicons/outline.tsx'
-import {} from '../icons/heroicons/outline.tsx'
-import {} from '../icons/heroicons/outline.tsx'
-import {} from '../icons/heroicons/outline.tsx'
 import { replaceParams } from '../../../util/replaceParams.ts'
 import SidebarToggleButton from '../../../islands/sidebar/ToggleButton.tsx'
 import { NavItem } from './NavItem.tsx'
@@ -31,6 +27,7 @@ export function GenericSidebar(
                     ' And ',
                     ' & ',
                   )}
+                count={link.count}
                 Icon={link.Icon}
               />
             ))}

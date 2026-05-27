@@ -245,7 +245,7 @@ export const TUTORIAL_SCRIPT: ScriptItem[] = [
   {
     type: 'dialogue',
     speaker: 'guide',
-    text: "After confirming their history conditions we assess the patient's height and weight.",
+    text: "After confirming their history, we assess the patient's height and weight.",
     // highlight: TUTORIAL_TARGETS.PATIENT_DRAWER_THIS_VISIT,
     highlight: '#height-and-weight',
   },

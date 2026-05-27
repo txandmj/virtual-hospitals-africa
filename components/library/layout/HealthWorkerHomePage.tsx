@@ -16,6 +16,7 @@ export function HealthWorkerHomePageLayout({
   employee,
   drawer,
   tutorial,
+  health_worker_notification_count = 0,
   children,
 }: {
   title: string
@@ -25,6 +26,7 @@ export function HealthWorkerHomePageLayout({
   employee: RenderedEmployee
   drawer?: ComponentChild
   tutorial?: boolean
+  health_worker_notification_count?: number
   children: ComponentChildren
 }) {
   return (
@@ -36,6 +38,7 @@ export function HealthWorkerHomePageLayout({
           route={route}
           params={params}
           urlSearchParams={url.searchParams}
+          health_worker_notification_count={health_worker_notification_count}
           bottom={<HealthWorkerSidebarBottom employee={employee} />}
           tutorial={tutorial}
         />

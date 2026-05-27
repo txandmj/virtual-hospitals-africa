@@ -7,7 +7,7 @@ import { google_tokens } from '../db/models/google_tokens.ts'
 export type token_refresher = { start(): void; exit(): void }
 
 export function createtoken_refresher(): token_refresher {
-  let timer: number
+  let timer: ReturnType<typeof setTimeout>
 
   async function doRefreshTokens(): Promise<void> {
     const tokens_about_to_expire = await google_tokens.getAllAboutToExpire(db)

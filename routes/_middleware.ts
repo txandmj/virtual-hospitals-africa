@@ -18,6 +18,7 @@ function generateTraceparent(): string {
 
 // deno-lint-ignore no-explicit-any
 async function attachTraceParent(ctx: Context<any>) {
+  console.log('zjkzkjzjkkjz', ctx.req.url)
   const traceparent = generateTraceparent()
   ctx.state.traceparent = traceparent
   console.time(`${ctx.req.method} ${ctx.req.url} ${traceparent} Response`)

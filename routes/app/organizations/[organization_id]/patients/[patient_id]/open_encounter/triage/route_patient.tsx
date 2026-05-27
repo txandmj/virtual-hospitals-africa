@@ -18,16 +18,18 @@ import { additional_tasks } from '../../../../../../../../db/models/additional_t
 import { assertOrRedirect } from '../../../../../../../../util/assertOr.ts'
 import { isManage } from '../../../../../../../../shared/tasks.ts'
 import partition from '../../../../../../../../util/partition.ts'
+import { notifications } from '../../../../../../../../db/models/notifications.ts'
+import { assertArrayNonEmpty } from '../../../../../../../../util/arraySize.ts'
 
 export const TriageRoutePatientSchema = z.object({
   next_step: z.enum(TRIAGE_ROUTE_PATIENT_NEXT_STEPS),
   notes: z.string().nullish(),
-  health_worker_ids_to_be_notified: z.string().uuid().array(),
+  health_worker_ids_to_be_notified: z.string().uuid().array().optional().default([]),
 })
 
 export const handler = postHandler(
   TriageRoutePatientSchema,
-  async (ctx: OpenEncounterWorkflowContext, { next_step /*, notes */ }) => {
+  async (ctx: OpenEncounterWorkflowContext, { next_step, health_worker_ids_to_be_notified }) => {
     const { trx, patient, organization, organization_employment } = ctx.state
 
     assert(completedPersonal(patient))
@@ -73,9 +75,24 @@ export const handler = postHandler(
             },
           ),
         })
-        // add the referral_placed workflow and redirect you there
-        // Notify other staff member
 
+        assertArrayNonEmpty(health_worker_ids_to_be_notified)
+        for (const to_notify_id of health_worker_ids_to_be_notified) {
+          await notifications.insert(
+            ctx.state.trx,
+            {
+              action_title: 'Referral',
+              action_href: '#todo',
+              avatar_url: ctx.state.health_worker.avatar_url!,
+              description: `A case was referred to you`,
+              table_name: 'patient_encounters',
+              row_id: ctx.state.patient_encounter_id,
+              notification_type: 'case_referral',
+              title: 'Case Referral',
+              health_worker_id: to_notify_id,
+            },
+          )
+        }
         return redirect(redirect_to)
       }
       // case 'stabilize_patient': {
@@ -117,7 +134,6 @@ export async function PatientTriageRoutePatientPage(
     encounter,
   } = ctx.state
   const { reason, notes, priority } = encounter
-  console.log(encounter)
   if (!priority) {
     return redirectToFirstIncompleteStep(ctx, { warning_message: 'Please complete triage before routing the patient' })
   }

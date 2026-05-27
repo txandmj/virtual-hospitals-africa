@@ -1,5 +1,5 @@
 import { ComponentChild } from 'preact'
-import { practitioner_home_page_nav_links } from './home_page_links/health_worker.ts'
+import { practitionerHomePageNavLinks } from './home_page_links/health_worker.ts'
 import { HealthWorkerDefaultTop } from './Top.tsx'
 import { GenericSidebar } from './Generic.tsx'
 
@@ -7,19 +7,20 @@ export type HealthWorkerHomePageSidebarProps = {
   route: string
   params: Record<string, string>
   urlSearchParams: URLSearchParams
+  health_worker_notification_count: number
   bottom?: ComponentChild
   tutorial?: boolean
 }
 
 export function HealthWorkerHomePageSidebar(
-  { route, params, urlSearchParams, bottom, tutorial }: HealthWorkerHomePageSidebarProps,
+  { route, params, urlSearchParams, health_worker_notification_count, bottom, tutorial }: HealthWorkerHomePageSidebarProps,
 ) {
   return (
     <GenericSidebar
       route={route}
       params={params}
       urlSearchParams={urlSearchParams}
-      nav_links={practitioner_home_page_nav_links}
+      nav_links={practitionerHomePageNavLinks({ health_worker_notification_count })}
       top={<HealthWorkerDefaultTop />}
       bottom={bottom}
       tutorial={tutorial}

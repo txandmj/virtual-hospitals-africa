@@ -3,7 +3,7 @@ import { route } from '../_route.ts'
 
 export default function waitUntilTestServerUp(): Promise<void> {
   return new Promise((resolve, reject) => {
-    let retry_timeout: number
+    let retry_timeout: ReturnType<typeof setTimeout>
     const controller = new AbortController()
 
     const cancel_timeout = setTimeout(() => {

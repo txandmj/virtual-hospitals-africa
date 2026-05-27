@@ -1,5 +1,5 @@
 import { Transition } from '@headlessui/react'
-import { BellIcon } from '../components/library/icons/heroicons/outline.tsx'
+// import { BellIcon } from '../components/library/icons/heroicons/outline.tsx'
 import { RenderedNotification } from '../types.ts'
 import Avatar from '../components/library/Avatar.tsx'
 import { useSignal } from '@preact/signals'
@@ -10,13 +10,13 @@ import { Fragment } from 'preact'
 /* NOTIFICATIONS SUBSCRIPTION */
 
 export function Notifications(
-  { show, notifications, dismiss }: {
-    show: boolean
-    notifications: RenderedNotification[]
-    dismiss: (notification: RenderedNotification) => void
-  },
+  // { show, notifications, dismiss }: {
+  //   show: boolean
+  //   notifications: RenderedNotification[]
+  //   dismiss: (notification: RenderedNotification) => void
+  // },
 ) {
-  const notifications_signal = useSignal(notifications)
+  const notifications_signal = useSignal<RenderedNotification[]>([])
 
   useEffect(() => {
     function listener(event: Event) {
@@ -37,8 +37,8 @@ export function Notifications(
       >
         <div className='flex flex-col items-center w-full space-y-4 sm:items-end'>
           {/* Notification panel, dynamically insert this into the live region when it needs to be displayed */}
-          <Transition
-            show={show}
+          <Transition.Root
+            show={!!notifications_signal.value.length}
             as={Fragment}
             enter='transform ease-out duration-300 transition'
             enterFrom='translate-y-2 opacity-0 sm:translate-y-0 sm:translate-x-2'
@@ -51,12 +51,12 @@ export function Notifications(
               {notifications_signal.value.map((notification) => (
                 <Notification
                   notification={notification}
-                  dismiss={() => dismiss(notification)}
+                  dismiss={() => notifications_signal.value = notifications_signal.value.filter((n) => n.notification_id === notification.notification_id)}
                   key={notification.notification_id}
                 />
               ))}
             </div>
-          </Transition>
+          </Transition.Root>
         </div>
       </div>
     </>
@@ -114,46 +114,46 @@ export function Notification(
   )
 }
 
-export function NotificationsButton(
-  props: { notifications: RenderedNotification[] },
-) {
-  const show = useSignal(false)
-  const notifications = useSignal(props.notifications)
+// export function NotificationsButton(
+//   props: { notifications: RenderedNotification[] },
+// ) {
+//   const show = useSignal(false)
+//   const notifications = useSignal(props.notifications)
 
-  function dismiss(notification: RenderedNotification) {
-    notifications.value = notifications.value.filter((n) => n !== notification)
+//   function dismiss(notification: RenderedNotification) {
+//     notifications.value = notifications.value.filter((n) => n !== notification)
 
-    // TODO: error handling?
-    fetch(`/api/notifications/${notification.notification_id}/dismiss`, {
-      method: 'POST',
-    })
-  }
+//     // TODO: error handling?
+//     fetch(`/api/notifications/${notification.notification_id}/dismiss`, {
+//       method: 'POST',
+//     })
+//   }
 
-  return (
-    <div className='relative'>
-      <button
-        type='button'
-        className='p-1 text-indigo-700 bg-white rounded-full hover:text-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-900 focus:ring-offset-2 focus:ring-offset-gray-800'
-        onClick={() => show.value = !show.value}
-      >
-        <span className='sr-only'>View notifications</span>
-        <BellIcon
-          className='w-6 h-6'
-          stroke-width='1.5'
-          stroke='currentColor'
-          aria-hidden='true'
-        />
-      </button>
-      {notifications.value.length > 0 && (
-        <span className='absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-green-600 rounded-full'>
-          {notifications.value.length}
-        </span>
-      )}
-      <Notifications
-        show={show.value}
-        notifications={notifications.value}
-        dismiss={dismiss}
-      />
-    </div>
-  )
-}
+//   return (
+//     <div className='relative'>
+//       <button
+//         type='button'
+//         className='p-1 text-indigo-700 bg-white rounded-full hover:text-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-900 focus:ring-offset-2 focus:ring-offset-gray-800'
+//         onClick={() => show.value = !show.value}
+//       >
+//         <span className='sr-only'>View notifications</span>
+//         <BellIcon
+//           className='w-6 h-6'
+//           stroke-width='1.5'
+//           stroke='currentColor'
+//           aria-hidden='true'
+//         />
+//       </button>
+//       {notifications.value.length > 0 && (
+//         <span className='absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-green-600 rounded-full'>
+//           {notifications.value.length}
+//         </span>
+//       )}
+//       <Notifications
+//         show={show.value}
+//         notifications={notifications.value}
+//         dismiss={dismiss}
+//       />
+//     </div>
+//   )
+// }

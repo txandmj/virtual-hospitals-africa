@@ -323,7 +323,6 @@ addEventListener('submit', function (event) {
 })
 
 /* SHOW DIALOG ON UNSAVED FORM */
-
 // // TODO: turn this back on? It's not working with hash changes and is just kind of overbearing during development
 
 // // Disable form submission if any inputs are modified
@@ -377,42 +376,79 @@ addEventListener('submit', function (event) {
 // addEventListener('beforeunload', onBeforeUnload)
 
 /* NOTIFICATIONS SUBSCRIPTION */
-Notification.requestPermission().then(function (result) {
-  if (result !== 'granted') {
-    return console.log('Permissions not granted', result)
-  }
+// Notification.requestPermission().then(function (result) {
+//   if (result !== 'granted') {
+//     return console.log('Permissions not granted', result)
+//   }
 
-  var wsUri = 'wss://' + self.location.host + '/app/notifications-websocket'
-  var websocket = new WebSocket(wsUri)
+//   var protocol = self.location.protocol === 'http:' ? 'ws' : 'wss'
 
-  websocket.onopen = function () {
-    console.log('websocket open')
-  }
+//   var wsUri = protocol + '://' + self.location.host + '/xwss'
+//   var websocket = new WebSocket(wsUri)
 
-  websocket.onclose = function () {
-    console.log('websocket close')
-  }
+//   websocket.onopen = function () {
+//     console.log('websocket open')
+//   }
 
-  websocket.onmessage = function (e) {
-    var notification_data = JSON.parse(e.data)
-    /*
-    {
-        "created_at": notification_data.created_at,
-        "updated_at": notification_data.updated_at,
-        "health_worker_id": nurse.health_worker.id,
-        "notification_type": "patient_encounter_immediate_triage",
-        "title": "Immediate Triage Requested",
-        "description": `${employeeDisplay(receptionist_employee).display_name} has requested immediate triage for a patient`,
-        "avatar_url": "/images/heroicons/24/solid/exclamation-triangle.svg",
-        "seen_at": null,
-        "notification_id": notification_data.notification_id,
-        "time_display": "Just now",
-        "action": {
-          "title": "View patient case",
-          "href": `/app/organizations/${organization.id}/patients/${patient_id}/open_encounter/respond-to-immediate-triage-request`
-        }
-      }
-    */
+//   websocket.onclose = function () {
+//     console.log('websocket close')
+//   }
+
+//   websocket.onmessage = function (e) {
+//     console.log('echo', e.data)
+//   //   var notification_data = JSON.parse(e.data)
+//   //   /*
+//   //   {
+//   //       "created_at": notification_data.created_at,
+//   //       "updated_at": notification_data.updated_at,
+//   //       "health_worker_id": nurse.health_worker.id,
+//   //       "notification_type": "patient_encounter_immediate_triage",
+//   //       "title": "Immediate Triage Requested",
+//   //       "description": `${employeeDisplay(receptionist_employee).display_name} has requested immediate triage for a patient`,
+//   //       "avatar_url": "/images/heroicons/24/solid/exclamation-triangle.svg",
+//   //       "seen_at": null,
+//   //       "notification_id": notification_data.notification_id,
+//   //       "time_display": "Just now",
+//   //       "action": {
+//   //         "title": "View patient case",
+//   //         "href": `/app/organizations/${organization.id}/patients/${patient_id}/open_encounter/respond-to-immediate-triage-request`
+//   //       }
+//   //     }
+//   //   */
+//   //  console.log(notification_data.title)
+//   //   var notification = new Notification(notification_data.title, {
+//   //     body: notification_data.description,
+//   //     icon: notification_data.avatar_url,
+//   //     timestamp: notification_data.created_at,
+//   //   })
+//   //   notification.onclick = function () {
+//   //     window.location.href = notification_data.action.href
+//   //   }
+//   }
+
+//   websocket.onerror = function (e) {
+//     console.error(e)
+//   }
+// })
+
+
+var protocol = self.location.protocol === 'http:' ? 'ws' : 'wss'
+
+var wsUri = protocol + '://' + self.location.host + '/app/notifications-websocket'
+var websocket = new WebSocket(wsUri)
+
+websocket.onopen = function () {
+  console.log('websocket open')
+}
+
+websocket.onclose = function () {
+  console.log('websocket close')
+}
+
+websocket.onmessage = function (e) {
+  var message_data = JSON.parse(e.data)
+  console.log('mmmmwelklekw', message_data)
+  if (document.hidden && Notification.permission === 'granted')  {
     var notification = new Notification(notification_data.title, {
       body: notification_data.description,
       icon: notification_data.avatar_url,
@@ -421,9 +457,35 @@ Notification.requestPermission().then(function (result) {
     notification.onclick = function () {
       window.location.href = notification_data.action.href
     }
+    return
   }
+  dispatchEvent(new CustomEvent('notification', {
+    detail: message_data
+  }))
+}
 
-  websocket.onerror = function (e) {
-    console.error(e)
-  }
-})
+websocket.onerror = function (e) {
+  console.error(e)
+}
+
+  // console.log(message_data)
+  
+  // // console.log('echo', e.data)
+  // /*
+  // {
+  //     "created_at": notification_data.created_at,
+  //     "updated_at": notification_data.updated_at,
+  //     "health_worker_id": nurse.health_worker.id,
+  //     "notification_type": "patient_encounter_immediate_triage",
+  //     "title": "Immediate Triage Requested",
+  //     "description": `${employeeDisplay(receptionist_employee).display_name} has requested immediate triage for a patient`,
+  //     "avatar_url": "/images/heroicons/24/solid/exclamation-triangle.svg",
+  //     "seen_at": null,
+  //     "notification_id": notification_data.notification_id,
+  //     "time_display": "Just now",
+  //     "action": {
+  //       "title": "View patient case",
+  //       "href": `/app/organizations/${organization.id}/patients/${patient_id}/open_encounter/respond-to-immediate-triage-request`
+  //     }
+  //   }
+  // */  
