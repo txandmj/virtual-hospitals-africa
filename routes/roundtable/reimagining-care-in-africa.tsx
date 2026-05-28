@@ -10,7 +10,7 @@ import { postHandler } from '../../backend/postHandler.ts'
 import redirect from '../../util/redirect.ts'
 import { CalendarDaysIcon, ClockIcon, GlobeAltIcon, VideoCameraIcon } from '../../components/library/icons/heroicons/solid.tsx'
 
-const ROUNDTABLE_LINK = 'https://riverside.com/studio/ubuntu-doctor-coaching?t=d5fc67fa6e6cac367879'
+const ROUNDTABLE_LINK = 'https://riverside.com/studio/ubuntu-doctor-coaching'
 
 const meeting_is_in_future = false
 const meeting_is_now = true
