@@ -10,6 +10,11 @@ import { postHandler } from '../../backend/postHandler.ts'
 import redirect from '../../util/redirect.ts'
 import { CalendarDaysIcon, ClockIcon, GlobeAltIcon, VideoCameraIcon } from '../../components/library/icons/heroicons/solid.tsx'
 
+const ROUNDTABLE_LINK = 'https://riverside.com/studio/ubuntu-doctor-coaching?t=d5fc67fa6e6cac367879'
+
+const meeting_is_in_future = false
+const meeting_is_now = true
+const meeting_is_past = false
 // --- Event details -----------------------------------------------------------
 
 const EVENT = {
@@ -130,7 +135,7 @@ function Hero() {
       </div>
 
       <div class='relative mx-auto max-w-7xl px-6 py-20 sm:py-28 lg:px-8'>
-        <div class='max-w-3xl'>
+        <a class='max-w-3xl' href={ROUNDTABLE_LINK}>
           <p class='text-sm font-semibold uppercase tracking-widest text-indigo-200 mb-4'>
             Virtual Roundtable · Live
           </p>
@@ -174,11 +179,19 @@ function Hero() {
           </dl>
 
           <div class='mt-10 flex flex-wrap gap-4'>
-            <Button href='#register' variant='secondary' size='xl'>
-              Save my seat
-            </Button>
+            {meeting_is_in_future && (
+              <Button href='#register' variant='secondary' size='xl'>
+                Save my seat
+              </Button>
+            )}
+            {meeting_is_now && (
+              <Button href={ROUNDTABLE_LINK} variant='secondary' size='xl'>
+                Join roundtable now
+              </Button>
+            )}
+            {meeting_is_past && <>TODO: Youtube link</>}
           </div>
-        </div>
+        </a>
       </div>
     </section>
   )
@@ -306,6 +319,29 @@ function Register() {
   )
 }
 
+function JoinNow() {
+  return (
+    <section
+      id='join_now'
+      class='bg-gradient-to-br from-indigo-50 via-white to-indigo-50 py-16 sm:py-24'
+    >
+      <div class='mx-auto max-w-3xl px-6 lg:px-8'>
+        <div class='mx-auto max-w-2xl text-center'>
+          <h2 class='text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl'>
+            Join roundtable now
+          </h2>
+          <p class='mt-4 text-lg leading-8 text-gray-600'>
+            Click the button below to be part of our live discussion
+          </p>
+          <Button className='mt-3' href={ROUNDTABLE_LINK}>
+            Join Now
+          </Button>
+        </div>
+      </div>
+    </section>
+  )
+}
+
 function ClosingCTA() {
   return (
     <section class='bg-indigo-900 py-16 text-white sm:py-20'>
@@ -371,7 +407,8 @@ export default async function ReimaginingCareInAfricaPage(ctx: Context<unknown>)
       <Hero />
       <About />
       <Speakers />
-      <Register />
+      {meeting_is_in_future && <Register />}
+      {meeting_is_now && <JoinNow />}
       <Essay />
       <ClosingCTA />
     </MarketingLayout>
