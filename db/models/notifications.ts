@@ -63,7 +63,7 @@ export const notifications = base({
   },
   insert(
     trx: TrxOrDbOrQueryCreator,
-    { health_worker_id, employment_id, ...notification }:
+    { health_worker_id, employment_id, patient_encounter_id, ...notification }:
       & {
         action_title: string
         action_href: string
@@ -73,6 +73,7 @@ export const notifications = base({
         row_id: string
         notification_type: string
         title: string
+        patient_encounter_id?: string | null
       }
       & (
         | { health_worker_id: string; employment_id?: never }
@@ -83,6 +84,7 @@ export const notifications = base({
       .insertInto('health_worker_web_notifications')
       .values({
         ...notification,
+        patient_encounter_id: patient_encounter_id ?? null,
         health_worker_id: health_worker_id ||
           trx.selectFrom('employment').select('health_worker_id').where(
             'id',
