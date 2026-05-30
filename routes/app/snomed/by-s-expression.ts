@@ -1,5 +1,5 @@
 import { parseWithSchema } from '../../../shared/s_expression.ts'
-import { insertable_finding_base, Lang } from '../../../shared/s_expression_schemas.ts'
+import { finding_base, insertable_finding_base, Lang } from '../../../shared/s_expression_schemas.ts'
 import { nameAndCategorySnomedConceptBase } from '../../../db/models/s_expression.ts'
 import { jsonBuildObject, literalString } from '../../../db/helpers.ts'
 import { json } from '../../../util/responses.ts'
@@ -56,6 +56,22 @@ export const handler = {
       .orderBy('rel_type.name')
       .execute()
 
-    return json({ ...node, predefined_attributes })
+    const relevant_qualifier_s_expressions = await ctx.state.trx
+      .selectFrom('due_to_findings')
+      .innerJoin('due_to', 'due_to.id', 'due_to_findings.id')
+      .innerJoin('snomed_concept_active_descendants_realized', 'ancestor_id', 'due_to_findings.specific_snomed_concept_id')
+      .where('due_to_findings.is_somehow_qualified', '=', true)
+      .where('due_to_findings.value_snomed_concept_id', 'is', null)
+      .where(
+        'snomed_concept_active_descendants_realized.descendant_id',
+        'in',
+        nameAndCategorySnomedConceptBase(ctx.state.trx, node.specific_snomed_concept),
+      )
+      .select('due_to.s_expression')
+      .execute()
+
+    const relevant_qualifiers = relevant_qualifier_s_expressions.flatMap(({ s_expression }) => parseWithSchema(s_expression, finding_base).qualifiers)
+
+    return json({ ...node, predefined_attributes, relevant_qualifiers })
   },
 }
