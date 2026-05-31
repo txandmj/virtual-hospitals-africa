@@ -85,6 +85,7 @@ export const handler = postHandler(
               action_href: '#todo',
               avatar_url: ctx.state.health_worker.avatar_url!,
               description: `A case was referred to you`,
+              patient_encounter_id: ctx.state.patient_encounter_id,
               table_name: 'patient_encounters',
               row_id: ctx.state.patient_encounter_id,
               notification_type: 'case_referral',

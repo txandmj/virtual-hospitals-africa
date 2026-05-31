@@ -360,6 +360,7 @@ export const EVENTS = {
             avatar_url: '/images/heroicons/24/solid/exclamation-triangle.svg',
             description: `${employeeDisplay(requested_by_employee).display_name} has requested immediate triage for a patient`,
             employment_id: employee.employee_id,
+            patient_encounter_id,
             table_name: 'patient_encounters',
             row_id: patient_encounter_id,
             notification_type: 'patient_encounter_immediate_triage',
