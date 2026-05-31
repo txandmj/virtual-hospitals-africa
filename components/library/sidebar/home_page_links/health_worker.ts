@@ -11,11 +11,16 @@ import {
   PresentationChartBarIcon,
   Squares2x2Icon,
 } from '../../icons/heroicons/outline.tsx'
+import type { Priority } from '../../../../shared/priorities.ts'
 import { LinkDef } from '../../../../types.ts'
 
-export function practitionerHomePageNavLinks(
-  { health_worker_notification_count }: { health_worker_notification_count: number },
-): LinkDef[] {
+export function practitionerHomePageNavLinks({
+  health_worker_notification_count,
+  health_worker_notification_priority,
+}: {
+  health_worker_notification_count: number
+  health_worker_notification_priority: Priority | null
+}): LinkDef[] {
   return [
     {
       route: '/app/organizations/:organization_id/dashboard',
@@ -59,6 +64,7 @@ export function practitionerHomePageNavLinks(
       title: 'Notifications',
       Icon: BellIcon,
       count: health_worker_notification_count,
+      notification_priority: health_worker_notification_priority,
     },
     { route: '/app/logout', title: 'Log Out', Icon: ArrowRightOnRectangleIcon },
   ]

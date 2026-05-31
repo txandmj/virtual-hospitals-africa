@@ -1,7 +1,8 @@
 import { useEffect } from 'preact/hooks'
 import { useSignal } from '@preact/signals'
+import type { Priority } from '../shared/priorities.ts'
 
-export function NotificationBubble(props: { count: number }) {
+export function NotificationBubble(props: { count: number; priority: Priority | null }) {
   const count = useSignal(props.count)
 
   useEffect(() => {

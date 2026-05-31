@@ -180,18 +180,23 @@ export function HealthWorkerHomePage<
       title = undefined as any
     }
 
-    let { rendered, health_worker_notification_count } = await promiseProps({
-      rendered: Promise.resolve(
-        render!(ctx),
-      ),
-      health_worker_notification_count: notifications.countAll(
-        trx,
-        {
-          health_worker_id: health_worker.id,
-          only_unread: true,
-        },
-      ),
-    })
+    let { rendered, health_worker_notification_count, health_worker_notification_priority } =
+      await promiseProps({
+        rendered: Promise.resolve(
+          render!(ctx),
+        ),
+        health_worker_notification_count: notifications.countAll(
+          trx,
+          {
+            health_worker_id: health_worker.id,
+            only_unread: true,
+          },
+        ),
+        health_worker_notification_priority: notifications.highestUnreadPriority(
+          trx,
+          { health_worker_id: health_worker.id },
+        ),
+      })
 
     let drawer: JSX.Element | undefined
     if (rendered instanceof Response) {
@@ -221,6 +226,7 @@ export function HealthWorkerHomePage<
           organization_id: defaultOrganizationId(ctx.state.health_worker),
         }}
         health_worker_notification_count={health_worker_notification_count}
+        health_worker_notification_priority={health_worker_notification_priority}
         drawer={drawer}
       >
         {rendered}

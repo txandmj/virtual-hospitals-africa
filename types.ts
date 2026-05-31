@@ -1597,6 +1597,7 @@ export type LinkProps = {
   title: string
   active: boolean
   count?: number
+  notification_priority?: Priority | null
   Icon?: (
     props: Omit<JSX.SVGAttributes<SVGSVGElement>, 'className'> & {
       active: boolean
@@ -1609,6 +1610,7 @@ export type LinkDef = {
   route: string
   title: string
   count?: number
+  notification_priority?: Priority | null
   Icon?: (
     props: Omit<JSX.SVGAttributes<SVGSVGElement>, 'className'> & {
       active: boolean

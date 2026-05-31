@@ -10,6 +10,7 @@ export function NavItem({
   title,
   active,
   count,
+  notification_priority,
   Icon,
 }: LinkProps) {
   if (typeof count === 'number') {
@@ -26,7 +27,9 @@ export function NavItem({
       >
         {Icon && <Icon className='w-5' active={active} />}
         <SidebarNavItemText>{title}</SidebarNavItemText>
-        {typeof count === 'number' && <NotificationBubble count={count} />}
+        {typeof count === 'number' && (
+          <NotificationBubble count={count} priority={notification_priority ?? null} />
+        )}
       </a>
     </li>
   )

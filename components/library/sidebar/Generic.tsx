@@ -28,6 +28,7 @@ export function GenericSidebar(
                     ' & ',
                   )}
                 count={link.count}
+                notification_priority={link.notification_priority}
                 Icon={link.Icon}
               />
             ))}

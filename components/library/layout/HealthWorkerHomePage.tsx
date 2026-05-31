@@ -1,4 +1,5 @@
 import { ComponentChild, ComponentChildren } from 'preact'
+import type { Priority } from '../../../shared/priorities.ts'
 import type { RenderedEmployee } from '../../../types.ts'
 import HealthWorkerContentsWithSidebarAndDrawer from './HealthWorkerContentsWithSidebarAndDrawer.tsx'
 import { HealthWorkerSidebarBottom } from '../HealthWorkerSidebarBottom.tsx'
@@ -17,6 +18,7 @@ export function HealthWorkerHomePageLayout({
   drawer,
   tutorial,
   health_worker_notification_count = 0,
+  health_worker_notification_priority = null,
   children,
 }: {
   title: string
@@ -27,6 +29,7 @@ export function HealthWorkerHomePageLayout({
   drawer?: ComponentChild
   tutorial?: boolean
   health_worker_notification_count?: number
+  health_worker_notification_priority?: Priority | null
   children: ComponentChildren
 }) {
   return (
@@ -39,6 +42,7 @@ export function HealthWorkerHomePageLayout({
           params={params}
           urlSearchParams={url.searchParams}
           health_worker_notification_count={health_worker_notification_count}
+          health_worker_notification_priority={health_worker_notification_priority}
           bottom={<HealthWorkerSidebarBottom employee={employee} />}
           tutorial={tutorial}
         />
