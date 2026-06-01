@@ -27,9 +27,7 @@ export function NavItem({
       >
         {Icon && <Icon className='w-5' active={active} />}
         <SidebarNavItemText>{title}</SidebarNavItemText>
-        {typeof count === 'number' && (
-          <NotificationBubble count={count} priority={notification_priority ?? null} />
-        )}
+        {typeof count === 'number' && <NotificationBubble count={count} priority={notification_priority ?? null} />}
       </a>
     </li>
   )

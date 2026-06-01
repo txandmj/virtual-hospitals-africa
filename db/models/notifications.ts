@@ -1,17 +1,6 @@
 import { sql } from 'kysely'
-import {
-  isPriority,
-  ORDERED_PRIORITIES,
-  PRIORITY_SNOMED_CODES,
-  Priority,
-} from '../../shared/priorities.ts'
-import {
-  NonEmptyArray,
-  PostgresInterval,
-  RenderedNotification,
-  TrxOrDb,
-  TrxOrDbOrQueryCreator,
-} from '../../types.ts'
+import { isPriority, ORDERED_PRIORITIES, Priority, PRIORITY_SNOMED_CODES } from '../../shared/priorities.ts'
+import { NonEmptyArray, PostgresInterval, RenderedNotification, TrxOrDb, TrxOrDbOrQueryCreator } from '../../types.ts'
 import { orderByArrayPosition } from '../helpers.ts'
 import { timeAgoDisplay } from '../../util/timeAgoDisplay.ts'
 import { base } from './_base.ts'
@@ -174,11 +163,9 @@ export const notifications = base({
                   eb_triage_level,
                   'patient_records.value_snomed_concept_id',
                   ENCOUNTER_PRIORITY_SNOMED_ORDER,
-                ),
-                'desc',
-              )
+                ), 'desc')
               .limit(1)
-              .as('encounter_priority'),
+              .as('encounter_priority')
           )
           .as('unread_encounter_notification_priorities')
       )
@@ -189,9 +176,7 @@ export const notifications = base({
           eb,
           'encounter_priority',
           ENCOUNTER_ORDERED_PRIORITIES,
-        ),
-        'desc',
-      )
+        ), 'desc')
       .limit(1)
       .executeTakeFirst()
 

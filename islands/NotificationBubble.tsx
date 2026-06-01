@@ -1,6 +1,6 @@
 import { useEffect } from 'preact/hooks'
 import { useSignal } from '@preact/signals'
-import { priorityColors, type Priority } from '../shared/priorities.ts'
+import { type Priority, priorityColors } from '../shared/priorities.ts'
 import cls from '../util/cls.ts'
 
 export function NotificationBubble(props: { count: number; priority: Priority | null }) {
