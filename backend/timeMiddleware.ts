@@ -23,3 +23,12 @@ export function timeMiddlewareCallNext<Ctx extends Context<any>>(middleware: (ct
     return maybe_response || ctx.next()
   }
 }
+
+// deno-lint-ignore no-explicit-any
+export function callNext<Ctx extends Context<any>>(middleware: (ctx: Ctx) => void | Response | Promise<void | Response>) {
+  assert(middleware.name, 'Must supply named function')
+  return async (ctx: Ctx): Promise<Response> => {
+    const maybe_response = await middleware(ctx)
+    return maybe_response || ctx.next()
+  }
+}

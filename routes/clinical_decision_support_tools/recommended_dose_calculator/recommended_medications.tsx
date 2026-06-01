@@ -6,6 +6,7 @@ import { LogoWithFullText } from '../../../components/library/Logo.tsx'
 import { recommended_doses } from '../../../db/models/recommended_doses.ts'
 import { PatientCaseSchema } from '../../../shared/recommended_doses.ts'
 import { StepsSidebar } from '../../../components/library/sidebar/Steps.tsx'
+import { Top } from '../../../components/library/sidebar/Top.tsx'
 
 export default async function RecommendedMedications(
   ctx: Context<unknown>,
@@ -18,10 +19,11 @@ export default async function RecommendedMedications(
       url={ctx.url}
       sidebar={
         <StepsSidebar
-          top={{
-            href: '/clinical_decision_support_tools',
-            child: <LogoWithFullText variant='indigo' className='w-full' />,
-          }}
+          top={
+            <Top>
+              <LogoWithFullText variant='indigo' className='w-full' />
+            </Top>
+          }
           url={ctx.url}
           route={ctx.route}
           params={ctx.params}

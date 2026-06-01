@@ -9,7 +9,9 @@ export const PatientCaseSchema = z.object({
   dob: z.string().date(),
   height_cm: positive_decimal,
   weight_kg: positive_decimal,
-  conditions: z.string().array().optional().default([]),
+  conditions: z.object({
+    id: z.string(),
+  }).array().optional().default([]),
 })
 
 export type ParsedPatientCase = z.infer<typeof PatientCaseSchema>

@@ -40,7 +40,7 @@ echo "Logs for this run available at $logs_dir"
 deno task events:processor 2>&1 | tee "$events_processor_output" &
 EVENTS_PROCESSOR_PID="$!"
 
-VERBOSE=1 HTTP_SERVER_PORT=$HTTP_SERVER_PORT HTTPS_PROXY_SERVER_PORT=$HTTPS_PROXY_SERVER_PORT deno task proxy 2>&1 | tee "$https_proxy_server_output" &
+HTTP_SERVER_PORT=$HTTP_SERVER_PORT HTTPS_PROXY_SERVER_PORT=$HTTPS_PROXY_SERVER_PORT deno task proxy 2>&1 | tee "$https_proxy_server_output" &
 PROXY_PID="$!"
 
 trap 'clean_up' EXIT
