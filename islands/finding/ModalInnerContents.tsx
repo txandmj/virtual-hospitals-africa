@@ -1,6 +1,7 @@
 import { useSignal } from '@preact/signals'
 import { AugmentedSign, BySExpressionResult, Maybe, NonEmptyArray, RenderedSnomedConcept } from '../../types.ts'
 import { FindingSite } from './FindingSite.tsx'
+import { QualifierSearch } from './QualifierSearch.tsx'
 import { groupBy } from '../../util/groupBy.ts'
 import { ATTRIBUTE, EVENT, FINDING_SITE, RESOLVED, TIME_OF_ONSET } from '../../shared/snomed_concepts.ts'
 import { Lang, SnomedConceptAttribute } from '../../shared/s_expression_schemas.ts'
@@ -50,6 +51,14 @@ export function FindingModalInnerContents({
     return { id: '@@triggersearch', snomed_concept_id: '@@triggersearch', ...s.value }
   }))
 
+  const initial_qualifiers = augmented_node?.qualifiers ?? []
+  const qualifiers = useSignal<RenderedSnomedConcept[]>(initial_qualifiers.map((q) => ({
+    id: '@@triggersearch',
+    snomed_concept_id: '@@triggersearch',
+    name: q.specific_snomed_concept.name,
+    category: q.specific_snomed_concept.category,
+  })))
+
   function runOnChange() {
     console.log('runOnChange')
     /* We have the original_node & original attributes
@@ -73,9 +82,20 @@ export function FindingModalInnerContents({
       return !identical_finding_site_already_existed
     })
 
-    // if (!new_finding_sites.length) {
-    //   return onChange(null)
-    // }
+    if (qualifiers.value.length) {
+      any_updates = true
+      for (const qualifier of qualifiers.value) {
+        new_node.qualifiers.push({
+          atom: 'qualifier' as const,
+          specific_snomed_concept: {
+            atom: 'snomed_concept' as const,
+            name: qualifier.name,
+            category: qualifier.category,
+          },
+          qualifiers: [],
+        })
+      }
+    }
 
     for (const site of new_finding_sites) {
       any_updates = true
@@ -159,6 +179,13 @@ export function FindingModalInnerContents({
         <OnsetRow
           onChange={(value) => {
             dates.value = value
+            runOnChange()
+          }}
+        />
+        <QualifierSearch
+          value={qualifiers.value}
+          onChange={(value) => {
+            qualifiers.value = value
             runOnChange()
           }}
         />
