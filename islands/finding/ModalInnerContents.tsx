@@ -1,4 +1,5 @@
-import { useSignal } from '@preact/signals'
+import { useSignal, useSignalEffect } from '@preact/signals'
+import { useRef } from 'preact/hooks'
 import { AugmentedSign, BySExpressionResult, Maybe, NonEmptyArray, RenderedSnomedConcept } from '../../types.ts'
 import { FindingSite } from './FindingSite.tsx'
 import { QualifierSearch } from './QualifierSearch.tsx'
@@ -9,6 +10,7 @@ import { assert } from 'std/assert/assert.ts'
 import { findingToDisplayableRecord, formatRecord } from '../../shared/patient_records.ts'
 import { inverseSExpression } from '../../shared/s_expression_inverse.ts'
 import { OnsetRow } from './Onset.tsx'
+import { YesNoGrid, YesNoQuestion } from '../form/inputs/yes_no.tsx'
 
 function groupAttributes(attributes: Lang['attribute'][]) {
   return groupBy(attributes, (attr) => attr.specific_snomed_concept.name)
@@ -59,8 +61,17 @@ export function FindingModalInnerContents({
     category: q.specific_snomed_concept.category,
   })))
 
+  const mounted = useRef(false)
+  useSignalEffect(() => {
+    qualifiers.value
+    if (!mounted.current) {
+      mounted.current = true
+      return
+    }
+    runOnChange()
+  })
+
   function runOnChange() {
-    console.log('runOnChange')
     /* We have the original_node & original attributes
     // Focusing just on finding site for now, if we
       1. selected finding sites where there were none previously, form a new augmented node with those as attributes
@@ -182,13 +193,40 @@ export function FindingModalInnerContents({
             runOnChange()
           }}
         />
-        <QualifierSearch
-          value={qualifiers.value}
-          onChange={(value) => {
-            qualifiers.value = value
-            runOnChange()
-          }}
-        />
+        <QualifierSearch signal={qualifiers} />
+        <YesNoGrid title='relevant qualifiers' id='relevant-qualifiers'>
+          {original_node.relevant_qualifiers.map((relevant_qualifier) => (
+            <YesNoQuestion
+              name={``}
+              // required={condition.required}
+              value={qualifiers.value.some((qualifier) =>
+                  qualifier.name === relevant_qualifier.specific_snomed_concept.name &&
+                  qualifier.category === relevant_qualifier.specific_snomed_concept.category
+                )
+                ? 'Yes'
+                : undefined}
+              label={relevant_qualifier.specific_snomed_concept.name}
+              onChange={(value) => {
+                console.log({ value, x: qualifiers.value })
+                const matches = (q: RenderedSnomedConcept) =>
+                  q.name === relevant_qualifier.specific_snomed_concept.name &&
+                  q.category === relevant_qualifier.specific_snomed_concept.category
+                if (value === 'Yes') {
+                  if (!qualifiers.value.some(matches)) {
+                    qualifiers.value = [...qualifiers.value, {
+                      snomed_concept_id: '@@triggersearch',
+                      name: relevant_qualifier.specific_snomed_concept.name,
+                      category: relevant_qualifier.specific_snomed_concept.category,
+                    }]
+                  }
+                } else {
+                  qualifiers.value = qualifiers.value.filter((q) => !matches(q))
+                }
+                console.log({ m: qualifiers.value })
+              }}
+            />
+          ))}
+        </YesNoGrid>
         <FindingSite
           search_within={search_within_finding_site}
           value={finding_sites.value}

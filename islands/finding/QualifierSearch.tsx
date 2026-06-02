@@ -1,25 +1,14 @@
-import { useSignal, useSignalEffect } from '@preact/signals'
-import { useRef } from 'preact/hooks'
+import { Signal } from '@preact/signals'
 import AsyncSearch from '../AsyncSearch.tsx'
 import { RenderedSnomedConcept } from '../../types.ts'
 
 const base_search_route = '/app/snomed/qualifier-value'
 
 export function QualifierSearch({
-  value,
-  onChange,
+  signal,
 }: {
-  value: RenderedSnomedConcept[]
-  onChange(qualifiers: RenderedSnomedConcept[]): void
+  signal: Signal<RenderedSnomedConcept[]>
 }) {
-  const signal = useSignal<RenderedSnomedConcept[]>(value)
-  const mounted = useRef(false)
-  useSignalEffect(() => {
-    const next = signal.value
-    if (mounted.current) return onChange(next)
-    mounted.current = true
-  })
-
   return (
     <div className='flex flex-col gap-2'>
       <h3 className='text-sm font-semibold text-gray-900'>Qualifiers</h3>
