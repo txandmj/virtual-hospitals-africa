@@ -5,6 +5,7 @@ import { describeParallel, itParallel } from 'test/_helpers/testParallel.ts'
 import waitUntilTestServerUp from 'test/_helpers/waitUntilTestServerUp.ts'
 import { assertMatches } from '../../../util/assertMatches.ts'
 import { assertEquals } from 'std/assert/assert_equals.ts'
+import { Lang } from '../../../shared/s_expression_schemas.ts'
 
 describeParallel('/app/snomed/by-s-expression', () => {
   before(waitUntilTestServerUp)
@@ -80,6 +81,42 @@ describeParallel('/app/snomed/by-s-expression', () => {
             category: 'observable entity',
           },
         },
+      ])
+    },
+  )
+
+  itParallel(
+    'returns relevant_qualifiers, those that are mentioned as part of the specific_snomed_concept in some rule',
+    async () => {
+      const { fetchJSON } = await addTestEmployeeWithSession(db, {
+        role: 'nurse',
+      })
+
+      const s_expression = '(clinical_finding (snomed_concept "Diarrhea" "finding"))'
+      const result = await fetchJSON(
+        `/app/snomed/by-s-expression?s_expression=${encodeURIComponent(s_expression)}`,
+      )
+
+      assertMatches(result, {
+        atom: 'finding',
+        specific_snomed_concept: {
+          atom: 'snomed_concept',
+          name: 'Diarrhea',
+          category: 'finding',
+        },
+        value_snomed_concept: null,
+      })
+
+      assertEquals(result.relevant_qualifiers, [
+        {
+          atom: 'qualifier',
+          specific_snomed_concept: {
+            atom: 'snomed_concept',
+            name: 'Watery',
+            category: 'qualifier value',
+          },
+          qualifiers: [],
+        } as Lang['qualifier'],
       ])
     },
   )
