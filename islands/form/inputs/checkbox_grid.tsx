@@ -1,6 +1,21 @@
 import { ComponentChildren } from 'preact'
 import { Label } from '../../../components/library/Label.tsx'
 
+export function CheckboxGrid(
+  { title, children, id }: { title: string; children: ComponentChildren; id?: string },
+) {
+  return (
+    <div id={id} className='border border-gray-300 rounded-lg overflow-hidden'>
+      <div className='text-sm font-medium text-indigo-900 capitalize bg-indigo-50 border-b border-gray-300 pl-4 py-4'>
+        {title}
+      </div>
+      <div className='flex flex-col gap-2 xl:gap-4 p-4'>
+        {children}
+      </div>
+    </div>
+  )
+}
+
 export function CheckboxGridItem({
   name,
   label,
@@ -31,7 +46,7 @@ export function CheckboxGridItem({
           onInput={(e) => onChange?.(e.currentTarget.checked)}
         />
       </div>
-      <Label label={label} />
+      <Label label={label} htmlFor={name} />
       {children}
     </div>
   )

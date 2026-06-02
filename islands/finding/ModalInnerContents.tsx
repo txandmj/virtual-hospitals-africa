@@ -10,7 +10,7 @@ import { assert } from 'std/assert/assert.ts'
 import { findingToDisplayableRecord, formatRecord } from '../../shared/patient_records.ts'
 import { inverseSExpression } from '../../shared/s_expression_inverse.ts'
 import { OnsetRow } from './Onset.tsx'
-import { YesNoGrid, YesNoQuestion } from '../form/inputs/yes_no.tsx'
+import { CheckboxGrid, CheckboxGridItem } from '../form/inputs/checkbox_grid.tsx'
 
 function groupAttributes(attributes: Lang['attribute'][]) {
   return groupBy(attributes, (attr) => attr.specific_snomed_concept.name)
@@ -194,39 +194,34 @@ export function FindingModalInnerContents({
           }}
         />
         <QualifierSearch signal={qualifiers} />
-        <YesNoGrid title='relevant qualifiers' id='relevant-qualifiers'>
-          {original_node.relevant_qualifiers.map((relevant_qualifier) => (
-            <YesNoQuestion
-              name={``}
-              // required={condition.required}
-              value={qualifiers.value.some((qualifier) =>
-                  qualifier.name === relevant_qualifier.specific_snomed_concept.name &&
-                  qualifier.category === relevant_qualifier.specific_snomed_concept.category
-                )
-                ? 'Yes'
-                : undefined}
-              label={relevant_qualifier.specific_snomed_concept.name}
-              onChange={(value) => {
-                console.log({ value, x: qualifiers.value })
-                const matches = (q: RenderedSnomedConcept) =>
-                  q.name === relevant_qualifier.specific_snomed_concept.name &&
-                  q.category === relevant_qualifier.specific_snomed_concept.category
-                if (value === 'Yes') {
-                  if (!qualifiers.value.some(matches)) {
-                    qualifiers.value = [...qualifiers.value, {
-                      snomed_concept_id: '@@triggersearch',
-                      name: relevant_qualifier.specific_snomed_concept.name,
-                      category: relevant_qualifier.specific_snomed_concept.category,
-                    }]
-                  }
-                } else {
-                  qualifiers.value = qualifiers.value.filter((q) => !matches(q))
-                }
-                console.log({ m: qualifiers.value })
-              }}
-            />
-          ))}
-        </YesNoGrid>
+        {!!original_node.relevant_qualifiers.length && (
+          <CheckboxGrid title='relevant qualifiers' id='relevant-qualifiers'>
+            {original_node.relevant_qualifiers.map((relevant_qualifier) => {
+              const matches = (q: RenderedSnomedConcept) =>
+                q.name === relevant_qualifier.specific_snomed_concept.name &&
+                q.category === relevant_qualifier.specific_snomed_concept.category
+              return (
+                <CheckboxGridItem
+                  label={relevant_qualifier.specific_snomed_concept.name}
+                  checked={qualifiers.value.some(matches)}
+                  onChange={(checked) => {
+                    if (checked) {
+                      if (!qualifiers.value.some(matches)) {
+                        qualifiers.value = [...qualifiers.value, {
+                          snomed_concept_id: '@@triggersearch',
+                          name: relevant_qualifier.specific_snomed_concept.name,
+                          category: relevant_qualifier.specific_snomed_concept.category,
+                        }]
+                      }
+                    } else {
+                      qualifiers.value = qualifiers.value.filter((q) => !matches(q))
+                    }
+                  }}
+                />
+              )
+            })}
+          </CheckboxGrid>
+        )}
         <FindingSite
           search_within={search_within_finding_site}
           value={finding_sites.value}

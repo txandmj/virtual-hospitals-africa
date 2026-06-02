@@ -3144,7 +3144,9 @@ export type OpenEncounterWorkflowContext<T = Record<never, never>> = LoggedInHea
   OpenEncounterWorkflowState & T
 >
 
-export type BySExpressionResult = InsertableFindingBase & {
+export type FindingRelatedModifiers = {
   predefined_attributes: Lang['attribute'][]
   relevant_qualifiers: Lang['qualifier'][]
 }
+
+export type BySExpressionResult = InsertableFindingBase & FindingRelatedModifiers
