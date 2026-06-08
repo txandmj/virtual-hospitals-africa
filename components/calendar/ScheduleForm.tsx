@@ -25,7 +25,7 @@ export default function ScheduleForm(
       </FormRow>
       <FormRow>
         <PersonSearch
-          name='provider'
+          name='employee'
           search_route='/app/providers?roles=[doctor,nurse]'
         />
       </FormRow>
