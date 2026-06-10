@@ -17,6 +17,11 @@ export default defineConfig({
       'preact/debug': 'preact',
     },
   },
+  ssr: {
+    // web-push and asn1.js are CommonJS; bundling them for SSR breaks with
+    // "ReferenceError: exports is not defined". Load via Deno/npm at runtime.
+    external: ['web-push', 'asn1.js'],
+  },
   server: {
     port: parseInt(PORT, 10),
     // // Tell Vite's HMR client to connect through the HTTPS proxy rather than

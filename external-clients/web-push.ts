@@ -1,27 +1,44 @@
-import webpush from 'web-push'
-import { readMandatoryStringEnvironmentVariable } from '../util/env.ts'
+import { vapid_public_key, vapid_server_config } from './web-push-config.ts'
 
-export const vapid_public_key = readMandatoryStringEnvironmentVariable(
-  'VAPID_PUBLIC_KEY',
-)
-
-const vapid_private_key = readMandatoryStringEnvironmentVariable(
-  'VAPID_PRIVATE_KEY',
-)
-const vapid_subject = readMandatoryStringEnvironmentVariable(
-  'VAPID_SUBJECT',
-)
-
-export const vapid_server_config = {
-  private_key: vapid_private_key,
-  subject: vapid_subject,
+type WebPushClient = {
+  setVapidDetails(subject: string, publicKey: string, privateKey: string): void
+  sendNotification(subscription: ReturnType<typeof webPushSubscriptionFromRow>, payload: string): Promise<void>
 }
 
-webpush.setVapidDetails(
-  vapid_server_config.subject,
-  vapid_public_key,
-  vapid_server_config.private_key,
-)
+let webpush_promise: Promise<WebPushClient> | undefined
+
+function isObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
+
+function webPushClientFromModule(mod: unknown): WebPushClient {
+  if (!isObject(mod)) throw new Error('web-push module must be an object')
+  const candidate = isObject(mod.default) ? mod.default : mod
+  const setVapidDetails = candidate.setVapidDetails
+  const sendNotification = candidate.sendNotification
+  if (typeof setVapidDetails !== 'function') throw new Error('web-push module missing setVapidDetails')
+  if (typeof sendNotification !== 'function') throw new Error('web-push module missing sendNotification')
+  return {
+    setVapidDetails: (subject, publicKey, privateKey) => setVapidDetails.call(candidate, subject, publicKey, privateKey),
+    sendNotification: (subscription, payload) => sendNotification.call(candidate, subscription, payload),
+  }
+}
+
+async function getWebPushClient(): Promise<WebPushClient> {
+  if (!webpush_promise) {
+    webpush_promise = (async () => {
+      const mod = await import(/* @vite-ignore */ 'web-push')
+      const webpush = webPushClientFromModule(mod)
+      webpush.setVapidDetails(
+        vapid_server_config.subject,
+        vapid_public_key,
+        vapid_server_config.private_key,
+      )
+      return webpush
+    })()
+  }
+  return webpush_promise
+}
 
 export type WebPushNotificationPayload = {
   title: string
@@ -69,6 +86,7 @@ export async function sendWebPushNotification({
   payload,
 }: WebPushSubscriptionInput & { payload: WebPushNotificationPayload }): Promise<SendWebPushNotificationResult> {
   try {
+    const webpush = await getWebPushClient()
     await webpush.sendNotification(
       webPushSubscriptionFromRow({ endpoint, p256dh, auth }),
       JSON.stringify(payload),
