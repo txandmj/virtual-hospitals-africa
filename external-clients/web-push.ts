@@ -1,8 +1,16 @@
 import { vapid_public_key, vapid_server_config } from './web-push-config.ts'
 
+type WebPushSendOptions = {
+  TTL: number
+}
+
 type WebPushClient = {
   setVapidDetails(subject: string, publicKey: string, privateKey: string): void
-  sendNotification(subscription: ReturnType<typeof webPushSubscriptionFromRow>, payload: string): Promise<void>
+  sendNotification(
+    subscription: ReturnType<typeof webPushSubscriptionFromRow>,
+    payload: string,
+    options?: WebPushSendOptions,
+  ): Promise<void>
 }
 
 let webpush_promise: Promise<WebPushClient> | undefined
@@ -19,8 +27,8 @@ function webPushClientFromModule(mod: unknown): WebPushClient {
   if (typeof setVapidDetails !== 'function') throw new Error('web-push module missing setVapidDetails')
   if (typeof sendNotification !== 'function') throw new Error('web-push module missing sendNotification')
   return {
-    setVapidDetails: (subject, publicKey, privateKey) => setVapidDetails.call(candidate, subject, publicKey, privateKey),
-    sendNotification: (subscription, payload) => sendNotification.call(candidate, subscription, payload),
+    setVapidDetails: (subject, publicKey, privateKey) => setVapidDetails(subject, publicKey, privateKey),
+    sendNotification: (subscription, payload, options) => sendNotification(subscription, payload, options),
   }
 }
 
@@ -90,6 +98,7 @@ export async function sendWebPushNotification({
     await webpush.sendNotification(
       webPushSubscriptionFromRow({ endpoint, p256dh, auth }),
       JSON.stringify(payload),
+      { TTL: 60 },
     )
     return { ok: true }
   } catch (error) {

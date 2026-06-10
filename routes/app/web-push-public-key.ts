@@ -1,4 +1,4 @@
-import { vapid_public_key } from '../../external-clients/web-push.ts'
+import { vapid_public_key } from '../../external-clients/web-push-config.ts'
 import { LoggedInHealthWorkerContext } from '../../types.ts'
 import { json } from '../../util/responses.ts'
 
