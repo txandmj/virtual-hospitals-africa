@@ -1,5 +1,5 @@
 import { Context } from 'fresh'
-import MarketingLayout from '../components/library/MarketingLayout.tsx'
+import MarketingLayout from '../../components/library/MarketingLayout.tsx'
 import {
   AcademicCapIcon,
   BeakerIcon,
@@ -10,7 +10,7 @@ import {
   CpuChipIcon,
   ScaleIcon,
   UserGroupIcon,
-} from '../components/library/icons/heroicons/solid.tsx'
+} from '../../components/library/icons/heroicons/solid.tsx'
 import { JSX } from 'preact'
 
 type IconComponent = (props: JSX.SVGAttributes<SVGSVGElement>) => JSX.Element

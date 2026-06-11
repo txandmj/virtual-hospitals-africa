@@ -1,6 +1,6 @@
 import { Context } from 'fresh'
-import MarketingLayout from '../components/library/MarketingLayout.tsx'
-import { ChartBarIcon, GlobeEuropeAfricaIcon, RocketLaunchIcon, Squares2x2Icon, WrenchScrewdriverIcon } from '../components/library/icons/heroicons/solid.tsx'
+import MarketingLayout from '../../components/library/MarketingLayout.tsx'
+import { ChartBarIcon, GlobeEuropeAfricaIcon, RocketLaunchIcon, Squares2x2Icon, WrenchScrewdriverIcon } from '../../components/library/icons/heroicons/solid.tsx'
 import { JSX } from 'preact'
 
 type IconComponent = (props: JSX.SVGAttributes<SVGSVGElement>) => JSX.Element
