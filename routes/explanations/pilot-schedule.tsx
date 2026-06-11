@@ -1,6 +1,12 @@
 import { Context } from 'fresh'
 import MarketingLayout from '../../components/library/MarketingLayout.tsx'
-import { ChartBarIcon, GlobeEuropeAfricaIcon, RocketLaunchIcon, Squares2x2Icon, WrenchScrewdriverIcon } from '../../components/library/icons/heroicons/solid.tsx'
+import {
+  ChartBarIcon,
+  GlobeEuropeAfricaIcon,
+  RocketLaunchIcon,
+  Squares2x2Icon,
+  WrenchScrewdriverIcon,
+} from '../../components/library/icons/heroicons/solid.tsx'
 import { JSX } from 'preact'
 
 type IconComponent = (props: JSX.SVGAttributes<SVGSVGElement>) => JSX.Element
@@ -22,14 +28,14 @@ const phase_groups: Array<{ label: string; phases: Phase[] }> = [
         icon: WrenchScrewdriverIcon,
         timeline: 'Months 1–2',
         activity: 'Technical setup + onboarding',
-        module: 'Finalizing baseline clinical protocol digitization, workflow mapping, and academic MoU execution.',
+        module: 'Hardware provisioning, nurse training via UL, and soft facility launch, shadowing everyday workflows',
       },
       {
         phase: 'Phase 2',
         icon: RocketLaunchIcon,
         timeline: 'Months 3–6',
-        activity: 'Active screening deployment',
-        module: 'Hardware provisioning, nurse training via UL, and localized facility launch for Core NCDs.',
+        activity: 'Active screening; triaging and escalation deployment',
+        module: 'Improved outcomes in alignment with AstraZeneca KPIs',
       },
       {
         phase: 'Phase 3',

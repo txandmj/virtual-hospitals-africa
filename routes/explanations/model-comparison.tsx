@@ -1,6 +1,6 @@
 import { Context } from 'fresh'
 import MarketingLayout from '../../components/library/MarketingLayout.tsx'
-import { CircleStackIcon, HeartIcon, PuzzlePieceIcon, UserGroupIcon, XMarkIcon } from '../components/library/icons/heroicons/solid.tsx'
+import { ArrowPathIcon, BoltIcon, PuzzlePieceIcon, RocketLaunchIcon, UserGroupIcon, XMarkIcon } from '../../components/library/icons/heroicons/solid.tsx'
 import { CheckIcon } from '../../components/library/icons/heroicons/solid.tsx'
 import { JSX } from 'preact'
 
@@ -14,33 +14,33 @@ const rows: Array<{
 }> = [
   {
     feature: 'Care Delivery',
-    icon: HeartIcon,
-    conventional: 'Episodic teleconsultations',
-    vha: 'Longitudinal PHC infrastructure',
+    icon: ArrowPathIcon,
+    conventional: 'Fragmented care events; ad hoc or nonexistent',
+    vha: 'Longitudinal care loops: risk stratification → case escalation → adherence monitoring',
   },
   {
     feature: 'Primary Focus',
     icon: UserGroupIcon,
-    conventional: 'Urban; private sector',
-    vha: 'Rural; public sector',
+    conventional: 'Urban, private-sector consumers',
+    vha: 'Rural public clinics; augments frontline nurses in low-bandwidth environments',
   },
   {
-    feature: 'System Integration',
+    feature: 'Interoperability',
     icon: PuzzlePieceIcon,
-    conventional: 'Standalone, disease or vaccination-centered apps',
-    vha: 'Interoperable clinical architecture',
+    conventional: 'Standalone disease- or vaccination-centered apps with disjointed data capture',
+    vha: 'SNOMED CT clinical core, ready for national EHR and NHI registry ingestion',
   },
-  // {
-  //   feature: 'Primary Focus',
-  //   icon: ShieldCheckIcon,
-  //   conventional: 'Consumer engagement',
-  //   vha: 'Health-system strengthening',
-  // },
   {
-    feature: 'Data Governance',
-    icon: CircleStackIcon,
-    conventional: 'Fragmented data capture',
-    vha: 'SNOMED CT structured clinical pathways',
+    feature: 'Deployment',
+    icon: RocketLaunchIcon,
+    conventional: 'Per-facility multi-year custom software development lifecycle',
+    vha: 'Pre-configured digital public good; plugs into primary care with minimal technical overhead',
+  },
+  {
+    feature: 'Time to Impact',
+    icon: BoltIcon,
+    conventional: 'Theoretical health models with slow rollout',
+    vha: 'Screening and protecting patients within days of facility onboarding',
   },
 ]
 
