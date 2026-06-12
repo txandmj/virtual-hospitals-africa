@@ -89,7 +89,8 @@ export function EnableWebPushNotifications() {
         level: 'success',
         message: 'Push notifications enabled. You will receive alerts when you are away from this page.',
       })
-    } catch {
+    } catch (error) {
+      console.error(error)
       showAlertMessage({
         level: 'error',
         message: 'Could not enable push notifications. Please try again.',

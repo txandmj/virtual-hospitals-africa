@@ -1,52 +1,5 @@
+import { ApplicationServer, importVapidKeys, PushMessageError } from '@negrel/webpush'
 import { vapid_public_key, vapid_server_config } from './web-push-config.ts'
-
-type WebPushSendOptions = {
-  TTL: number
-}
-
-type WebPushClient = {
-  setVapidDetails(subject: string, publicKey: string, privateKey: string): void
-  sendNotification(
-    subscription: ReturnType<typeof webPushSubscriptionFromRow>,
-    payload: string,
-    options?: WebPushSendOptions,
-  ): Promise<void>
-}
-
-let webpush_promise: Promise<WebPushClient> | undefined
-
-function isObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null
-}
-
-function webPushClientFromModule(mod: unknown): WebPushClient {
-  if (!isObject(mod)) throw new Error('web-push module must be an object')
-  const candidate = isObject(mod.default) ? mod.default : mod
-  const setVapidDetails = candidate.setVapidDetails
-  const sendNotification = candidate.sendNotification
-  if (typeof setVapidDetails !== 'function') throw new Error('web-push module missing setVapidDetails')
-  if (typeof sendNotification !== 'function') throw new Error('web-push module missing sendNotification')
-  return {
-    setVapidDetails: (subject, publicKey, privateKey) => setVapidDetails(subject, publicKey, privateKey),
-    sendNotification: (subscription, payload, options) => sendNotification(subscription, payload, options),
-  }
-}
-
-async function getWebPushClient(): Promise<WebPushClient> {
-  if (!webpush_promise) {
-    webpush_promise = (async () => {
-      const mod = await import(/* @vite-ignore */ 'web-push')
-      const webpush = webPushClientFromModule(mod)
-      webpush.setVapidDetails(
-        vapid_server_config.subject,
-        vapid_public_key,
-        vapid_server_config.private_key,
-      )
-      return webpush
-    })()
-  }
-  return webpush_promise
-}
 
 export type WebPushNotificationPayload = {
   title: string
@@ -77,15 +30,74 @@ export function webPushSubscriptionFromRow({
 
 const EXPIRED_WEB_PUSH_STATUS_CODES = new Set([404, 410])
 
+function webPushStatusCode(error: unknown): number | undefined {
+  if (error instanceof PushMessageError) return error.response.status
+  if (error && typeof error === 'object' && 'statusCode' in error) {
+    const { statusCode } = error as { statusCode: unknown }
+    if (typeof statusCode === 'number') return statusCode
+  }
+  return undefined
+}
+
 export function isExpiredWebPushSubscriptionError(error: unknown): boolean {
-  if (!error || typeof error !== 'object' || !('statusCode' in error)) return false
-  const { statusCode } = error
-  return typeof statusCode === 'number' && EXPIRED_WEB_PUSH_STATUS_CODES.has(statusCode)
+  const status = webPushStatusCode(error)
+  return status !== undefined && EXPIRED_WEB_PUSH_STATUS_CODES.has(status)
 }
 
 export type SendWebPushNotificationResult =
   | { ok: true }
   | { ok: false; error: unknown; expired_subscription: boolean }
+
+// @negrel/webpush wants VAPID keys as a CryptoKeyPair imported from JWK, but our
+// env vars hold the keys as base64url-encoded raw bytes (RFC 8292 format): the
+// public key is the 65-byte uncompressed P-256 point, the private key the 32-byte
+// scalar. Convert to JWK so importVapidKeys can build the CryptoKeyPair.
+function base64UrlToBytes(value: string): Uint8Array {
+  const padding = '='.repeat((4 - (value.length % 4)) % 4)
+  const base64 = (value + padding).replace(/-/g, '+').replace(/_/g, '/')
+  const binary = atob(base64)
+  const bytes = new Uint8Array(binary.length)
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
+  return bytes
+}
+
+function bytesToBase64Url(bytes: Uint8Array): string {
+  let binary = ''
+  for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i])
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+}
+
+let application_server_promise: Promise<ApplicationServer> | undefined
+
+function getApplicationServer(): Promise<ApplicationServer> {
+  if (!application_server_promise) {
+    application_server_promise = (async () => {
+      const publicBytes = base64UrlToBytes(vapid_public_key) // 0x04 || x(32) || y(32)
+      const x = bytesToBase64Url(publicBytes.slice(1, 33))
+      const y = bytesToBase64Url(publicBytes.slice(33, 65))
+      const vapidKeys = await importVapidKeys({
+        publicKey: { kty: 'EC', crv: 'P-256', x, y, ext: true },
+        privateKey: {
+          kty: 'EC',
+          crv: 'P-256',
+          x,
+          y,
+          d: vapid_server_config.private_key,
+          ext: true,
+        },
+      })
+      return ApplicationServer.new({
+        contactInformation: vapid_server_config.subject,
+        vapidKeys,
+      })
+    })().catch((error) => {
+      // Don't cache a failed init; let the next send retry.
+      application_server_promise = undefined
+      throw error
+    })
+  }
+  return application_server_promise
+}
 
 export async function sendWebPushNotification({
   endpoint,
@@ -94,12 +106,9 @@ export async function sendWebPushNotification({
   payload,
 }: WebPushSubscriptionInput & { payload: WebPushNotificationPayload }): Promise<SendWebPushNotificationResult> {
   try {
-    const webpush = await getWebPushClient()
-    await webpush.sendNotification(
-      webPushSubscriptionFromRow({ endpoint, p256dh, auth }),
-      JSON.stringify(payload),
-      { TTL: 60 },
-    )
+    const app_server = await getApplicationServer()
+    const subscriber = app_server.subscribe(webPushSubscriptionFromRow({ endpoint, p256dh, auth }))
+    await subscriber.pushTextMessage(JSON.stringify(payload), { ttl: 60 })
     return { ok: true }
   } catch (error) {
     return {
