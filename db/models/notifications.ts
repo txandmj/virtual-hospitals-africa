@@ -1,10 +1,106 @@
 import { sql } from 'kysely'
+import { Client } from 'pg'
 import { isPriority, ORDERED_PRIORITIES, Priority, PRIORITY_SNOMED_CODES } from '../../shared/priorities.ts'
 import { NonEmptyArray, PostgresInterval, RenderedNotification, TrxOrDb, TrxOrDbOrQueryCreator } from '../../types.ts'
 import { orderByArrayPosition } from '../helpers.ts'
 import { timeAgoDisplay } from '../../util/timeAgoDisplay.ts'
 import { base } from './_base.ts'
 import { assertOr400 } from '../../util/assertOr.ts'
+import { opts } from '../db.ts'
+import { assert } from 'std/assert/assert.ts'
+import { isUUID } from '../../util/uuid.ts'
+import { exists } from '../../util/exists.ts'
+import assertHasProperty from '../../util/assertHasProperty.ts'
+
+const _PUBSUB_GLOBAL_KEY = '__vha_notificationsPubSub__'
+
+type NotificationsPubSub = {
+  by_health_worker_id: {
+    subscribe(health_worker_id: string, callback: (notification_id: string) => void): void
+    unsubscribe(health_worker_id: string, callback: (notification_id: string) => void): void
+  }
+  shutdown(): Promise<void>
+}
+
+let notifications_pub_sub_promise: Promise<NotificationsPubSub> | undefined
+
+async function createNotificationsPubSub(): Promise<NotificationsPubSub> {
+  const by_health_worker_id_subscribers = new Map<string, Set<(notification_id: string) => void>>()
+
+  const client = new Client(opts || {})
+  await client.connect()
+  await client.query(`LISTEN health_worker_notification_inserted`)
+
+  const on_notification = (event: { channel?: string; payload?: string }) => {
+    if (event.channel !== 'health_worker_notification_inserted') return
+    assert(event.payload)
+    const notification = JSON.parse(event.payload)
+    assertHasProperty(notification, 'id')
+    assertHasProperty(notification, 'health_worker_id')
+    assert(isUUID(notification.id))
+    assert(isUUID(notification.health_worker_id))
+    const subscriptions = by_health_worker_id_subscribers.get(notification.health_worker_id)
+    if (!subscriptions?.size) return
+    for (const subscription of subscriptions) {
+      subscription(notification.id)
+    }
+  }
+  client.on('notification', on_notification)
+
+  return {
+    by_health_worker_id: {
+      subscribe(health_worker_id: string, callback: (notification_id: string) => void) {
+        assert(isUUID(health_worker_id))
+        if (!by_health_worker_id_subscribers.has(health_worker_id)) {
+          by_health_worker_id_subscribers.set(health_worker_id, new Set())
+        }
+        const subscriptions = exists(by_health_worker_id_subscribers.get(health_worker_id))
+        subscriptions.add(callback)
+      },
+      unsubscribe(health_worker_id: string, callback: (notification_id: string) => void) {
+        assert(isUUID(health_worker_id))
+        const subscriptions = by_health_worker_id_subscribers.get(health_worker_id)
+        subscriptions?.delete(callback)
+        if (!subscriptions?.size) {
+          by_health_worker_id_subscribers.delete(health_worker_id)
+        }
+      },
+    },
+    async shutdown() {
+      by_health_worker_id_subscribers.clear()
+      client.removeListener('notification', on_notification)
+      client.removeAllListeners('notification')
+      try {
+        await client.query('UNLISTEN health_worker_notification_inserted')
+      } catch {
+        // Connection may already be closing.
+      }
+      await client.end()
+    },
+  }
+}
+
+async function initializeNotificationsPubSubImpl(): Promise<NotificationsPubSub> {
+  // deno-lint-ignore no-explicit-any
+  const existing = (globalThis as any)[_PUBSUB_GLOBAL_KEY] as NotificationsPubSub | undefined
+  if (existing) return existing
+
+  notifications_pub_sub_promise ||= createNotificationsPubSub().then((instance) => {
+    // deno-lint-ignore no-explicit-any
+    ;(globalThis as any)[_PUBSUB_GLOBAL_KEY] = instance
+    return instance
+  })
+  return await notifications_pub_sub_promise
+}
+
+const initialize_notifications_pub_sub = Object.assign(
+  initializeNotificationsPubSubImpl,
+  {
+    get called() {
+      return !!notifications_pub_sub_promise
+    },
+  },
+)
 
 // Deceased is in ORDERED_PRIORITIES but is not assigned as a live encounter triage level.
 const ENCOUNTER_ORDERED_PRIORITIES = ORDERED_PRIORITIES.filter(
@@ -22,7 +118,7 @@ type Terms = {
   recent_first?: boolean
 }
 
-export const notifications = base({
+const notifications_base = base({
   top_level_table: 'health_worker_web_notifications',
   baseQuery(trx, terms: Terms) {
     assertOr400(terms.health_worker_id)
@@ -182,5 +278,18 @@ export const notifications = base({
 
     const priority = row?.encounter_priority
     return priority && isPriority(priority) ? priority : null
+  },
+})
+
+export const notifications = Object.assign(notifications_base, {
+  initializeNotificationsPubSub: initialize_notifications_pub_sub,
+  async closeNotificationsPubSub(opts: { graceful: boolean }) {
+    assert(!opts.graceful, 'TODO support a graceful mode')
+    if (!notifications_pub_sub_promise) return
+    const pub_sub = await notifications_pub_sub_promise
+    await pub_sub.shutdown()
+    // deno-lint-ignore no-explicit-any
+    delete (globalThis as any)[_PUBSUB_GLOBAL_KEY]
+    notifications_pub_sub_promise = undefined
   },
 })
