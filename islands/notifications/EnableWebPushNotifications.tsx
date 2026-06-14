@@ -1,4 +1,5 @@
 import { useSignal } from '@preact/signals'
+import { useEffect } from 'preact/hooks'
 import { Button } from '../../components/library/Button.tsx'
 import { showAlertMessage } from '../alert/AlertListener.tsx'
 
@@ -18,10 +19,31 @@ function urlBase64ToUint8Array(base64_string: string) {
 }
 
 export function EnableWebPushNotifications() {
+  const enabled = useSignal(false)
   const loading = useSignal(false)
 
+  useEffect(() => {
+    async function restoreSubscriptionState() {
+      try {
+        if (!browserSupportsWebPush()) return
+
+        const registration = await navigator.serviceWorker.getRegistration()
+        if (!registration) return
+
+        const subscription = await registration.pushManager.getSubscription()
+        if (Notification.permission === 'granted' && subscription) {
+          enabled.value = true
+        }
+      } catch (error) {
+        console.error(error)
+      }
+    }
+
+    restoreSubscriptionState()
+  }, [])
+
   async function enableWebPush() {
-    if (loading.value) return
+    if (loading.value || enabled.value) return
     loading.value = true
 
     try {
@@ -44,28 +66,31 @@ export function EnableWebPushNotifications() {
         return
       }
 
-      const public_key_response = await fetch('/app/web-push-public-key')
-      if (!public_key_response.ok) {
-        showAlertMessage({
-          level: 'error',
-          message: 'Could not load push notification configuration. Please try again.',
-        })
-        return
-      }
+      let subscription = await registration.pushManager.getSubscription()
+      if (!subscription) {
+        const public_key_response = await fetch('/app/web-push-public-key')
+        if (!public_key_response.ok) {
+          showAlertMessage({
+            level: 'error',
+            message: 'Could not load push notification configuration. Please try again.',
+          })
+          return
+        }
 
-      const { public_key } = await public_key_response.json()
-      if (!public_key) {
-        showAlertMessage({
-          level: 'error',
-          message: 'Push notification configuration is missing. Please contact support.',
-        })
-        return
-      }
+        const { public_key } = await public_key_response.json()
+        if (!public_key) {
+          showAlertMessage({
+            level: 'error',
+            message: 'Push notification configuration is missing. Please contact support.',
+          })
+          return
+        }
 
-      const subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(public_key),
-      })
+        subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(public_key),
+        })
+      }
 
       const subscription_json = subscription.toJSON()
       const save_response = await fetch('/app/web-push-subscription', {
@@ -85,6 +110,7 @@ export function EnableWebPushNotifications() {
         return
       }
 
+      enabled.value = true
       showAlertMessage({
         level: 'success',
         message: 'Push notifications enabled. You will receive alerts when you are away from this page.',
@@ -100,6 +126,8 @@ export function EnableWebPushNotifications() {
     }
   }
 
+  const button_label = loading.value ? 'Enabling…' : enabled.value ? 'Push notifications enabled' : 'Enable push notifications'
+
   return (
     <div className='rounded-lg border border-gray-200 bg-white p-4 shadow'>
       <p className='text-sm text-gray-600'>
@@ -109,10 +137,10 @@ export function EnableWebPushNotifications() {
         type='button'
         variant='secondary'
         className='mt-3'
-        disabled={loading.value}
+        disabled={loading.value || enabled.value}
         onClick={enableWebPush}
       >
-        {loading.value ? 'Enabling…' : 'Enable push notifications'}
+        {button_label}
       </Button>
     </div>
   )
