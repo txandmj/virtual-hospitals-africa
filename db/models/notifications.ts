@@ -14,7 +14,16 @@ import assertHasProperty from '../../util/assertHasProperty.ts'
 
 const _PUBSUB_GLOBAL_KEY = '__vha_notificationsPubSub__'
 
+type NotificationInsertedPayload = {
+  id: string
+  health_worker_id: string
+}
+
 type NotificationsPubSub = {
+  any: {
+    subscribe(callback: (notification: NotificationInsertedPayload) => void): void
+    unsubscribe(callback: (notification: NotificationInsertedPayload) => void): void
+  }
   by_health_worker_id: {
     subscribe(health_worker_id: string, callback: (notification_id: string) => void): void
     unsubscribe(health_worker_id: string, callback: (notification_id: string) => void): void
@@ -22,9 +31,20 @@ type NotificationsPubSub = {
   shutdown(): Promise<void>
 }
 
+function notifySubscribers<T>(subscribers: Iterable<(value: T) => void>, value: T) {
+  for (const subscriber of subscribers) {
+    try {
+      subscriber(value)
+    } catch (error) {
+      console.error('notifications pub/sub subscriber threw', { value, error })
+    }
+  }
+}
+
 let notifications_pub_sub_promise: Promise<NotificationsPubSub> | undefined
 
 async function createNotificationsPubSub(): Promise<NotificationsPubSub> {
+  const any_subscribers = new Set<(notification: NotificationInsertedPayload) => void>()
   const by_health_worker_id_subscribers = new Map<string, Set<(notification_id: string) => void>>()
 
   const client = new Client(opts || {})
@@ -39,15 +59,27 @@ async function createNotificationsPubSub(): Promise<NotificationsPubSub> {
     assertHasProperty(notification, 'health_worker_id')
     assert(isUUID(notification.id))
     assert(isUUID(notification.health_worker_id))
-    const subscriptions = by_health_worker_id_subscribers.get(notification.health_worker_id)
-    if (!subscriptions?.size) return
-    for (const subscription of subscriptions) {
-      subscription(notification.id)
+    const payload: NotificationInsertedPayload = {
+      id: notification.id,
+      health_worker_id: notification.health_worker_id,
+    }
+    notifySubscribers(any_subscribers, payload)
+    const subscriptions = by_health_worker_id_subscribers.get(payload.health_worker_id)
+    if (subscriptions?.size) {
+      notifySubscribers(subscriptions, payload.id)
     }
   }
   client.on('notification', on_notification)
 
   return {
+    any: {
+      subscribe(callback: (notification: NotificationInsertedPayload) => void) {
+        any_subscribers.add(callback)
+      },
+      unsubscribe(callback: (notification: NotificationInsertedPayload) => void) {
+        any_subscribers.delete(callback)
+      },
+    },
     by_health_worker_id: {
       subscribe(health_worker_id: string, callback: (notification_id: string) => void) {
         assert(isUUID(health_worker_id))
@@ -67,6 +99,7 @@ async function createNotificationsPubSub(): Promise<NotificationsPubSub> {
       },
     },
     async shutdown() {
+      any_subscribers.clear()
       by_health_worker_id_subscribers.clear()
       client.removeListener('notification', on_notification)
       client.removeAllListeners('notification')
