@@ -51,7 +51,7 @@ async function createNotificationsPubSub(): Promise<NotificationsPubSub> {
   await client.connect()
   await client.query(`LISTEN health_worker_notification_inserted`)
 
-  const on_notification = (event: { channel?: string; payload?: string }) => {
+  const onNotification = (event: { channel?: string; payload?: string }) => {
     if (event.channel !== 'health_worker_notification_inserted') return
     assert(event.payload)
     const notification = JSON.parse(event.payload)
@@ -69,7 +69,7 @@ async function createNotificationsPubSub(): Promise<NotificationsPubSub> {
       notifySubscribers(subscriptions, payload.id)
     }
   }
-  client.on('notification', on_notification)
+  client.on('notification', onNotification)
 
   return {
     any: {
@@ -101,7 +101,7 @@ async function createNotificationsPubSub(): Promise<NotificationsPubSub> {
     async shutdown() {
       any_subscribers.clear()
       by_health_worker_id_subscribers.clear()
-      client.removeListener('notification', on_notification)
+      client.removeListener('notification', onNotification)
       client.removeAllListeners('notification')
       try {
         await client.query('UNLISTEN health_worker_notification_inserted')
@@ -113,7 +113,7 @@ async function createNotificationsPubSub(): Promise<NotificationsPubSub> {
   }
 }
 
-async function initializeNotificationsPubSubImpl(): Promise<NotificationsPubSub> {
+async function initializeNotificationsPubSub(): Promise<NotificationsPubSub> {
   // deno-lint-ignore no-explicit-any
   const existing = (globalThis as any)[_PUBSUB_GLOBAL_KEY] as NotificationsPubSub | undefined
   if (existing) return existing
@@ -126,14 +126,15 @@ async function initializeNotificationsPubSubImpl(): Promise<NotificationsPubSub>
   return await notifications_pub_sub_promise
 }
 
-const initialize_notifications_pub_sub = Object.assign(
-  initializeNotificationsPubSubImpl,
-  {
-    get called() {
-      return !!notifications_pub_sub_promise
-    },
-  },
-)
+async function closeNotificationsPubSub(opts: { graceful: boolean }) {
+  assert(!opts.graceful, 'TODO support a graceful mode')
+  if (!notifications_pub_sub_promise) return
+  const pub_sub = await notifications_pub_sub_promise
+  await pub_sub.shutdown()
+  // deno-lint-ignore no-explicit-any
+  delete (globalThis as any)[_PUBSUB_GLOBAL_KEY]
+  notifications_pub_sub_promise = undefined
+}
 
 // Deceased is in ORDERED_PRIORITIES but is not assigned as a live encounter triage level.
 const ENCOUNTER_ORDERED_PRIORITIES = ORDERED_PRIORITIES.filter(
@@ -151,7 +152,7 @@ type Terms = {
   recent_first?: boolean
 }
 
-const notifications_base = base({
+export const notifications = base({
   top_level_table: 'health_worker_web_notifications',
   baseQuery(trx, terms: Terms) {
     assertOr400(terms.health_worker_id)
@@ -312,17 +313,6 @@ const notifications_base = base({
     const priority = row?.encounter_priority
     return priority && isPriority(priority) ? priority : null
   },
-})
-
-export const notifications = Object.assign(notifications_base, {
-  initializeNotificationsPubSub: initialize_notifications_pub_sub,
-  async closeNotificationsPubSub(opts: { graceful: boolean }) {
-    assert(!opts.graceful, 'TODO support a graceful mode')
-    if (!notifications_pub_sub_promise) return
-    const pub_sub = await notifications_pub_sub_promise
-    await pub_sub.shutdown()
-    // deno-lint-ignore no-explicit-any
-    delete (globalThis as any)[_PUBSUB_GLOBAL_KEY]
-    notifications_pub_sub_promise = undefined
-  },
+  initializeNotificationsPubSub,
+  closeNotificationsPubSub,
 })

@@ -5,6 +5,7 @@ import {
   sendWebPushNotification as defaultSendWebPushNotification,
   type SendWebPushNotificationResult,
   type WebPushNotificationPayload,
+  webPushSendErrorSummary,
   type WebPushSubscriptionInput,
 } from '../../external-clients/web-push.ts'
 import type { RenderedNotification } from '../../types.ts'
@@ -39,19 +40,6 @@ function webPushPayloadFromNotification(
     notification_id: notification.notification_id,
     notification_type: notification.notification_type,
   }
-}
-
-function webPushSendErrorSummary(error: unknown): string {
-  if (!error || typeof error !== 'object') return String(error)
-
-  const summary: Record<string, unknown> = {}
-  if ('name' in error && typeof error.name === 'string') summary.name = error.name
-  if ('message' in error && typeof error.message === 'string') summary.message = error.message
-  if ('statusCode' in error && typeof error.statusCode === 'number') summary.statusCode = error.statusCode
-  if ('body' in error) summary.body = error.body
-  if ('headers' in error) summary.headers = error.headers
-
-  return Object.keys(summary).length ? JSON.stringify(summary) : String(error)
 }
 
 async function deliverWebPushToSubscription({

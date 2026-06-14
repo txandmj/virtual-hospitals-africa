@@ -1,5 +1,6 @@
 import { ApplicationServer, importVapidKeys, PushMessageError } from '@negrel/webpush'
 import { vapid_public_key, vapid_server_config } from './web-push-config.ts'
+import isObjectLike from '../util/isObjectLike.ts'
 
 export type WebPushNotificationPayload = {
   title: string
@@ -43,6 +44,19 @@ function webPushStatusCode(error: unknown): number | undefined {
 export function isExpiredWebPushSubscriptionError(error: unknown): boolean {
   const status = webPushStatusCode(error)
   return status !== undefined && EXPIRED_WEB_PUSH_STATUS_CODES.has(status)
+}
+
+export function webPushSendErrorSummary(error: unknown): string {
+  if (!isObjectLike(error)) return String(error)
+
+  const summary: Record<string, unknown> = {}
+  if ('name' in error && typeof error.name === 'string') summary.name = error.name
+  if ('message' in error && typeof error.message === 'string') summary.message = error.message
+  if ('statusCode' in error && typeof error.statusCode === 'number') summary.statusCode = error.statusCode
+  if ('body' in error) summary.body = error.body
+  if ('headers' in error) summary.headers = error.headers
+
+  return Object.keys(summary).length ? JSON.stringify(summary) : String(error)
 }
 
 export type SendWebPushNotificationResult =

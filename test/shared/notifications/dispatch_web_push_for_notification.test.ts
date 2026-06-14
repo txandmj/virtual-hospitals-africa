@@ -78,7 +78,11 @@ describe('shared/notifications/dispatch_web_push_for_notification.ts', () => {
       await dispatchWebPushForNotification({ notification_id, health_worker_id: health_worker.id }, deps)
 
       assertEquals(calls.length, 1)
-      assertEquals(calls[0]?.payload, {
+      let payload: WebPushNotificationPayload | undefined
+      for (const call of calls) {
+        payload = call.payload
+      }
+      assertEquals(payload, {
         title: 'Web push title',
         body: 'Web push description',
         url: '/app/custom',
@@ -151,7 +155,12 @@ describe('shared/notifications/dispatch_web_push_for_notification.ts', () => {
       const { calls, deps } = createSendMock(() => ({ ok: true }))
       await dispatchWebPushForNotification({ notification_id, health_worker_id: health_worker.id }, deps)
 
-      assertEquals(calls[0]?.payload.url, '/app/notifications')
+      assertEquals(calls.length, 1)
+      let url: string | undefined
+      for (const call of calls) {
+        url = call.payload.url
+      }
+      assertEquals(url, '/app/notifications')
     })
 
     it('uses /app/notifications when action_href is empty', async () => {
@@ -164,7 +173,12 @@ describe('shared/notifications/dispatch_web_push_for_notification.ts', () => {
       const { calls, deps } = createSendMock(() => ({ ok: true }))
       await dispatchWebPushForNotification({ notification_id, health_worker_id: health_worker.id }, deps)
 
-      assertEquals(calls[0]?.payload.url, '/app/notifications')
+      assertEquals(calls.length, 1)
+      let url: string | undefined
+      for (const call of calls) {
+        url = call.payload.url
+      }
+      assertEquals(url, '/app/notifications')
     })
 
     it('deletes expired subscriptions', async () => {

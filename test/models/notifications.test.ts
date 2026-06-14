@@ -23,13 +23,15 @@ describe('db/models/notifications.ts', () => {
         const pub_sub = await notifications.initializeNotificationsPubSub()
         const global_received = Promise.withResolvers<{ id: string; health_worker_id: string }>()
         const matching_received = Promise.withResolvers<string>()
-        const other_received = Promise.withResolvers<string>()
-        const global_callback = (notification: { id: string; health_worker_id: string }) => global_received.resolve(notification)
-        const matching_callback = (notification_id: string) => matching_received.resolve(notification_id)
-        const other_callback = (notification_id: string) => other_received.resolve(notification_id)
-        pub_sub.any.subscribe(global_callback)
-        pub_sub.by_health_worker_id.subscribe(health_worker.id, matching_callback)
-        pub_sub.by_health_worker_id.subscribe(other_health_worker.id, other_callback)
+        let other_received_called = false
+        const globalCallback = (notification: { id: string; health_worker_id: string }) => global_received.resolve(notification)
+        const matchingCallback = (notification_id: string) => matching_received.resolve(notification_id)
+        const otherCallback = (_notification_id: string) => {
+          other_received_called = true
+        }
+        pub_sub.any.subscribe(globalCallback)
+        pub_sub.by_health_worker_id.subscribe(health_worker.id, matchingCallback)
+        pub_sub.by_health_worker_id.subscribe(other_health_worker.id, otherCallback)
 
         try {
           const { id } = await notifications.insert(db, {
@@ -51,17 +53,14 @@ describe('db/models/notifications.ts', () => {
               health_worker_id: health_worker.id,
             })
             assertEquals(await Promise.race([matching_received.promise, timer]), id)
-            const not_received = new Promise<string>((resolve) => {
-              setTimeout(() => resolve('not-received'), 250)
-            })
-            assertEquals(await Promise.race([other_received.promise, not_received]), 'not-received')
+            assertEquals(other_received_called, false)
           } finally {
             timer.cancel()
           }
         } finally {
-          pub_sub.any.unsubscribe(global_callback)
-          pub_sub.by_health_worker_id.unsubscribe(health_worker.id, matching_callback)
-          pub_sub.by_health_worker_id.unsubscribe(other_health_worker.id, other_callback)
+          pub_sub.any.unsubscribe(globalCallback)
+          pub_sub.by_health_worker_id.unsubscribe(health_worker.id, matchingCallback)
+          pub_sub.by_health_worker_id.unsubscribe(other_health_worker.id, otherCallback)
         }
       },
     )
@@ -72,12 +71,12 @@ describe('db/models/notifications.ts', () => {
         const health_worker = await addTestEmployee(db, { role: 'nurse' })
         const pub_sub = await notifications.initializeNotificationsPubSub()
         const received = Promise.withResolvers<string>()
-        const throwing_callback = () => {
+        const throwingCallback = () => {
           throw new Error('subscriber failed')
         }
-        const succeeding_callback = (notification_id: string) => received.resolve(notification_id)
-        pub_sub.by_health_worker_id.subscribe(health_worker.id, throwing_callback)
-        pub_sub.by_health_worker_id.subscribe(health_worker.id, succeeding_callback)
+        const succeedingCallback = (notification_id: string) => received.resolve(notification_id)
+        pub_sub.by_health_worker_id.subscribe(health_worker.id, throwingCallback)
+        pub_sub.by_health_worker_id.subscribe(health_worker.id, succeedingCallback)
 
         try {
           const { id } = await notifications.insert(db, {
@@ -99,8 +98,8 @@ describe('db/models/notifications.ts', () => {
             timer.cancel()
           }
         } finally {
-          pub_sub.by_health_worker_id.unsubscribe(health_worker.id, throwing_callback)
-          pub_sub.by_health_worker_id.unsubscribe(health_worker.id, succeeding_callback)
+          pub_sub.by_health_worker_id.unsubscribe(health_worker.id, throwingCallback)
+          pub_sub.by_health_worker_id.unsubscribe(health_worker.id, succeedingCallback)
         }
       },
     )
