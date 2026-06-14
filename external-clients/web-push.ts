@@ -6,6 +6,7 @@ export type WebPushNotificationPayload = {
   body: string
   url?: string
   notification_id?: string
+  notification_type?: string
 }
 
 export type WebPushSubscriptionInput = {
