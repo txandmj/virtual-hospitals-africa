@@ -1,7 +1,11 @@
 import { afterEach, describe, it } from 'std/testing/bdd.ts'
 import { assertEquals } from 'std/assert/assert_equals.ts'
 import { type Stub, stub } from 'std/testing/mock.ts'
-import { initializeWebPushDispatcher, type InitializeWebPushDispatcherDeps } from '../../../shared/notifications/initialize_web_push_dispatcher.ts'
+import {
+  initializeWebPushDispatcher,
+  type InitializeWebPushDispatcherDeps,
+  startWebPushDispatcherAtStartup,
+} from '../../../shared/notifications/initialize_web_push_dispatcher.ts'
 import type { DispatchWebPushForNotificationInput } from '../../../shared/notifications/dispatch_web_push_for_notification.ts'
 import generateUUID from '../../../util/uuid.ts'
 
@@ -125,6 +129,65 @@ describe('shared/notifications/initialize_web_push_dispatcher.ts', () => {
         health_worker_id,
         error: new Error('dispatch failed'),
       })
+    })
+  })
+
+  describe('startWebPushDispatcherAtStartup', () => {
+    it('invokes initializeWebPushDispatcher when external connect is enabled', async () => {
+      let calls = 0
+      startWebPushDispatcherAtStartup({
+        no_external_connect: false,
+        initializeWebPushDispatcher: async () => {
+          calls++
+        },
+      })
+      await new Promise((resolve) => setTimeout(resolve, 0))
+
+      assertEquals(calls, 1)
+    })
+
+    it('does not invoke initializeWebPushDispatcher when NO_EXTERNAL_CONNECT is set', async () => {
+      let calls = 0
+      startWebPushDispatcherAtStartup({
+        no_external_connect: true,
+        initializeWebPushDispatcher: async () => {
+          calls++
+        },
+      })
+      await new Promise((resolve) => setTimeout(resolve, 0))
+
+      assertEquals(calls, 0)
+    })
+
+    it('does not register a second pub/sub callback when startup runs after initialization', async () => {
+      const { any_callbacks, deps } = createDeps()
+
+      await initializeWebPushDispatcher(deps)
+      startWebPushDispatcherAtStartup({
+        no_external_connect: false,
+        initializeWebPushDispatcher: () => initializeWebPushDispatcher(deps),
+      })
+      await new Promise((resolve) => setTimeout(resolve, 0))
+
+      assertEquals(any_callbacks.length, 1)
+    })
+
+    it('logs rejected initializer without escaping as an unhandled rejection', async () => {
+      const initialize_failed = Promise.withResolvers<void>()
+      log_error = stub(console, 'error')
+      startWebPushDispatcherAtStartup({
+        no_external_connect: false,
+        initializeWebPushDispatcher: () => {
+          initialize_failed.resolve()
+          return Promise.reject(new Error('initialize failed'))
+        },
+      })
+      await initialize_failed.promise
+      await new Promise((resolve) => setTimeout(resolve, 0))
+
+      assertEquals(log_error.calls.length, 1)
+      assertEquals(log_error.calls[0]?.args[0], 'failed to initialize web push dispatcher')
+      assertEquals(log_error.calls[0]?.args[1], { error: new Error('initialize failed') })
     })
   })
 })

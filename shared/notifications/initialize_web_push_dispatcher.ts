@@ -1,4 +1,5 @@
 import { notifications } from '../../db/models/notifications.ts'
+import { NO_EXTERNAL_CONNECT } from '../../util/env.ts'
 import { dispatchWebPushForNotification } from './dispatch_web_push_for_notification.ts'
 
 const _WEB_PUSH_DISPATCHER_GLOBAL_KEY = '__vha_webPushDispatcherInitialized__'
@@ -20,7 +21,23 @@ const default_deps: InitializeWebPushDispatcherDeps = {
   dispatchWebPushForNotification,
 }
 
-// Automatic Web Push delivery is not active until this initializer is called from server startup in Step 4.
+export type StartWebPushDispatcherAtStartupDeps = {
+  no_external_connect?: boolean
+  initializeWebPushDispatcher?: () => Promise<void>
+}
+
+export function startWebPushDispatcherAtStartup(
+  deps: StartWebPushDispatcherAtStartupDeps = {},
+): void {
+  if (deps.no_external_connect ?? NO_EXTERNAL_CONNECT) return
+
+  // LISTEN-based delivery assumes a single vha-app instance; multiple application
+  // instances would each receive the same PostgreSQL NOTIFY and could send duplicate pushes.
+  void (deps.initializeWebPushDispatcher ?? initializeWebPushDispatcher)()
+    .catch((error) => {
+      console.error('failed to initialize web push dispatcher', { error })
+    })
+}
 
 export async function initializeWebPushDispatcher(
   deps: InitializeWebPushDispatcherDeps = default_deps,

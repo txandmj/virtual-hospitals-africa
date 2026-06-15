@@ -1,5 +1,6 @@
 import { App, staticFiles } from 'fresh'
 import httpsUrlPlugin from './plugins/httpsUrl.ts'
+import { startWebPushDispatcherAtStartup } from './shared/notifications/initialize_web_push_dispatcher.ts'
 
 export const app = new App()
   // .ws('/xwss', {
@@ -20,6 +21,8 @@ export const app = new App()
   .use(staticFiles())
   // Enable file-system based routing
   .fsRoutes()
+
+startWebPushDispatcherAtStartup()
 
 globalThis.addEventListener('unhandledrejection', (e) => {
   console.error('Caught unhandled rejection:', e.reason)
