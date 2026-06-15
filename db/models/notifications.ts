@@ -113,29 +113,6 @@ async function createNotificationsPubSub(): Promise<NotificationsPubSub> {
   }
 }
 
-async function initializeNotificationsPubSub(): Promise<NotificationsPubSub> {
-  // deno-lint-ignore no-explicit-any
-  const existing = (globalThis as any)[_PUBSUB_GLOBAL_KEY] as NotificationsPubSub | undefined
-  if (existing) return existing
-
-  notifications_pub_sub_promise ||= createNotificationsPubSub().then((instance) => {
-    // deno-lint-ignore no-explicit-any
-    ;(globalThis as any)[_PUBSUB_GLOBAL_KEY] = instance
-    return instance
-  })
-  return await notifications_pub_sub_promise
-}
-
-async function closeNotificationsPubSub(opts: { graceful: boolean }) {
-  assert(!opts.graceful, 'TODO support a graceful mode')
-  if (!notifications_pub_sub_promise) return
-  const pub_sub = await notifications_pub_sub_promise
-  await pub_sub.shutdown()
-  // deno-lint-ignore no-explicit-any
-  delete (globalThis as any)[_PUBSUB_GLOBAL_KEY]
-  notifications_pub_sub_promise = undefined
-}
-
 // Deceased is in ORDERED_PRIORITIES but is not assigned as a live encounter triage level.
 const ENCOUNTER_ORDERED_PRIORITIES = ORDERED_PRIORITIES.filter(
   (priority) => priority !== 'Deceased',
@@ -313,6 +290,25 @@ export const notifications = base({
     const priority = row?.encounter_priority
     return priority && isPriority(priority) ? priority : null
   },
-  initializeNotificationsPubSub,
-  closeNotificationsPubSub,
+  async initializeNotificationsPubSub(): Promise<NotificationsPubSub> {
+    // deno-lint-ignore no-explicit-any
+    const existing = (globalThis as any)[_PUBSUB_GLOBAL_KEY] as NotificationsPubSub | undefined
+    if (existing) return existing
+
+    notifications_pub_sub_promise ||= createNotificationsPubSub().then((instance) => {
+      // deno-lint-ignore no-explicit-any
+      ;(globalThis as any)[_PUBSUB_GLOBAL_KEY] = instance
+      return instance
+    })
+    return await notifications_pub_sub_promise
+  },
+  async closeNotificationsPubSub(opts: { graceful: boolean }) {
+    assert(!opts.graceful, 'TODO support a graceful mode')
+    if (!notifications_pub_sub_promise) return
+    const pub_sub = await notifications_pub_sub_promise
+    await pub_sub.shutdown()
+    // deno-lint-ignore no-explicit-any
+    delete (globalThis as any)[_PUBSUB_GLOBAL_KEY]
+    notifications_pub_sub_promise = undefined
+  },
 })

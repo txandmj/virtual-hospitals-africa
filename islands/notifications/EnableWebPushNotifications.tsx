@@ -1,6 +1,7 @@
 import { useSignal } from '@preact/signals'
 import { useEffect } from 'preact/hooks'
 import { Button } from '../../components/library/Button.tsx'
+import { applicationServerKeysMatch, urlBase64ToUint8Array } from '../../shared/notifications/application_server_key.ts'
 import { showAlertMessage } from '../alert/AlertListener.tsx'
 
 function browserSupportsWebPush() {
@@ -9,16 +10,36 @@ function browserSupportsWebPush() {
     'PushManager' in window
 }
 
-function urlBase64ToUint8Array(base64_string: string) {
-  const padding = '='.repeat((4 - base64_string.length % 4) % 4)
-  const base64 = (base64_string + padding)
-    .replace(/-/g, '+')
-    .replace(/_/g, '/')
-  const raw_data = atob(base64)
-  return Uint8Array.from(raw_data, (char) => char.charCodeAt(0))
+async function ensurePushSubscription(
+  service_worker: ServiceWorkerRegistration,
+  vapid_public_key: string,
+) {
+  const application_server_key = urlBase64ToUint8Array(vapid_public_key)
+  let subscription = await service_worker.pushManager.getSubscription()
+
+  if (
+    subscription &&
+    applicationServerKeysMatch(
+      subscription.options.applicationServerKey,
+      vapid_public_key,
+    )
+  ) {
+    return subscription
+  }
+
+  if (subscription) {
+    await subscription.unsubscribe()
+  }
+
+  return await service_worker.pushManager.subscribe({
+    userVisibleOnly: true,
+    applicationServerKey: application_server_key,
+  })
 }
 
-export function EnableWebPushNotifications() {
+export function EnableWebPushNotifications(
+  { vapid_public_key }: { vapid_public_key: string },
+) {
   const enabled = useSignal(false)
   const loading = useSignal(false)
 
@@ -27,11 +48,18 @@ export function EnableWebPushNotifications() {
       try {
         if (!browserSupportsWebPush()) return
 
-        const registration = await navigator.serviceWorker.getRegistration()
-        if (!registration) return
+        const service_worker = await navigator.serviceWorker.getRegistration()
+        if (!service_worker) return
 
-        const subscription = await registration.pushManager.getSubscription()
-        if (Notification.permission === 'granted' && subscription) {
+        const subscription = await service_worker.pushManager.getSubscription()
+        if (
+          Notification.permission === 'granted' &&
+          subscription &&
+          applicationServerKeysMatch(
+            subscription.options.applicationServerKey,
+            vapid_public_key,
+          )
+        ) {
           enabled.value = true
         }
       } catch (error) {
@@ -40,7 +68,7 @@ export function EnableWebPushNotifications() {
     }
 
     restoreSubscriptionState()
-  }, [])
+  }, [vapid_public_key])
 
   async function enableWebPush() {
     if (loading.value || enabled.value) return
@@ -55,7 +83,7 @@ export function EnableWebPushNotifications() {
         return
       }
 
-      const registration = await navigator.serviceWorker.register('/service-worker.js')
+      const service_worker = await navigator.serviceWorker.register('/service-worker.js')
 
       const permission = await Notification.requestPermission()
       if (permission !== 'granted') {
@@ -66,31 +94,7 @@ export function EnableWebPushNotifications() {
         return
       }
 
-      let subscription = await registration.pushManager.getSubscription()
-      if (!subscription) {
-        const public_key_response = await fetch('/app/web-push-public-key')
-        if (!public_key_response.ok) {
-          showAlertMessage({
-            level: 'error',
-            message: 'Could not load push notification configuration. Please try again.',
-          })
-          return
-        }
-
-        const { public_key } = await public_key_response.json()
-        if (!public_key) {
-          showAlertMessage({
-            level: 'error',
-            message: 'Push notification configuration is missing. Please contact support.',
-          })
-          return
-        }
-
-        subscription = await registration.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(public_key),
-        })
-      }
+      const subscription = await ensurePushSubscription(service_worker, vapid_public_key)
 
       const subscription_json = subscription.toJSON()
       const save_response = await fetch('/app/web-push-subscription', {

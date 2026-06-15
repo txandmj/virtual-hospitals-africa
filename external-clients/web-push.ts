@@ -34,8 +34,8 @@ const EXPIRED_WEB_PUSH_STATUS_CODES = new Set([404, 410])
 
 function webPushStatusCode(error: unknown): number | undefined {
   if (error instanceof PushMessageError) return error.response.status
-  if (error && typeof error === 'object' && 'statusCode' in error) {
-    const { statusCode } = error as { statusCode: unknown }
+  if (isObjectLike(error) && 'statusCode' in error) {
+    const { statusCode } = error
     if (typeof statusCode === 'number') return statusCode
   }
   return undefined
