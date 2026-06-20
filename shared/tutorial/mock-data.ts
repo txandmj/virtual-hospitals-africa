@@ -1875,6 +1875,7 @@ function makeMockClinicEmployee(data: {
     demographics: { sex: data.sex, gender: data.gender, date_of_birth: data.date_of_birth },
     contact_details: { mobile_phone_number: null, address: null },
     ever_licensed_as_doctor: 0 as const,
+    next_appointment_within_hour: null,
     organizations: [
       {
         id: 'tutorial-org-001',
