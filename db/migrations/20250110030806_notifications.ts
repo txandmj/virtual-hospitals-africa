@@ -2,8 +2,8 @@ import type { DB } from '../../db.d.ts'
 import { Kysely } from 'kysely'
 import { createStandardTable } from '../createTable.ts'
 
-export function up(db: Kysely<DB>) {
-  return createStandardTable(
+export async function up(db: Kysely<DB>) {
+  await createStandardTable(
     db,
     'health_worker_web_notifications',
     (qb) =>
@@ -18,19 +18,18 @@ export function up(db: Kysely<DB>) {
         .addColumn('action_title', 'text', (col) => col.notNull())
         .addColumn('action_href', 'text', (col) => col.notNull())
         .addColumn('seen_at', 'timestamptz')
-        .addColumn('patient_encounter_id', 'uuid', (col) => col.references('patient_encounters.id')),
-  ).then(async () => {
-    await db.schema
-      .createIndex('idx_health_worker_web_notifications_health_worker_id')
-      .on('health_worker_web_notifications')
-      .column('health_worker_id')
-      .execute()
-    await db.schema
-      .createIndex('idx_health_worker_web_notifications_unread_priority_lookup')
-      .on('health_worker_web_notifications')
-      .columns(['health_worker_id', 'seen_at', 'patient_encounter_id'])
-      .execute()
-  })
+        .addColumn('patient_encounter_id', 'uuid', (col) => col.references('patient_encounters.id').onDelete('cascade')),
+  )
+  await db.schema
+    .createIndex('idx_health_worker_web_notifications_health_worker_id')
+    .on('health_worker_web_notifications')
+    .column('health_worker_id')
+    .execute()
+  await db.schema
+    .createIndex('idx_health_worker_web_notifications_unread_priority_lookup')
+    .on('health_worker_web_notifications')
+    .columns(['health_worker_id', 'seen_at', 'patient_encounter_id'])
+    .execute()
 }
 
 export async function down(db: Kysely<DB>) {

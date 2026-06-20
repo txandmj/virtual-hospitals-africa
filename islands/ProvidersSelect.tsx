@@ -1,4 +1,5 @@
 import { useSignal } from '@preact/signals'
+import { useMemo } from 'preact/hooks'
 import { RenderedEmployeeWithPresence } from '../types.ts'
 import cls from '../util/cls.ts'
 import Avatar from '../components/library/Avatar.tsx'
@@ -97,7 +98,13 @@ export default function ProvidersSelect(
     initial_selected?: RenderedEmployeeWithPresence[]
   } & TrackFormDataSomehow,
 ) {
-  const providers_with_initially_selected_first = initial_selected ? sortBy(providers, (provider) => initial_selected.includes(provider) ? 0 : 1) : providers
+  // Compute the display order once on mount. `initial_selected` may be backed
+  // by a signal that this component's onChange mutates, so re-sorting on every
+  // render would shuffle just-selected providers to the front. Freeze the order.
+  const providers_with_initially_selected_first = useMemo(
+    () => providers.length ? sortBy(providers, (provider) => initial_selected.includes(provider) ? 0 : 1) : providers,
+    [],
+  )
 
   const selected = useSignal<Set<RenderedEmployeeWithPresence>>(new Set(initial_selected))
 
