@@ -1,7 +1,7 @@
 import { afterAll, describe, it } from 'std/testing/bdd.ts'
 import { parseWithSchema } from '../../shared/s_expression.ts'
 import { TASKS_LISP } from '../../s_expression/tasks.ts'
-import { Lang, QueryableEvidenceNode, SnomedConcept, system_diagnosis_rule, system_priority_evaluation, task } from '../../shared/s_expression_schemas.ts'
+import { system_diagnosis_rule, system_priority_evaluation, task } from '../../shared/s_expression_schemas.ts'
 import db from '../../db/db.ts'
 import { collect, filter } from '../../util/inParallel.ts'
 import { assertArrayEmpty } from '../../util/arraySize.ts'
@@ -11,102 +11,10 @@ import { parseLispFile, walkDirectory } from '../../s_expression/compile.ts'
 import { allEvidenceToLookFor } from '../../db/models/s_expression_evidence.ts'
 import { inverseSExpression } from '../../shared/s_expression_inverse.ts'
 import { ALL_ASESSMENT_OPTIONS_PARSED, VITALS_ADULT_SNOMED_CONCEPT_NAMES } from '../../shared/vitals.ts'
-import { assertUnreachable } from '../../util/assertUnreachable.ts'
 import { isCheckFor } from '../../db/models/additional_tasks.ts'
 import compactMap from '../../util/compactMap.ts'
-
-export function* allConceptsToLookFor(
-  node: QueryableEvidenceNode | Lang['task' | 'system_diagnosis_rule' | 'system_priority_evaluation'],
-): Generator<SnomedConcept> {
-  switch (node.atom) {
-    case 'qualifier':
-      if (node.specific_snomed_concept) yield node.specific_snomed_concept
-      for (const qualifier of node.qualifiers) {
-        yield* allConceptsToLookFor(qualifier)
-      }
-      break
-    case 'attribute':
-      if (node.specific_snomed_concept) yield node.specific_snomed_concept
-      break
-    case 'active_condition':
-      yield node.snomed_concept
-      break
-    case 'finding':
-    case 'evaluation':
-      if (node.root_snomed_concept) yield node.root_snomed_concept
-      if (node.specific_snomed_concept) yield node.specific_snomed_concept
-      if (node.value_snomed_concept) yield node.value_snomed_concept
-      for (const qualifier of node.qualifiers) {
-        yield* allConceptsToLookFor(qualifier)
-      }
-      for (const attribute of node.attributes) {
-        yield* allConceptsToLookFor(attribute)
-      }
-      if ('excluding' in node) {
-        for (const excluding of node.excluding) {
-          yield* allConceptsToLookFor(excluding.finding)
-        }
-      }
-      break
-    case 'procedure':
-      if (node.root_snomed_concept) yield node.root_snomed_concept
-      if (node.specific_snomed_concept) yield node.specific_snomed_concept
-      if (Array.isArray(node.value)) {
-        for (const n of node.value) {
-          yield* allConceptsToLookFor(n)
-        }
-      }
-      for (const qualifier of node.qualifiers) {
-        yield* allConceptsToLookFor(qualifier)
-      }
-      break
-
-    case 'diagnosis':
-    case 'measurement':
-      yield node.snomed_concept
-      break
-    case '<':
-    case '<=':
-    case '=':
-    case '>':
-    case '>=':
-      if (node.type === 'measurement') yield* allConceptsToLookFor(node.measurement)
-      break
-    case 'or':
-    case 'and':
-    case 'any2':
-      for (const expression of node.expressions) {
-        yield* allConceptsToLookFor(expression)
-      }
-      break
-    case 'not':
-      yield* allConceptsToLookFor(node.expression)
-      break
-    case 'task':
-      yield* allConceptsToLookFor(node.due_to)
-      yield* allConceptsToLookFor(node.to_be_done)
-      break
-    case 'system_diagnosis_rule':
-      yield* allConceptsToLookFor(node.due_to)
-      yield* allConceptsToLookFor(node.diagnosis)
-      break
-    case 'system_priority_evaluation':
-      yield* allConceptsToLookFor(node.due_to)
-      break
-    default:
-      assertUnreachable(node)
-  }
-}
-
-export async function conceptDoesNotExist({ concept }: { concept: SnomedConcept }): Promise<boolean> {
-  const found = await db.selectFrom('snomed_inferred_canonical_name_and_category')
-    .where('name', '=', concept.name)
-    .where('category', '=', concept.category)
-    .limit(1)
-    .executeTakeFirst()
-
-  return !found
-}
+import { allConceptsToLookFor } from '../../shared/s_expression_concepts.ts'
+import { conceptDoesNotExist } from '../../db/models/snomed_concept_exists.ts'
 
 function* nodesAndConceptsTasks() {
   for (const s_expression of TASKS_LISP) {
