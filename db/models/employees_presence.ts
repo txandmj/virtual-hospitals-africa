@@ -18,6 +18,15 @@ export const employees_presence = base({
           patient_encounters.baseQuery(trx, { is_open: true })
             .where('patient_encounters.patient_id', '=', eb.ref('employment_presence.with_patient_id')),
         ).as('open_encounter'),
+        eb.selectFrom('appointment_employees')
+          .innerJoin('appointments', 'appointments.id', 'appointment_employees.appointment_id')
+          .select('appointments.start')
+          .whereRef('appointment_employees.employee_id', '=', 'employment.id')
+          .where('appointments.start', '>=', sql<Date>`now()`)
+          .where('appointments.start', '<=', sql<Date>`now() + interval '1 hour'`)
+          .orderBy('appointments.start', 'asc')
+          .limit(1)
+          .as('next_appointment_within_hour'),
       ])
   },
   formatResult({ open_encounter, ...employee }): RenderedEmployeeWithPresence {

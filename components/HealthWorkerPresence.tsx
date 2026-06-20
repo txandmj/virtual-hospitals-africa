@@ -47,13 +47,22 @@ export function HealthWorkerPresence({ employee }: {
   employee: RenderedEmployee & {
     at_work?: SqlBool
     open_encounter?: Maybe<RenderedPatientOpenEncounter>
+    next_appointment_within_hour?: Maybe<Date | string>
   }
 }) {
   const availability = computeAvailability(employee)
+  const appt = employee.next_appointment_within_hour
+  const appt_time = appt
+    ? new Date(appt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    : null
+
   return (
     <span className='flex flex-col items-start gap-1 mt-2 sm:mt-0 sm:items-end'>
       <span className='text-xs text-gray-600'>{availability.label}</span>
       {availability.priority !== undefined && <PriorityBadge priority={availability.priority} />}
+      {appt_time && (
+        <span className='text-xs text-amber-600'>Appt at {appt_time}</span>
+      )}
     </span>
   )
 }
