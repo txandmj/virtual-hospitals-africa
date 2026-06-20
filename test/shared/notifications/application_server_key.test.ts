@@ -1,9 +1,9 @@
 import { describe, it } from 'std/testing/bdd.ts'
 import { assert } from 'std/assert/assert.ts'
 import { assertEquals } from 'std/assert/assert_equals.ts'
-import { applicationServerKeysMatch, urlBase64ToUint8Array } from '../../../shared/notifications/application_server_key.ts'
+import { applicationServerKeysMatch, urlBase64ToUint8Array } from '../../../backend/notifications/application_server_key.ts'
 
-describe('shared/notifications/application_server_key.ts', () => {
+describe('backend/notifications/application_server_key.ts', () => {
   const vapid_public_key = 'BDsD5qRyJeBmU-d4X-KWcVBJkD68Efbw4k0xJWhE6ezfZA9aXLvd4mHK-eAYD8pA7FLhnXzfMDLhGLUZ4nHLen0'
 
   describe('applicationServerKeysMatch', () => {

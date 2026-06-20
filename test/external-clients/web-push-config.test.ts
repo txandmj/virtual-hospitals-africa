@@ -70,7 +70,7 @@ describe('external-clients/web-push-config.ts', () => {
         () =>
           resolveVapidConfig({
             is_production: true,
-            generate_keys: async () => {
+            generate_keys: () => {
               throw new Error('should not generate keys in production')
             },
           }),

@@ -87,10 +87,10 @@ let application_server_promise: Promise<ApplicationServer> | undefined
 function getApplicationServer(): Promise<ApplicationServer> {
   if (!application_server_promise) {
     application_server_promise = (async () => {
-      const publicBytes = base64UrlToBytes(vapid_public_key) // 0x04 || x(32) || y(32)
-      const x = bytesToBase64Url(publicBytes.slice(1, 33))
-      const y = bytesToBase64Url(publicBytes.slice(33, 65))
-      const vapidKeys = await importVapidKeys({
+      const public_bytes = base64UrlToBytes(vapid_public_key) // 0x04 || x(32) || y(32)
+      const x = bytesToBase64Url(public_bytes.slice(1, 33))
+      const y = bytesToBase64Url(public_bytes.slice(33, 65))
+      const vapid_keys = await importVapidKeys({
         publicKey: { kty: 'EC', crv: 'P-256', x, y, ext: true },
         privateKey: {
           kty: 'EC',
@@ -103,7 +103,7 @@ function getApplicationServer(): Promise<ApplicationServer> {
       })
       return ApplicationServer.new({
         contactInformation: vapid_server_config.subject,
-        vapidKeys,
+        vapidKeys: vapid_keys,
       })
     })().catch((error) => {
       // Don't cache a failed init; let the next send retry.

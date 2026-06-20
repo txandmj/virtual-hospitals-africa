@@ -5,8 +5,8 @@ import {
   initializeWebPushDispatcher,
   type InitializeWebPushDispatcherDeps,
   startWebPushDispatcherAtStartup,
-} from '../../../shared/notifications/initialize_web_push_dispatcher.ts'
-import type { DispatchWebPushForNotificationInput } from '../../../shared/notifications/dispatch_web_push_for_notification.ts'
+} from '../../../backend/notifications/initialize_web_push_dispatcher.ts'
+import type { DispatchWebPushForNotificationInput } from '../../../backend/notifications/dispatch_web_push_for_notification.ts'
 import generateUUID from '../../../util/uuid.ts'
 
 const _WEB_PUSH_DISPATCHER_GLOBAL_KEY = '__vha_webPushDispatcherInitialized__'
@@ -48,13 +48,13 @@ function createDeps(
 ) {
   const { any_callbacks, pub_sub } = createMockPubSub()
   const deps: InitializeWebPushDispatcherDeps = {
-    initializeNotificationsPubSub: async () => pub_sub,
+    initializeNotificationsPubSub: () => Promise.resolve(pub_sub),
     dispatchWebPushForNotification,
   }
   return { any_callbacks, deps }
 }
 
-describe('shared/notifications/initialize_web_push_dispatcher.ts', () => {
+describe('backend/notifications/initialize_web_push_dispatcher.ts', () => {
   let log_error: Stub | undefined
 
   afterEach(() => {
@@ -79,9 +79,10 @@ describe('shared/notifications/initialize_web_push_dispatcher.ts', () => {
       const dispatch_calls: DispatchWebPushForNotificationInput[] = []
       const dispatch_finished = Promise.withResolvers<void>()
       const { any_callbacks, deps } = createDeps({
-        dispatchWebPushForNotification: async (input) => {
+        dispatchWebPushForNotification: (input) => {
           dispatch_calls.push(input)
           dispatch_finished.resolve()
+          return Promise.resolve()
         },
       })
 
@@ -137,8 +138,9 @@ describe('shared/notifications/initialize_web_push_dispatcher.ts', () => {
       let calls = 0
       startWebPushDispatcherAtStartup({
         no_external_connect: false,
-        initializeWebPushDispatcher: async () => {
+        initializeWebPushDispatcher: () => {
           calls++
+          return Promise.resolve()
         },
       })
       await new Promise((resolve) => setTimeout(resolve, 0))
@@ -150,8 +152,9 @@ describe('shared/notifications/initialize_web_push_dispatcher.ts', () => {
       let calls = 0
       startWebPushDispatcherAtStartup({
         no_external_connect: true,
-        initializeWebPushDispatcher: async () => {
+        initializeWebPushDispatcher: () => {
           calls++
+          return Promise.resolve()
         },
       })
       await new Promise((resolve) => setTimeout(resolve, 0))

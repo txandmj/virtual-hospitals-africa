@@ -1,6 +1,6 @@
 import { App, staticFiles } from 'fresh'
 import httpsUrlPlugin from './plugins/httpsUrl.ts'
-import { startWebPushDispatcherAtStartup } from './shared/notifications/initialize_web_push_dispatcher.ts'
+import { startWebPushDispatcherAtStartup } from './backend/notifications/initialize_web_push_dispatcher.ts'
 
 export const app = new App()
   // .ws('/xwss', {

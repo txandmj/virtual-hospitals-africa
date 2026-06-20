@@ -1,3 +1,4 @@
+// deno-lint-ignore-file
 addEventListener('push', (event) => {
   var title = 'New VHA notification'
   var body = 'You have a new notification.'

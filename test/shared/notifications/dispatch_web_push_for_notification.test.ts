@@ -4,7 +4,7 @@ import { type Stub, stub } from 'std/testing/mock.ts'
 import db from '../../../db/db.ts'
 import { notifications } from '../../../db/models/notifications.ts'
 import { health_worker_web_push_subscriptions } from '../../../db/models/health_worker_web_push_subscriptions.ts'
-import { dispatchWebPushForNotification, type DispatchWebPushForNotificationDeps } from '../../../shared/notifications/dispatch_web_push_for_notification.ts'
+import { dispatchWebPushForNotification, type DispatchWebPushForNotificationDeps } from '../../../backend/notifications/dispatch_web_push_for_notification.ts'
 import type { SendWebPushNotificationResult, WebPushNotificationPayload, WebPushSubscriptionInput } from '../../../external-clients/web-push.ts'
 import { addTestEmployee } from '../../_helpers/employees.ts'
 import generateUUID from '../../../util/uuid.ts'
@@ -55,7 +55,7 @@ async function insertTestSubscription(health_worker_id: string, endpoint: string
   })
 }
 
-describe('shared/notifications/dispatch_web_push_for_notification.ts', () => {
+describe('backend/notifications/dispatch_web_push_for_notification.ts', () => {
   afterAll(() => db.destroy())
 
   describe('dispatchWebPushForNotification', () => {

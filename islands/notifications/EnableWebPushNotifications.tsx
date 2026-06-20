@@ -1,7 +1,7 @@
 import { useSignal } from '@preact/signals'
 import { useEffect } from 'preact/hooks'
 import { Button } from '../../components/library/Button.tsx'
-import { applicationServerKeysMatch, urlBase64ToUint8Array } from '../../shared/notifications/application_server_key.ts'
+import { applicationServerKeysMatch, urlBase64ToUint8Array } from '../../backend/notifications/application_server_key.ts'
 import { showAlertMessage } from '../alert/AlertListener.tsx'
 
 function browserSupportsWebPush() {
@@ -15,7 +15,7 @@ async function ensurePushSubscription(
   vapid_public_key: string,
 ) {
   const application_server_key = urlBase64ToUint8Array(vapid_public_key)
-  let subscription = await service_worker.pushManager.getSubscription()
+  const subscription = await service_worker.pushManager.getSubscription()
 
   if (
     subscription &&
