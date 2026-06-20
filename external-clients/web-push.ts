@@ -1,11 +1,13 @@
 import { ApplicationServer, importVapidKeys, PushMessageError } from '@negrel/webpush'
 import { vapid_public_key, vapid_server_config } from './web-push-config.ts'
+import isObjectLike from '../util/isObjectLike.ts'
 
 export type WebPushNotificationPayload = {
   title: string
   body: string
   url?: string
   notification_id?: string
+  notification_type?: string
 }
 
 export type WebPushSubscriptionInput = {
@@ -32,8 +34,8 @@ const EXPIRED_WEB_PUSH_STATUS_CODES = new Set([404, 410])
 
 function webPushStatusCode(error: unknown): number | undefined {
   if (error instanceof PushMessageError) return error.response.status
-  if (error && typeof error === 'object' && 'statusCode' in error) {
-    const { statusCode } = error as { statusCode: unknown }
+  if (isObjectLike(error) && 'statusCode' in error) {
+    const { statusCode } = error
     if (typeof statusCode === 'number') return statusCode
   }
   return undefined
@@ -42,6 +44,19 @@ function webPushStatusCode(error: unknown): number | undefined {
 export function isExpiredWebPushSubscriptionError(error: unknown): boolean {
   const status = webPushStatusCode(error)
   return status !== undefined && EXPIRED_WEB_PUSH_STATUS_CODES.has(status)
+}
+
+export function webPushSendErrorSummary(error: unknown): string {
+  if (!isObjectLike(error)) return String(error)
+
+  const summary: Record<string, unknown> = {}
+  if ('name' in error && typeof error.name === 'string') summary.name = error.name
+  if ('message' in error && typeof error.message === 'string') summary.message = error.message
+  if ('statusCode' in error && typeof error.statusCode === 'number') summary.statusCode = error.statusCode
+  if ('body' in error) summary.body = error.body
+  if ('headers' in error) summary.headers = error.headers
+
+  return Object.keys(summary).length ? JSON.stringify(summary) : String(error)
 }
 
 export type SendWebPushNotificationResult =
@@ -72,10 +87,10 @@ let application_server_promise: Promise<ApplicationServer> | undefined
 function getApplicationServer(): Promise<ApplicationServer> {
   if (!application_server_promise) {
     application_server_promise = (async () => {
-      const publicBytes = base64UrlToBytes(vapid_public_key) // 0x04 || x(32) || y(32)
-      const x = bytesToBase64Url(publicBytes.slice(1, 33))
-      const y = bytesToBase64Url(publicBytes.slice(33, 65))
-      const vapidKeys = await importVapidKeys({
+      const public_bytes = base64UrlToBytes(vapid_public_key) // 0x04 || x(32) || y(32)
+      const x = bytesToBase64Url(public_bytes.slice(1, 33))
+      const y = bytesToBase64Url(public_bytes.slice(33, 65))
+      const vapid_keys = await importVapidKeys({
         publicKey: { kty: 'EC', crv: 'P-256', x, y, ext: true },
         privateKey: {
           kty: 'EC',
@@ -88,7 +103,7 @@ function getApplicationServer(): Promise<ApplicationServer> {
       })
       return ApplicationServer.new({
         contactInformation: vapid_server_config.subject,
-        vapidKeys,
+        vapidKeys: vapid_keys,
       })
     })().catch((error) => {
       // Don't cache a failed init; let the next send retry.

@@ -1,3 +1,4 @@
+// deno-lint-ignore-file
 addEventListener('push', (event) => {
   var title = 'New VHA notification'
   var body = 'You have a new notification.'
@@ -35,12 +36,24 @@ addEventListener('push', (event) => {
 addEventListener('notificationclick', (event) => {
   event.notification.close()
 
-  var url = event.notification.data?.url || '/app/notifications'
+  var url = event.notification.data?.url || '/app'
 
-  event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((window_clients) => {
-      if (window_clients.length) return window_clients[0].focus()
-      return clients.openWindow(url)
-    }),
-  )
+  event.waitUntil((async () => {
+    var window_clients = await clients.matchAll({
+      type: 'window',
+      includeUncontrolled: true,
+    })
+
+    if (window_clients.length) {
+      var client = window_clients[0]
+
+      if ('navigate' in client) {
+        await client.navigate(url)
+      }
+
+      return client.focus()
+    }
+
+    return clients.openWindow(url)
+  })())
 })

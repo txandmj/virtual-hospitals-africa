@@ -5,6 +5,7 @@ import Pagination from '../../components/library/Pagination.tsx'
 import Avatar from '../../components/library/Avatar.tsx'
 import { EmptyState } from '../../components/library/EmptyState.tsx'
 import { BellIcon } from '../../components/library/icons/heroicons/outline.tsx'
+import { vapid_public_key } from '../../external-clients/web-push-config.ts'
 import { EnableWebPushNotifications } from '../../islands/notifications/EnableWebPushNotifications.tsx'
 
 const ROWS_PER_PAGE = 25
@@ -27,7 +28,7 @@ export default HealthWorkerHomePage(
     if (results.length === 0 && page === 1) {
       return (
         <div className='flex flex-col gap-4'>
-          <EnableWebPushNotifications />
+          <EnableWebPushNotifications vapid_public_key={vapid_public_key} />
           <EmptyState
             header='No notifications yet'
             explanation="When you have notifications, they'll show up here."
@@ -39,7 +40,7 @@ export default HealthWorkerHomePage(
 
     return (
       <form method='get' className='flex flex-col gap-4'>
-        <EnableWebPushNotifications />
+        <EnableWebPushNotifications vapid_public_key={vapid_public_key} />
         <ul role='list' className='divide-y divide-gray-200 bg-white shadow rounded-lg'>
           {results.map((notification) => (
             <NotificationRow
