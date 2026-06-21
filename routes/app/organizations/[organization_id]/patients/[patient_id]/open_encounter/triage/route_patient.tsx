@@ -141,9 +141,13 @@ export async function PatientTriageRoutePatientPage(
   assert(completedPersonal(patient))
 
   const { clinic_employees, manage_patient_tasks } = await promiseProps({
-    clinic_employees: employees_presence.findAll(trx, {
+    clinic_employees: employees_presence.getAllAtOrganization(trx, {
       organization_id,
-      excluding_health_worker_id: health_worker_id,
+      excluding_health_worker: {
+        health_worker_id,
+        at_work: true,
+        seniority_order: organization_employment.seniority_order,
+      },
     }),
     manage_patient_tasks: managePatientTasks(ctx),
   })

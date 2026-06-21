@@ -52,7 +52,7 @@ export const handler = postHandler(
 export default HealthWorkerHomePage(
   'Add patient to waiting room',
   async function WaitingRoomAdd(
-    { url, state: { trx, organization, organization_id, health_worker_id } }: OrganizationContext,
+    { url, state: { trx, organization, organization_id, health_worker_id, organization_employment } }: OrganizationContext,
   ) {
     const { searchParams } = url
     const patient_id = searchParams.get('patient_id')
@@ -60,9 +60,13 @@ export default HealthWorkerHomePage(
 
     const { patient, providers, open_encounter } = await promiseProps({
       patient: patients.getById(trx, patient_id, { include_incomplete_registration: true }),
-      providers: employees_presence.findAll(trx, {
+      providers: employees_presence.getAllAtOrganization(trx, {
         organization_id,
-        excluding_health_worker_id: health_worker_id,
+        excluding_health_worker: {
+          health_worker_id,
+          at_work: true,
+          seniority_order: organization_employment.seniority_order,
+        },
       }),
       open_encounter: patient_encounters.getFirstOpen(trx, {
         patient_id,

@@ -39,6 +39,7 @@ function fromHealthWorker(
     employee_id: organization_employment.employment_id,
     role: organization_employment.role,
     is_admin: organization_employment.is_admin,
+    seniority_order: organization_employment.seniority_order,
     href: `/app/organizations/${organization_employment.id}/employees/${health_worker.id}`,
   }
 }
@@ -53,6 +54,7 @@ export const employees = base({
         'employment.organization_id',
         'employment.role',
         'employment.is_admin',
+        'employment.seniority_order',
         concat('/app/organizations/', eb.ref('employment.organization_id'), '/employees/', eb.ref('employment.health_worker_id')).as('href'),
       ])
 

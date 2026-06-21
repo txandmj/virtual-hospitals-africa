@@ -388,6 +388,7 @@ export interface Employment {
   is_admin: boolean
   organization_id: string
   role: string
+  seniority_order: number
   updated_at: Generated<Timestamp>
 }
 

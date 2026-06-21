@@ -16,6 +16,7 @@ import { describeParallel, itParallel } from 'test/_helpers/testParallel.ts'
 import assertLength from '../../util/assertLength.ts'
 import { assertEquals } from 'std/assert/assert_equals.ts'
 import { check_for } from '../../db/models/check_for.ts'
+import { createTestOrganization } from 'test/_helpers/organizations.ts'
 
 describeParallel('db/models/s_expression.ts', () => {
   afterAll(() => db.destroy())
@@ -23,8 +24,10 @@ describeParallel('db/models/s_expression.ts', () => {
   itParallel(
     "can insert a Burn Circumferential finding which isn't later then considered a Burn Other finding",
     async () => {
+      const clinic = await createTestOrganization(db)
       const nurse = await addTestEmployee(db, {
         role: 'nurse',
+        organization_id: clinic.id,
       })
 
       const encounter = await insertPatientSeekingTreatmentWithEmployeeAndCompleteRegistrationForTest(
@@ -122,8 +125,10 @@ describeParallel('db/models/s_expression.ts', () => {
   itParallel(
     'can insert a Nasal discharge finding which then matches for a query for finding site: nasal structure',
     async () => {
+      const clinic = await createTestOrganization(db)
       const nurse = await addTestEmployee(db, {
         role: 'nurse',
+        organization_id: clinic.id,
       })
 
       const encounter = await insertPatientSeekingTreatmentWithEmployeeAndCompleteRegistrationForTest(
