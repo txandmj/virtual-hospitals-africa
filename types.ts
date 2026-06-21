@@ -1273,6 +1273,7 @@ export type HealthWorker = Names & {
 
 export type HealthWorkerOrganization = RenderedOrganization & {
   employment_id: string
+  seniority_order: number
   is_admin: boolean
   role: string
   in_departments: {
@@ -2257,6 +2258,7 @@ export type RenderedLicence = {
 
 export type RenderedEmployee = RenderedHealthWorker & {
   organization_id: string
+  seniority_order: number
   employee_id: string
   is_admin: boolean
   role: string
@@ -2267,6 +2269,11 @@ export type RenderedEmployeeWithPresence = RenderedEmployee & {
   at_work: boolean
   open_encounter: null | RenderedPatientOpenEncounter
   next_appointment_within_hour: Date | null
+}
+
+export type RenderedEmployeeWithPresenceAndSeniority = RenderedEmployeeWithPresence & {
+  senior_on_staff: boolean
+  senior_on_duty: boolean
 }
 
 export type MessageTargetEntities = {

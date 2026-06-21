@@ -1,4 +1,4 @@
-import { Maybe, Names, Priority, RenderedEmployeeWithPresence, RenderedTaskToBeDone } from '../../types.ts'
+import { Maybe, Names, Priority, RenderedEmployeeWithPresenceAndSeniority, RenderedTaskToBeDone } from '../../types.ts'
 import { EncounterReason } from '../../db.d.ts'
 import { TextArea } from '../../islands/form/inputs/textarea.tsx'
 import FormRow from '../../components/library/FormRow.tsx'
@@ -8,7 +8,6 @@ import { computed, useSignal } from '@preact/signals'
 import { employeeDisplay } from '../../util/healthWorkerDisplay.ts'
 import { HiddenInput } from '../../components/library/HiddenInput.tsx'
 import { assertUnreachable } from '../../util/assertUnreachable.ts'
-import { organizationOf } from '../../shared/employees.ts'
 import { TriageRoutePatientNextStep } from '../../shared/triage_route_patient.ts'
 import { NextStepSelect } from '../../components/library/NextStepSelect.tsx'
 import ProvidersSelect from '../ProvidersSelect.tsx'
@@ -28,11 +27,14 @@ function defaultNextStep(priority: Priority, has_manage_patient_tasks: boolean):
   }
 }
 
-function getSHCP(clinic_employees: RenderedEmployeeWithPresence[]) {
-  return clinic_employees.find((employee) => organizationOf(employee).in_departments.some((department) => department.name === 'Primary care'))
+function getSHCP(clinic_employees: RenderedEmployeeWithPresenceAndSeniority[]) {
+  return clinic_employees[0]
 }
 
-function defaultToBeNotified(next_step: TriageRoutePatientNextStep, clinic_employees: RenderedEmployeeWithPresence[]): RenderedEmployeeWithPresence[] {
+function defaultToBeNotified(
+  next_step: TriageRoutePatientNextStep,
+  clinic_employees: RenderedEmployeeWithPresenceAndSeniority[],
+): RenderedEmployeeWithPresenceAndSeniority[] {
   switch (next_step) {
     case 'await_consultation':
       return []
@@ -62,14 +64,14 @@ export default function TriageRoutePatientSection(
       name: Priority
       target_treatment_time: Date | null
     }
-    clinic_employees: RenderedEmployeeWithPresence[]
+    clinic_employees: RenderedEmployeeWithPresenceAndSeniority[]
     tasks_i_can_do: Array<RenderedTaskToBeDone & { atom: 'procedure' }>
     tasks_for_another: Array<RenderedTaskToBeDone & { atom: 'procedure' }>
   },
 ) {
   const default_next_step = defaultNextStep(priority.name, !!tasks_i_can_do.length)
   const next_step = useSignal<string>(default_next_step)
-  const to_be_notified = useSignal<RenderedEmployeeWithPresence[]>(defaultToBeNotified(default_next_step, clinic_employees))
+  const to_be_notified = useSignal<RenderedEmployeeWithPresenceAndSeniority[]>(defaultToBeNotified(default_next_step, clinic_employees))
   const to_be_notified_display = computed(() => [...to_be_notified.value].map(employeeDisplay).map((e) => e.display_name))
 
   return (

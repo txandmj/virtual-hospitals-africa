@@ -6,6 +6,7 @@ import waitUntilTestServerUp from 'test/_helpers/waitUntilTestServerUp.ts'
 import { assertMatches } from '../../../util/assertMatches.ts'
 import { assertEquals } from 'std/assert/assert_equals.ts'
 import { Lang } from '../../../shared/s_expression_schemas.ts'
+import { createTestOrganization } from 'test/_helpers/organizations.ts'
 
 describeParallel('/app/snomed/by-s-expression', () => {
   before(waitUntilTestServerUp)
@@ -14,8 +15,10 @@ describeParallel('/app/snomed/by-s-expression', () => {
   itParallel(
     'returns the parsed finding plus its predefined attributes, including Finding site: Respiratory tract structure for Cough',
     async () => {
+      const clinic = await createTestOrganization(db)
       const { fetchJSON } = await addTestEmployeeWithSession(db, {
         role: 'nurse',
+        organization_id: clinic.id,
       })
 
       const s_expression = '(clinical_finding (snomed_concept "Cough" "finding"))'
@@ -88,8 +91,10 @@ describeParallel('/app/snomed/by-s-expression', () => {
   itParallel(
     'returns relevant_qualifiers, those that are mentioned as part of the specific_snomed_concept in some rule',
     async () => {
+      const clinic = await createTestOrganization(db)
       const { fetchJSON } = await addTestEmployeeWithSession(db, {
         role: 'nurse',
+        organization_id: clinic.id,
       })
 
       const s_expression = '(clinical_finding (snomed_concept "Diarrhea" "finding"))'

@@ -21,6 +21,7 @@ export type TestHealthWorkerOpts = {
   specialty?: string
   is_admin?: boolean
   organization_id?: string
+  seniority_order?: number
   country?: string
   health_worker_attrs?: Partial<HealthWorkerWithGoogleTokens>
 }
@@ -49,6 +50,7 @@ export async function addTestEmployee(
     health_worker_attrs = {},
     specialty,
     is_admin,
+    seniority_order,
   }: TestHealthWorkerOpts = {},
 ): Promise<TestEmployee> {
   if (!specialty && ['nurse', 'doctor'].includes(role)) {
@@ -106,6 +108,7 @@ export async function addTestEmployee(
     is_admin: role === 'admin' || !!is_admin,
     department_ids,
     health_worker_id: health_worker.id,
+    seniority_order,
   })
   const employee_id = created_employee.id
   const calendars = testCalendars()

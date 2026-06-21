@@ -16,6 +16,7 @@ import z from 'zod'
 import { CLINICAL_FINDING, PROCEDURE } from '../../shared/snomed_concepts.ts'
 import assertLength from '../../util/assertLength.ts'
 import { asNormalFormSExpression } from '../../shared/patient_records.ts'
+import { createTestOrganization } from 'test/_helpers/organizations.ts'
 
 describeParallel('db/models/patient_findings.ts', () => {
   afterAll(() => db.destroy())
@@ -23,8 +24,10 @@ describeParallel('db/models/patient_findings.ts', () => {
   itParallel(
     'can insert/find records with snomed_concept attributes',
     async () => {
+      const clinic = await createTestOrganization(db)
       const nurse = await addTestEmployee(db, {
         role: 'nurse',
+        organization_id: clinic.id,
       })
 
       const encounter = await insertPatientSeekingTreatmentWithEmployeeAndCompleteRegistrationForTest(
@@ -142,8 +145,10 @@ describeParallel('db/models/patient_findings.ts', () => {
   )
 
   itParallel('can insert/find records with an event attribute', async () => {
+    const clinic = await createTestOrganization(db)
     const nurse = await addTestEmployee(db, {
       role: 'nurse',
+      organization_id: clinic.id,
     })
 
     const encounter = await insertPatientSeekingTreatmentWithEmployeeAndCompleteRegistrationForTest(
@@ -229,8 +234,10 @@ describeParallel('db/models/patient_findings.ts', () => {
   itParallel(
     'can insert/find a finding with a complex display involving nested qualifiers',
     async () => {
+      const clinic = await createTestOrganization(db)
       const nurse = await addTestEmployee(db, {
         role: 'nurse',
+        organization_id: clinic.id,
       })
 
       const encounter = await insertPatientSeekingTreatmentWithEmployeeAndCompleteRegistrationForTest(

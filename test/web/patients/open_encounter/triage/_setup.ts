@@ -204,11 +204,13 @@ export async function setupTriageNewPatient(
       role: 'nurse',
       specialty: 'Triage',
       organization_id: clinic.id,
+      seniority_order: 2,
     }),
     shcp: addTestEmployee(db, {
       role: 'nurse',
       specialty: 'Primary care',
       organization_id: clinic.id,
+      seniority_order: 1,
     }),
   })
 

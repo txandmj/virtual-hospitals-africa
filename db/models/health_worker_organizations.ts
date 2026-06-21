@@ -18,6 +18,7 @@ export const health_worker_organizations = base({
         'employment.id as employment_id',
         'role',
         'is_admin',
+        'seniority_order',
         jsonArrayFrom(
           eb_employment.selectFrom('department_employment')
             .innerJoin(
