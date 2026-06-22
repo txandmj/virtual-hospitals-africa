@@ -20,8 +20,8 @@ export function Notifications(
 
   useEffect(() => {
     function listener(event: Event) {
-      console.log('notification event', event)
       assert(event instanceof CustomEvent)
+      if (event.detail?.type !== 'new_notification') return
       notifications_signal.value = [event.detail, ...notifications_signal.value]
     }
     self.addEventListener('notification', listener)

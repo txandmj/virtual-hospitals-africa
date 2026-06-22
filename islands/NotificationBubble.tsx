@@ -5,11 +5,15 @@ import cls from '../util/cls.ts'
 
 export function NotificationBubble(props: { count: number; priority: Priority | null }) {
   const count = useSignal(props.count)
-  const colors = priorityColors(props.priority)
+  const priority = useSignal<Priority | null>(props.priority)
+  const colors = priorityColors(priority.value)
 
   useEffect(() => {
-    function listener() {
-      count.value++
+    function listener(event: Event) {
+      if (!(event instanceof CustomEvent)) return
+      if (event.detail?.type !== 'notification_summary') return
+      count.value = event.detail.unread_count
+      priority.value = event.detail.highest_priority
     }
     self.addEventListener('notification', listener)
     return () => {

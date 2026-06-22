@@ -2065,6 +2065,20 @@ export type RenderedNotification = {
   }
 }
 
+export type NewNotificationMessage = RenderedNotification & {
+  type: 'new_notification'
+}
+
+export type NotificationSummaryMessage = {
+  type: 'notification_summary'
+  unread_count: number
+  highest_priority: Priority | null
+}
+
+export type NotificationWebSocketMessage =
+  | NewNotificationMessage
+  | NotificationSummaryMessage
+
 export type ChatbotName = 'patient' | 'pharmacist'
 
 export type UnhandledMessage = {
