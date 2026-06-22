@@ -184,10 +184,8 @@ addEventListener('submit', function (event) {
             elements = document.querySelectorAll('input[name^="' + path + '"]')
           }
 
-          var message = issue.message === 'Required'
-            ? 'A value must be input'
-            : issue.message
-          
+          var message = issue.message === 'Required' ? 'A value must be input' : issue.message
+
           if (!elements.length) {
             return dispatchEvent(
               new CustomEvent('show-alert', { detail: message }),
@@ -195,9 +193,7 @@ addEventListener('submit', function (event) {
           }
           if (elements.length > 1) {
             var label = document.querySelector('[for="' + path + '"]') || document.querySelector('[for^="' + path + '"]')
-            var detail = label
-              ? label.textContent + ': ' + message
-              : message
+            var detail = label ? label.textContent + ': ' + message : message
             return dispatchEvent(
               new CustomEvent('show-alert', { detail: detail }),
             )
@@ -431,7 +427,6 @@ addEventListener('submit', function (event) {
 //   }
 // })
 
-
 var protocol = self.location.protocol === 'http:' ? 'ws' : 'wss'
 
 var wsUri = protocol + '://' + self.location.host + '/app/notifications-websocket'
@@ -447,45 +442,49 @@ websocket.onclose = function () {
 
 websocket.onmessage = function (e) {
   var message_data = JSON.parse(e.data)
-  console.log('mmmmwelklekw', message_data)
-  if (document.hidden && Notification.permission === 'granted')  {
-    var notification = new Notification(notification_data.title, {
-      body: notification_data.description,
-      icon: notification_data.avatar_url,
-      timestamp: notification_data.created_at,
+  if (
+    message_data.type === 'new_notification' &&
+    document.hidden &&
+    Notification.permission === 'granted'
+  ) {
+    var notification = new Notification(message_data.title, {
+      body: message_data.description,
+      icon: message_data.avatar_url,
+      timestamp: message_data.created_at,
     })
     notification.onclick = function () {
-      window.location.href = notification_data.action.href
+      window.location.href = message_data.action.href
     }
-    return
   }
-  dispatchEvent(new CustomEvent('notification', {
-    detail: message_data
-  }))
+  dispatchEvent(
+    new CustomEvent('notification', {
+      detail: message_data,
+    }),
+  )
 }
 
 websocket.onerror = function (e) {
   console.error(e)
 }
 
-  // console.log(message_data)
-  
-  // // console.log('echo', e.data)
-  // /*
-  // {
-  //     "created_at": notification_data.created_at,
-  //     "updated_at": notification_data.updated_at,
-  //     "health_worker_id": nurse.health_worker.id,
-  //     "notification_type": "patient_encounter_immediate_triage",
-  //     "title": "Immediate Triage Requested",
-  //     "description": `${employeeDisplay(receptionist_employee).display_name} has requested immediate triage for a patient`,
-  //     "avatar_url": "/images/heroicons/24/solid/exclamation-triangle.svg",
-  //     "seen_at": null,
-  //     "notification_id": notification_data.notification_id,
-  //     "time_display": "Just now",
-  //     "action": {
-  //       "title": "View patient case",
-  //       "href": `/app/organizations/${organization.id}/patients/${patient_id}/open_encounter/respond-to-immediate-triage-request`
-  //     }
-  //   }
-  // */  
+// console.log(message_data)
+
+// // console.log('echo', e.data)
+// /*
+// {
+//     "created_at": notification_data.created_at,
+//     "updated_at": notification_data.updated_at,
+//     "health_worker_id": nurse.health_worker.id,
+//     "notification_type": "patient_encounter_immediate_triage",
+//     "title": "Immediate Triage Requested",
+//     "description": `${employeeDisplay(receptionist_employee).display_name} has requested immediate triage for a patient`,
+//     "avatar_url": "/images/heroicons/24/solid/exclamation-triangle.svg",
+//     "seen_at": null,
+//     "notification_id": notification_data.notification_id,
+//     "time_display": "Just now",
+//     "action": {
+//       "title": "View patient case",
+//       "href": `/app/organizations/${organization.id}/patients/${patient_id}/open_encounter/respond-to-immediate-triage-request`
+//     }
+//   }
+// */

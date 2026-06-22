@@ -5,6 +5,20 @@ import { notifications } from '../../db/models/notifications.ts'
 import { addTestEmployee } from '../_helpers/employees.ts'
 import { timeout } from '../../util/timeout.ts'
 
+function insertTestNotification(health_worker_id: string, row_id: string) {
+  return notifications.insert(db, {
+    health_worker_id,
+    title: 'Test notification',
+    description: 'Test description',
+    avatar_url: '/images/test.svg',
+    table_name: 'patient_encounters',
+    row_id,
+    notification_type: 'test',
+    action_title: 'View',
+    action_href: '/app',
+  })
+}
+
 describe('db/models/notifications.ts', () => {
   before(async () => {
     await notifications.initializeNotificationsPubSub()
@@ -101,6 +115,80 @@ describe('db/models/notifications.ts', () => {
           pub_sub.by_health_worker_id.unsubscribe(health_worker.id, throwingCallback)
           pub_sub.by_health_worker_id.unsubscribe(health_worker.id, succeedingCallback)
         }
+      },
+    )
+  })
+
+  describe('notification summary data sources', () => {
+    it(
+      'countAll only_unread reflects unread notifications and excludes seen ones',
+      async () => {
+        const health_worker = await addTestEmployee(db, { role: 'nurse' })
+
+        assertEquals(
+          await notifications.countAll(db, {
+            health_worker_id: health_worker.id,
+            only_unread: true,
+          }),
+          0,
+        )
+
+        const first = await insertTestNotification(
+          health_worker.id,
+          '00000000-0000-1000-8000-000000000091',
+        )
+        await insertTestNotification(
+          health_worker.id,
+          '00000000-0000-1000-8000-000000000092',
+        )
+
+        assertEquals(
+          await notifications.countAll(db, {
+            health_worker_id: health_worker.id,
+            only_unread: true,
+          }),
+          2,
+        )
+
+        await db
+          .updateTable('health_worker_web_notifications')
+          .set({ seen_at: new Date() })
+          .where('id', '=', first.id)
+          .execute()
+
+        assertEquals(
+          await notifications.countAll(db, {
+            health_worker_id: health_worker.id,
+            only_unread: true,
+          }),
+          1,
+        )
+      },
+    )
+
+    it(
+      'highestUnreadPriority returns null when there are no unread encounter-linked notifications',
+      async () => {
+        const health_worker = await addTestEmployee(db, { role: 'nurse' })
+
+        assertEquals(
+          await notifications.highestUnreadPriority(db, {
+            health_worker_id: health_worker.id,
+          }),
+          null,
+        )
+
+        await insertTestNotification(
+          health_worker.id,
+          '00000000-0000-1000-8000-000000000093',
+        )
+
+        assertEquals(
+          await notifications.highestUnreadPriority(db, {
+            health_worker_id: health_worker.id,
+          }),
+          null,
+        )
       },
     )
   })

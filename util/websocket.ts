@@ -17,18 +17,15 @@ export default function upgradeWebsocket<State>(
   return async function (
     ctx: Context<State>,
   ) {
-    console.log('foo bar')
     assert(
       isWebsocketPath(ctx),
       'Route must follow the convention that websocket routes end in websocket. This is used to determine whether to open a transaction or not.',
     )
-    console.log('baz bing')
     assertOr400(
       ctx.req.headers.get('upgrade') === 'websocket',
       'Only websocket connections supported',
     )
 
-    console.log('ok true')
     const { socket, response } = Deno.upgradeWebSocket(ctx.req)
     callback(ctx, socket)
     return response
