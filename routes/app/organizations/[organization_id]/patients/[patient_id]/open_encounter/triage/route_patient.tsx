@@ -6,7 +6,7 @@ import { assert } from 'std/assert/assert.ts'
 import { patient_presence } from '../../../../../../../../db/models/patient_presence.ts'
 import redirect from '../../../../../../../../util/redirect.ts'
 import { completedPersonal } from '../../../../../../../../shared/patient_registration.ts'
-import { OpenEncounterWorkflowContext, UpdateShape } from '../../../../../../../../types.ts'
+import { OpenEncounterWorkflowContext, RenderedManageTaskToBeDone, UpdateShape } from '../../../../../../../../types.ts'
 import { DB } from '../../../../../../../../db.d.ts'
 import { success } from '../../../../../../../../util/alerts.ts'
 import { completeLastStep, OpenEncounterWorkflowPage } from '../_middleware.tsx'
@@ -17,7 +17,7 @@ import { redirectToFirstIncompleteStep } from '../index.tsx'
 import { additional_tasks } from '../../../../../../../../db/models/additional_tasks.ts'
 import { assertOrRedirect } from '../../../../../../../../util/assertOr.ts'
 import { isManage } from '../../../../../../../../shared/tasks.ts'
-import partition from '../../../../../../../../util/partition.ts'
+import { divideTasksByPermissionsNeeded } from '../../../../../../../../shared/permissions.ts'
 import { notifications } from '../../../../../../../../db/models/notifications.ts'
 import { assertArrayNonEmpty } from '../../../../../../../../util/arraySize.ts'
 
@@ -109,7 +109,7 @@ export const handler = postHandler(
 // While we have the evaluation_ids, this is not the time we do those tasks so we do not include them
 async function managePatientTasks(
   ctx: OpenEncounterWorkflowContext,
-) {
+): Promise<RenderedManageTaskToBeDone[]> {
   const { trx, health_worker_id, encounter, open_encounter_pathname } = ctx.state
   const { task_groups } = await additional_tasks.getTasksGroups(trx, { health_worker_id, encounter })
   const some_non_manage_task_incomplete = task_groups.some((task_group) =>
@@ -152,14 +152,7 @@ export async function PatientTriageRoutePatientPage(
     manage_patient_tasks: managePatientTasks(ctx),
   })
 
-  const [tasks_i_can_do, tasks_for_another] = partition(manage_patient_tasks, (task) => {
-    const { permissions } = task
-    if (!permissions?.length) return true
-    return permissions.some((p) =>
-      p.role === (organization_employment.role as 'doctor' | 'nurse' | 'specialist') &&
-        !p.specialty || (organization_employment.active_licences.some((licence: { specialty: string | null }) => licence.specialty === p.specialty))
-    )
-  })
+  const tasks_divided = divideTasksByPermissionsNeeded(organization_employment, clinic_employees, manage_patient_tasks)
 
   return (
     <TriageRoutePatientSection
@@ -167,8 +160,7 @@ export async function PatientTriageRoutePatientPage(
       patient={patient}
       priority={priority}
       clinic_employees={clinic_employees}
-      tasks_i_can_do={tasks_i_can_do}
-      tasks_for_another={tasks_for_another}
+      {...tasks_divided}
     />
   )
 }

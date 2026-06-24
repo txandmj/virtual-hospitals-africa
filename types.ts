@@ -2833,13 +2833,9 @@ export type RenderedTaskToBeDone =
     s_expression: string
     existing_record: null | (RenderedFindingRelativeToHealthWorker & { value: RecordValueMeasurement })
   }
-// & {
-//   task: {
-//     id: string
-//     description: string
-//   }
-//   // atom: 'link' | 'finding' | 'measurement'
-// }
+
+export type RenderedManageTaskToBeDone = RenderedTaskToBeDone & { atom: 'procedure' }
+
 export type TaskGroup = {
   completed: boolean
   due_to: Array<RenderedFindingRelativeToHealthWorker | RenderedEvaluationRelativeToHealthWorker>
@@ -3158,3 +3154,11 @@ export type FindingRelatedModifiers = {
 }
 
 export type BySExpressionResult = InsertableFindingBase & FindingRelatedModifiers
+
+export type TasksDividedByPermission = {
+  tasks_i_can_do_without_approval_needed: RenderedManageTaskToBeDone[],
+  tasks_i_can_do_with_approval: RenderedManageTaskToBeDone[],
+  tasks_i_cant_ever_do: RenderedManageTaskToBeDone[],
+  tasks_can_be_approved_by: Map<RenderedEmployeeWithPresenceAndSeniority, RenderedManageTaskToBeDone[]>,
+  tasks_can_be_done_by: Map<RenderedEmployeeWithPresenceAndSeniority, RenderedManageTaskToBeDone[]>,
+}

@@ -1,5 +1,5 @@
 import { TRIAGE_ROUTE_PATIENT_NEXT_STEPS, TriageRoutePatientNextStep } from '../../shared/triage_route_patient.ts'
-import { Names, Priority, RenderedTaskToBeDone } from '../../types.ts'
+import { Names, Priority, RenderedManageTaskToBeDone, RenderedTaskToBeDone, TasksDividedByPermission } from '../../types.ts'
 import assertOneOf from '../../util/assertOneOf.ts'
 import capitalize from '../../util/capitalize.ts'
 import compact from '../../util/compact.ts'
@@ -9,7 +9,7 @@ import { objectPronoun, posessivePronoun, pronoun } from '../../shared/sex_and_g
 import { preferredName } from '../../util/asNames.ts'
 
 export function NextStepSelect(
-  { patient, default_next_step, priority, to_be_notified, tasks_i_can_do, tasks_for_another, onSelect }: {
+  { patient, default_next_step, priority, to_be_notified, tasks_divided_by_permission, onSelect }: {
     patient: {
       names: Names
       gender: string | null
@@ -20,8 +20,7 @@ export function NextStepSelect(
       target_treatment_time: Date | null
     }
     to_be_notified: string[]
-    tasks_i_can_do: Array<RenderedTaskToBeDone & { atom: 'procedure' }>
-    tasks_for_another: Array<RenderedTaskToBeDone & { atom: 'procedure' }>
+    tasks_divided_by_permission: TasksDividedByPermission
     onSelect(next_step: TriageRoutePatientNextStep): void
   },
 ) {
@@ -49,7 +48,7 @@ export function NextStepSelect(
             `Target treatment time: ${new Date(priority.target_treatment_time).toLocaleTimeString('en', { hour: 'numeric', minute: 'numeric' })}`,
           ]),
         },
-        tasks_i_can_do.length && {
+        tasks_i_can_do_without_approval_needed.length && {
           id: 'manage_and_refer' satisfies TriageRoutePatientNextStep,
           name: 'Manage and refer',
           icon: AtSymbolIcon,
@@ -58,7 +57,7 @@ export function NextStepSelect(
           description: compact([
             `I will stay here to manage ${patient.names.preferred_name}:`,
             <ul key='manage-tasks' class='mt-1.5 list-disc list-inside space-y-1'>
-              {tasks_i_can_do.map((task, i) => <li key={i} class='text-xs text-gray-700'>{task.description}</li>)}
+              {tasks_i_can_do_without_approval_needed.map((task, i) => <li key={i} class='text-xs text-gray-700'>{task.description}</li>)}
             </ul>,
             `${capitalize(staff)} will be notified immediately about ${posessivePronoun(patient)} case and location.${
               tasks_for_another.length ? ' They may approve:' : ''

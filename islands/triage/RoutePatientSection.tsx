@@ -1,4 +1,4 @@
-import { Maybe, Names, Priority, RenderedEmployeeWithPresenceAndSeniority, RenderedTaskToBeDone } from '../../types.ts'
+import { Maybe, Names, Priority, RenderedEmployeeWithPresenceAndSeniority, TasksDividedByPermission } from '../../types.ts'
 import { EncounterReason } from '../../db.d.ts'
 import { TextArea } from '../../islands/form/inputs/textarea.tsx'
 import FormRow from '../../components/library/FormRow.tsx'
@@ -51,7 +51,7 @@ function defaultToBeNotified(
 }
 
 export default function TriageRoutePatientSection(
-  { this_visit, patient, priority, clinic_employees, tasks_i_can_do, tasks_for_another }: {
+  { this_visit, patient, priority, clinic_employees, tasks_divided_by_permission }: {
     this_visit: {
       reason: Maybe<EncounterReason>
       notes?: Maybe<string>
@@ -65,11 +65,10 @@ export default function TriageRoutePatientSection(
       target_treatment_time: Date | null
     }
     clinic_employees: RenderedEmployeeWithPresenceAndSeniority[]
-    tasks_i_can_do: Array<RenderedTaskToBeDone & { atom: 'procedure' }>
-    tasks_for_another: Array<RenderedTaskToBeDone & { atom: 'procedure' }>
+    tasks_divided_by_permission: TasksDividedByPermission
   },
 ) {
-  const default_next_step = defaultNextStep(priority.name, !!tasks_i_can_do.length)
+  const default_next_step = defaultNextStep(priority.name, !!tasks_i_can_do_without_approval_needed.length)
   const next_step = useSignal<string>(default_next_step)
   const to_be_notified = useSignal<RenderedEmployeeWithPresenceAndSeniority[]>(defaultToBeNotified(default_next_step, clinic_employees))
   const to_be_notified_display = computed(() => [...to_be_notified.value].map(employeeDisplay).map((e) => e.display_name))
@@ -83,8 +82,7 @@ export default function TriageRoutePatientSection(
             priority={priority}
             default_next_step={default_next_step}
             to_be_notified={to_be_notified_display.value}
-            tasks_i_can_do={tasks_i_can_do}
-            tasks_for_another={tasks_for_another}
+            tasks_divided_by_permission={tasks_divided_by_permission}
             onSelect={(step) => next_step.value = step}
           />
         </FormRow>

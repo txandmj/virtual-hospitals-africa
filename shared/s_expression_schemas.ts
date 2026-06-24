@@ -119,7 +119,8 @@ type QueryableSingleBaseLang =
       qualifiers: Lang['qualifier'][]
       attributes: Lang['attribute'][]
       permissions?: Array<{
-        role: 'doctor' | 'nurse' | 'specialist'
+        type: 'done_by' | 'approved_by'
+        role: 'doctor' | 'nurse' | 'specialist' | 'shcp'
         specialty?: string
       }>
       history: boolean
@@ -903,9 +904,9 @@ const permission_specialty = z.lazy(() =>
 
 const permission_entry = z.lazy(() =>
   z.object({
-    atom: z.literal('permission'),
+    atom: z.literal('done_by').or(z.literal('approved_by')),
     args: z.tuple([permission_role, permission_specialty.optional()]),
-  }).transform(({ args: [role, specialty] }) => specialty !== undefined ? { role, specialty } : { role })
+  }).transform(({ atom, args: [role, specialty] }) => specialty !== undefined ? { type: atom, role, specialty } : { type: atom, role })
 )
 
 export const manage: z.ZodType<Lang['procedure']> = z.lazy(
