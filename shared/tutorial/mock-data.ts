@@ -1752,6 +1752,23 @@ export function buildSidebarFindings(
     })
   }
 
+  // Recommended doses step
+  if (currentStep === 'recommended_doses') {
+    steps.push({
+      workflow_step: 'recommended_doses',
+      title: 'Recommended Doses',
+      status: 'in progress',
+      records: [],
+    })
+  } else if (isStepCompleted(currentStep, 'recommended_doses')) {
+    steps.push({
+      workflow_step: 'recommended_doses',
+      title: 'Recommended Doses',
+      status: 'completed',
+      records: [],
+    })
+  }
+
   // Route patient step
   if (currentStep === 'route_patient') {
     steps.push({
