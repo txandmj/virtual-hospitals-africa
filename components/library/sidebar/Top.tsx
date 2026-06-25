@@ -28,7 +28,7 @@ export function DefaultTop({ url }: { url: URL }) {
   throw new Error(`Could not compute home page top for url: ${url}`)
 }
 
-export function Top({ href, children }: { href: string; children: ComponentChildren }) {
+export function Top({ href, children }: { href?: string; children: ComponentChildren }) {
   return (
     <a
       href={href}

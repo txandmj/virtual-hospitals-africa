@@ -1,6 +1,8 @@
-import { useSignal } from '@preact/signals'
+import { useSignal, useSignalEffect } from '@preact/signals'
+import { useRef } from 'preact/hooks'
 import { AugmentedSign, BySExpressionResult, Maybe, NonEmptyArray, RenderedSnomedConcept } from '../../types.ts'
 import { FindingSite } from './FindingSite.tsx'
+import { QualifierSearch } from './QualifierSearch.tsx'
 import { groupBy } from '../../util/groupBy.ts'
 import { ATTRIBUTE, EVENT, FINDING_SITE, RESOLVED, TIME_OF_ONSET } from '../../shared/snomed_concepts.ts'
 import { Lang, SnomedConceptAttribute } from '../../shared/s_expression_schemas.ts'
@@ -8,6 +10,7 @@ import { assert } from 'std/assert/assert.ts'
 import { findingToDisplayableRecord, formatRecord } from '../../shared/patient_records.ts'
 import { inverseSExpression } from '../../shared/s_expression_inverse.ts'
 import { OnsetRow } from './Onset.tsx'
+import { CheckboxGrid, CheckboxGridItem } from '../form/inputs/checkbox_grid.tsx'
 
 function groupAttributes(attributes: Lang['attribute'][]) {
   return groupBy(attributes, (attr) => attr.specific_snomed_concept.name)
@@ -50,8 +53,25 @@ export function FindingModalInnerContents({
     return { id: '@@triggersearch', snomed_concept_id: '@@triggersearch', ...s.value }
   }))
 
+  const initial_qualifiers = augmented_node?.qualifiers ?? []
+  const qualifiers = useSignal<RenderedSnomedConcept[]>(initial_qualifiers.map((q) => ({
+    id: '@@triggersearch',
+    snomed_concept_id: '@@triggersearch',
+    name: q.specific_snomed_concept.name,
+    category: q.specific_snomed_concept.category,
+  })))
+
+  const mounted = useRef(false)
+  useSignalEffect(() => {
+    qualifiers.value
+    if (!mounted.current) {
+      mounted.current = true
+      return
+    }
+    runOnChange()
+  })
+
   function runOnChange() {
-    console.log('runOnChange')
     /* We have the original_node & original attributes
     // Focusing just on finding site for now, if we
       1. selected finding sites where there were none previously, form a new augmented node with those as attributes
@@ -73,9 +93,20 @@ export function FindingModalInnerContents({
       return !identical_finding_site_already_existed
     })
 
-    // if (!new_finding_sites.length) {
-    //   return onChange(null)
-    // }
+    if (qualifiers.value.length) {
+      any_updates = true
+      for (const qualifier of qualifiers.value) {
+        new_node.qualifiers.push({
+          atom: 'qualifier' as const,
+          specific_snomed_concept: {
+            atom: 'snomed_concept' as const,
+            name: qualifier.name,
+            category: qualifier.category,
+          },
+          qualifiers: [],
+        })
+      }
+    }
 
     for (const site of new_finding_sites) {
       any_updates = true
@@ -162,6 +193,35 @@ export function FindingModalInnerContents({
             runOnChange()
           }}
         />
+        <QualifierSearch signal={qualifiers} />
+        {!!original_node.relevant_qualifiers.length && (
+          <CheckboxGrid title='relevant qualifiers' id='relevant-qualifiers'>
+            {original_node.relevant_qualifiers.map((relevant_qualifier) => {
+              const matches = (q: RenderedSnomedConcept) =>
+                q.name === relevant_qualifier.specific_snomed_concept.name &&
+                q.category === relevant_qualifier.specific_snomed_concept.category
+              return (
+                <CheckboxGridItem
+                  label={relevant_qualifier.specific_snomed_concept.name}
+                  checked={qualifiers.value.some(matches)}
+                  onChange={(checked) => {
+                    if (checked) {
+                      if (!qualifiers.value.some(matches)) {
+                        qualifiers.value = [...qualifiers.value, {
+                          snomed_concept_id: '@@triggersearch',
+                          name: relevant_qualifier.specific_snomed_concept.name,
+                          category: relevant_qualifier.specific_snomed_concept.category,
+                        }]
+                      }
+                    } else {
+                      qualifiers.value = qualifiers.value.filter((q) => !matches(q))
+                    }
+                  }}
+                />
+              )
+            })}
+          </CheckboxGrid>
+        )}
         <FindingSite
           search_within={search_within_finding_site}
           value={finding_sites.value}

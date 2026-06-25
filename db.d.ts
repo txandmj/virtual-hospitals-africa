@@ -559,6 +559,7 @@ export interface HealthWorkerWebNotifications {
   health_worker_id: string
   id: Generated<string>
   notification_type: string
+  patient_encounter_id: string | null
   row_id: string
   seen_at: Timestamp | null
   table_name: string
@@ -1549,6 +1550,11 @@ export interface SnomedConceptPrioritizations {
   warning_sign: string
 }
 
+export interface SnomedConceptQualifierValue {
+  id: Int8
+  term: string
+}
+
 export interface SnomedCRefsetAssociation {
   active: boolean
   effective_time: Timestamp
@@ -1975,6 +1981,7 @@ export interface DB {
   snomed_concept_body_structure: SnomedConceptBodyStructure
   snomed_concept_finding_like: SnomedConceptFindingLike
   snomed_concept_prioritizations: SnomedConceptPrioritizations
+  snomed_concept_qualifier_value: SnomedConceptQualifierValue
   snomed_description: SnomedDescription
   snomed_iissscc_refset_extended_map: SnomedIisssccRefsetExtendedMap
   snomed_inferred_canonical_name_and_category: SnomedInferredCanonicalNameAndCategory

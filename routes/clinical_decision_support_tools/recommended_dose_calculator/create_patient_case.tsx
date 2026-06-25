@@ -12,10 +12,6 @@ import { SelectWithOptions } from '../../../islands/form/inputs/select_with_opti
 import PatientConditionsSection from '../../../islands/recommended_dose_calculator/PatientConditionsSection.tsx'
 import { LogoWithFullText } from '../../../components/library/Logo.tsx'
 import { StepsSidebar } from '../../../components/library/sidebar/Steps.tsx'
-import {
-  RECOMMENDED_DOSE_CALCULATOR_SNOMED_FIELD_HELP,
-  RECOMMENDED_DOSE_CALCULATOR_SUBMIT_LABEL,
-} from '../../../shared/snomed_to_icd10.ts'
 
 export default function CreatePatientCase(ctx: Context<unknown>) {
   return (
@@ -24,10 +20,11 @@ export default function CreatePatientCase(ctx: Context<unknown>) {
       url={ctx.url}
       sidebar={
         <StepsSidebar
-          top={{
-            href: '/clinical_decision_support_tools',
-            child: <LogoWithFullText variant='indigo' className='w-full' />,
-          }}
+          top={
+            <Top>
+              <LogoWithFullText variant='indigo' className='w-full' />
+            </Top>
+          }
           url={ctx.url}
           route={ctx.route}
           params={ctx.params}

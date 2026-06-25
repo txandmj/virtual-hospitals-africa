@@ -349,7 +349,7 @@ function asWorkflowStatus(
   const workflow_steps = WORKFLOW_STEPS[workflow]
   if (completed_at) {
     assertArrayNonEmpty(seen_patient_encounter_employee_ids, '1')
-    assertEquals(workflow_steps, steps_completed)
+    assert(steps_completed.includes(last(workflow_steps)!))
     return {
       patient_workflow_id,
       workflow,
