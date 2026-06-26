@@ -63,7 +63,7 @@ function asWaitingRoomAction(
   return {
     method: 'POST',
     href: `/app/organizations/${organization_employment.id}/patients/${patient.id}/open_encounter/start-workflow?workflow=${workflow_to_start}`,
-    text: with_employee_other_than_me && workflow_to_start !== 'referral_placed' ? `In ${workflow_to_start}` : workflow_to_start,
+    text: with_employee_other_than_me && workflow_to_start !== 'check_with_colleague' ? `In ${workflow_to_start}` : workflow_to_start,
     disabled: !can_perform_action || with_employee_other_than_me,
   }
 }

@@ -5,6 +5,7 @@
 
 import type {
   Existence,
+  HealthWorkerOrganization,
   MostRecentBriefHistoryFindings,
   OptionalUndefinedFields,
   Priority,
@@ -205,6 +206,13 @@ export const TUTORIAL_OTHER_EMPLOYEE: RenderedEmployee = {
   is_admin: false,
   href: '/tutorial',
 }
+
+/**
+ * The current health worker's employment at the tutorial clinic, mirroring
+ * `ctx.state.organization_employment` in the real route. Used to evaluate task
+ * permissions (`applyPermissions`).
+ */
+export const TUTORIAL_ORGANIZATION_EMPLOYMENT: HealthWorkerOrganization = TUTORIAL_EMPLOYEE.organizations[0]
 
 const MOCK_PROVIDER_IS_ME = {
   ...TUTORIAL_EMPLOYEE,
@@ -5356,7 +5364,7 @@ export const TUTORIAL_MANAGE_PATIENT_TASKS: Array<
     },
     's_expression': '(manage (snomed_concept "Oxygen therapy" "procedure"))',
     'existing_record': null,
-    'description': 'Administer 100% face mask oxygen for anaphylaxis patient',
+    'description': 'Administer 100% face mask oxygen',
   },
   {
     'atom': 'procedure',
@@ -5386,7 +5394,7 @@ export const TUTORIAL_MANAGE_PATIENT_TASKS: Array<
     },
     's_expression': '(manage (snomed_concept "Product containing epinephrine" "medicinal product") (approved_by (role shcp)))',
     'existing_record': null,
-    'description': 'Administer epinephrine 0.5mL (1:1000 solution) IM into mid outer thigh for anaphylaxis patient',
+    'description': 'Administer epinephrine 0.5mL (1:1000 solution) IM into mid outer thigh',
   },
   {
     'atom': 'procedure',
@@ -5416,7 +5424,7 @@ export const TUTORIAL_MANAGE_PATIENT_TASKS: Array<
     },
     's_expression': '(manage (snomed_concept "Product containing only hydrocortisone" "medicinal product") (approved_by (role shcp)))',
     'existing_record': null,
-    'description': 'Administer hydrocortisone 200mg IM/slow IV for anaphylaxis patient',
+    'description': 'Administer hydrocortisone 200mg IM/slow IV',
   },
   {
     'atom': 'procedure',
@@ -5446,7 +5454,7 @@ export const TUTORIAL_MANAGE_PATIENT_TASKS: Array<
     },
     's_expression': '(manage (snomed_concept "Product containing only promethazine" "medicinal product") (approved_by (role shcp)))',
     'existing_record': null,
-    'description': 'Administer promethazine 50mg IM/slow IV for anaphylaxis patient',
+    'description': 'Administer promethazine 50mg IM/slow IV',
   },
   {
     'atom': 'procedure',
@@ -5478,7 +5486,7 @@ export const TUTORIAL_MANAGE_PATIENT_TASKS: Array<
     's_expression':
       '(manage (snomed_concept "Product containing precisely sodium chloride 9 milligram/1 milliliter conventional release solution for infusion and/or injection" "clinical drug") (approved_by (role shcp)))',
     'existing_record': null,
-    'description': 'Administer sodium chloride 0.9% 1-2L IV rapidly for anaphylaxis patient',
+    'description': 'Administer sodium chloride 0.9% 1-2L IV rapidly',
   },
   {
     'atom': 'procedure',
@@ -5503,6 +5511,6 @@ export const TUTORIAL_MANAGE_PATIENT_TASKS: Array<
     },
     's_expression': '(manage (snomed_concept "Elevation of lower limb" "procedure"))',
     'existing_record': null,
-    'description': 'Raise legs for anaphylaxis patient',
+    'description': 'Raise legs',
   },
 ]

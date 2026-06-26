@@ -689,3 +689,8 @@ export const RESOLVED = asConcept({
   name: 'Resolved',
   category: 'qualifier value' as const,
 })
+export const REFERRAL_TO_PERSON = asConcept({
+  id: '307837007',
+  name: 'Referral to person',
+  category: 'procedure' as const,
+})

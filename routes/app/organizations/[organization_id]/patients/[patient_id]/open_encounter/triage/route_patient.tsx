@@ -10,14 +10,14 @@ import { OpenEncounterWorkflowContext, RenderedManageTaskToBeDone, UpdateShape }
 import { DB } from '../../../../../../../../db.d.ts'
 import { success } from '../../../../../../../../util/alerts.ts'
 import { completeLastStep, OpenEncounterWorkflowPage } from '../_middleware.tsx'
-import { TRIAGE_ROUTE_PATIENT_NEXT_STEPS } from '../../../../../../../../shared/triage_route_patient.ts'
+import { TRIAGE_ROUTE_PATIENT_NEXT_STEPS, triageNextStepRecommendations } from '../../../../../../../../shared/triage_route_patient.ts'
 import { startWorkflow } from '../start-workflow.tsx'
 import { promiseProps } from '../../../../../../../../util/promiseProps.ts'
 import { redirectToFirstIncompleteStep } from '../index.tsx'
 import { additional_tasks } from '../../../../../../../../db/models/additional_tasks.ts'
 import { assertOrRedirect } from '../../../../../../../../util/assertOr.ts'
 import { isManage } from '../../../../../../../../shared/tasks.ts'
-import { divideTasksByPermissionsNeeded } from '../../../../../../../../shared/permissions.ts'
+import { applyPermissions } from '../../../../../../../../shared/permissions.ts'
 import { notifications } from '../../../../../../../../db/models/notifications.ts'
 import { assertArrayNonEmpty } from '../../../../../../../../util/arraySize.ts'
 
@@ -62,13 +62,17 @@ export const handler = postHandler(
           `/app/organizations/${organization.id}/waiting_room`,
         ))
       }
-      case 'manage_and_refer':
-      case 'refer': {
+
+      case 'hand_over': {
+        throw new Error('todo')
+      }
+
+      case 'check_with_colleague': {
         const { redirect_to } = await promiseProps({
           completing_last_step,
           redirect_to: startWorkflow(
             ctx,
-            'referral_placed',
+            'check_with_colleague',
             {
               planning: 'create_anew_every_time',
               patient_presence: 'move_into_specificed_workflow',
@@ -152,7 +156,9 @@ export async function PatientTriageRoutePatientPage(
     manage_patient_tasks: managePatientTasks(ctx),
   })
 
-  const tasks_divided = divideTasksByPermissionsNeeded(organization_employment, clinic_employees, manage_patient_tasks)
+  // const tasks_divided_by_permission = divideTasksByPermissionsNeeded(organization_employment, clinic_employees, manage_patient_tasks)
+  const tasks_with_permissions = applyPermissions(organization_employment, clinic_employees, manage_patient_tasks)
+  const triage_next_step_recommendations = triageNextStepRecommendations(priority.name, clinic_employees, tasks_with_permissions)
 
   return (
     <TriageRoutePatientSection
@@ -160,7 +166,8 @@ export async function PatientTriageRoutePatientPage(
       patient={patient}
       priority={priority}
       clinic_employees={clinic_employees}
-      {...tasks_divided}
+      tasks_with_permissions={tasks_with_permissions}
+      triage_next_step_recommendations={triage_next_step_recommendations}
     />
   )
 }

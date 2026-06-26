@@ -27,7 +27,7 @@ Defined in [db/migrations/20230101134900_workflows.ts](db/migrations/20230101134
 
 | column            | type      | notes                                            |
 | ----------------- | --------- | ------------------------------------------------ |
-| workflow          | `workflow` enum (PK) | one of `registration`, `triage`, `consultation`, `maternity`, `referral_placed`, `emergency_escalation`, `stabilization`, `prescription_refill`, `doctor_review`, `create_google_meet` |
+| workflow          | `workflow` enum (PK) | one of `registration`, `triage`, `consultation`, `maternity`, `check_with_colleague`, `emergency_escalation`, `stabilization`, `prescription_refill`, `doctor_review`, `create_google_meet` |
 | snomed_concept_id | bigint, unique       | SNOMED concept that names this kind of workflow (e.g. `TRIAGE`, `PATIENT_REGISTRATION`) |
 | order             | int8, unique         | global presentation order                        |
 
@@ -56,14 +56,14 @@ The unique `order` column is invariant-checked by [test/models/workflows.test.ts
 - `WORKFLOWS` — the enum members
 - `WORKFLOW_SNOMED_CONCEPTS` — workflow → SNOMED concept
 - `WORKFLOW_STEPS` — workflow → ordered list of step names
-- `WORKFLOW_STEP_SNOMED_CONCEPTS` — optional per-step SNOMED concept (currently filled in for `triage` and `referral_placed`)
+- `WORKFLOW_STEP_SNOMED_CONCEPTS` — optional per-step SNOMED concept (currently filled in for `triage` and `check_with_colleague`)
 - `workflowStepKey(workflow, step)` → `"workflow:step"` (the PK in `workflow_steps`)
 - `workflowStepPath(workflow, step)` → `"/workflow/step"`
 - `firstIncompleteStep`, `firstStep`, `lastStep`, `prettyStepName`
 - `canPerform(organization_employment, workflow)` → which department the worker is in that lets them do this workflow
 - `WORKFLOW_NAV_LINKS` — used to render the sidebar of steps
 
-[shared/departments.ts](shared/departments.ts) maps each workflow to the department(s) responsible for it via `WORKFLOW_DEPARTMENTS` and exposes `departmentResponsibleForWorkflow(department, workflow)`. `referral_placed` and `create_google_meet` are open to all departments; everything else is owned by one or two specific departments (e.g. `triage` → `Triage`, `consultation` → `Primary care`).
+[shared/departments.ts](shared/departments.ts) maps each workflow to the department(s) responsible for it via `WORKFLOW_DEPARTMENTS` and exposes `departmentResponsibleForWorkflow(department, workflow)`. `check_with_colleague` and `create_google_meet` are open to all departments; everything else is owned by one or two specific departments (e.g. `triage` → `Triage`, `consultation` → `Primary care`).
 
 ## Per-patient tables
 
@@ -76,7 +76,7 @@ Defined in [db/migrations/20230101137080_patient_workflows.ts](db/migrations/202
 
 A row here means "this patient encounter is *planned* to go through this workflow". Multiple workflows can be planned per encounter — e.g. a returning patient seeking treatment gets `triage` and `consultation` rows inserted at the same time (see [db/models/patient_encounters.ts](db/models/patient_encounters.ts) `insertSeekingTreatmentForRegisteredPatient`).
 
-A workflow can also be added mid-encounter through `patient_workflows.insertOne` from [db/models/patient_workflows.ts](db/models/patient_workflows.ts), called by `startWorkflow` in [routes/app/organizations/[organization_id]/patients/[patient_id]/open_encounter/start-workflow.tsx](routes/app/organizations/[organization_id]/patients/[patient_id]/open_encounter/start-workflow.tsx) when `planning: 'create_anew_every_time'` (e.g. routing a triaged patient to `referral_placed`).
+A workflow can also be added mid-encounter through `patient_workflows.insertOne` from [db/models/patient_workflows.ts](db/models/patient_workflows.ts), called by `startWorkflow` in [routes/app/organizations/[organization_id]/patients/[patient_id]/open_encounter/start-workflow.tsx](routes/app/organizations/[organization_id]/patients/[patient_id]/open_encounter/start-workflow.tsx) when `planning: 'create_anew_every_time'` (e.g. routing a triaged patient to `check_with_colleague`).
 
 ### `patient_workflows_started`
 
@@ -155,7 +155,7 @@ Each step page submission calls `completeStep` / `completeAndProceedToNextStep` 
 The triage `route_patient` step is the last step; it decides what happens next:
 
 - `await_consultation` → marks the last step complete (`completeLastStep` writes both `patient_workflow_steps_completed` and `patient_workflows_completed`), then sets `patient_presence` to the waiting room with `next_workflow = 'consultation'`.
-- `refer`/`manage_and_refer` → completes the triage workflow + calls `startWorkflow(ctx, 'referral_placed', { planning: 'create_anew_every_time', ... })`, which inserts a new `patient_workflows` row for `referral_placed`, a `patient_workflows_started` row, and moves `patient_presence` into the new workflow.
+- `refer`/`manage_and_refer` → completes the triage workflow + calls `startWorkflow(ctx, 'check_with_colleague', { planning: 'create_anew_every_time', ... })`, which inserts a new `patient_workflows` row for `check_with_colleague`, a `patient_workflows_started` row, and moves `patient_presence` into the new workflow.
 
 ### 4. Consultation
 

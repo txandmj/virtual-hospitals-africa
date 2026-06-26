@@ -891,7 +891,7 @@ export const measure: z.ZodType<Lang['procedure']> = z.lazy(
 const permission_role = z.lazy(() =>
   z.object({
     atom: z.literal('role'),
-    args: z.tuple([z.enum(['doctor', 'nurse', 'specialist'])]),
+    args: z.tuple([z.enum(['doctor', 'nurse', 'specialist', 'shcp'])]),
   }).transform(({ args: [role] }) => role)
 )
 
