@@ -290,6 +290,24 @@ export const notifications = base({
     const priority = row?.encounter_priority
     return priority && isPriority(priority) ? priority : null
   },
+  async markSeen(
+    trx: TrxOrDb,
+    { health_worker_id, notification_ids }: {
+      health_worker_id: string
+      notification_ids: string[]
+    },
+  ): Promise<number> {
+    assertOr400(health_worker_id)
+    if (!notification_ids.length) return 0
+    const result = await trx
+      .updateTable('health_worker_web_notifications')
+      .set({ seen_at: new Date() })
+      .where('health_worker_id', '=', health_worker_id)
+      .where('id', 'in', notification_ids)
+      .where('seen_at', 'is', null)
+      .executeTakeFirst()
+    return Number(result.numUpdatedRows)
+  },
   async initializeNotificationsPubSub(): Promise<NotificationsPubSub> {
     // deno-lint-ignore no-explicit-any
     const existing = (globalThis as any)[_PUBSUB_GLOBAL_KEY] as NotificationsPubSub | undefined
