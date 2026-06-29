@@ -7,6 +7,8 @@ import { EmptyState } from '../../components/library/EmptyState.tsx'
 import { BellIcon } from '../../components/library/icons/heroicons/outline.tsx'
 import { vapid_public_key } from '../../external-clients/web-push-config.ts'
 import { EnableWebPushNotifications } from '../../islands/notifications/EnableWebPushNotifications.tsx'
+import { MarkPageNotificationsSeen } from '../../islands/notifications/MarkPageNotificationsSeen.tsx'
+import { NotificationSeenLink } from '../../islands/notifications/NotificationSeenLink.tsx'
 
 const ROWS_PER_PAGE = 25
 
@@ -38,9 +40,12 @@ export default HealthWorkerHomePage(
       )
     }
 
+    const notification_ids = results.map((notification) => notification.notification_id)
+
     return (
       <form method='get' className='flex flex-col gap-4'>
         <EnableWebPushNotifications vapid_public_key={vapid_public_key} />
+        {notification_ids.length > 0 && <MarkPageNotificationsSeen notification_ids={notification_ids} />}
         <ul role='list' className='divide-y divide-gray-200 bg-white shadow rounded-lg'>
           {results.map((notification) => (
             <NotificationRow
@@ -66,12 +71,13 @@ function NotificationRow(
         <p className='mt-1 text-sm text-gray-500'>{notification.description}</p>
         <p className='mt-1 text-xs text-gray-400'>{notification.time_display}</p>
       </div>
-      <a
+      <NotificationSeenLink
+        notification_id={notification.notification_id}
         href={notification.action.href}
         className='text-sm font-medium text-indigo-600 hover:text-indigo-500 whitespace-nowrap'
       >
         {notification.action.title}
-      </a>
+      </NotificationSeenLink>
     </li>
   )
 }
