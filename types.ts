@@ -1030,9 +1030,9 @@ export type GCalCalendarList = {
 }
 
 export type GCalFreeBusy = {
-  kind: 'calendar#free_busy'
-  time_min: string
-  time_max: string
+  kind: 'calendar#freeBusy'
+  timeMin: string
+  timeMax: string
   calendars: {
     [calendarId: string]: {
       busy: { start: string; end: string }[]

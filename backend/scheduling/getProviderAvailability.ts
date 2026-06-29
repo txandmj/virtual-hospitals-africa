@@ -97,6 +97,7 @@ export async function providerAvailability(
     ),
   })
 
+  console.log({ timeRange, calendars })
   if (!google_tokens_of_provider || !calendars?.availability_set) {
     return {
       provider: {
@@ -145,13 +146,22 @@ export function getAllProviderAvailability(
  */
 export async function availableSlots(
   trx: TrxOrDb,
-  { dates, declined_times = [], count, employment_ids, duration_minutes = 30 }: {
-    count: number
-    employment_ids: string[]
-    declined_times?: string[]
-    dates?: string[]
-    duration_minutes?: number
-  },
+  { dates, declined_times = [], count, health_worker_ids, employment_ids, duration_minutes = 30 }:
+    & {
+      count: number
+      declined_times?: string[]
+      dates?: string[]
+      duration_minutes?: number
+    }
+    & (
+      {
+        employment_ids: string[]
+        health_worker_ids?: never
+      } | {
+        employment_ids?: never
+        health_worker_ids?: string[]
+      }
+    ),
 ): Promise<{
   provider: RenderedAppointmentEmployee
   start: Date
@@ -161,9 +171,13 @@ export async function availableSlots(
   assert(count > 0, 'count must be greater than 0')
   assertAllJohannesburg(declined_times)
 
-  const providers = await employees.getByIds(trx, employment_ids)
+  const providers = await (
+    employment_ids ? employees.getByIds(trx, employment_ids) : employees.findAll(trx, { health_worker_id: health_worker_ids })
+  )
+  console.log({ providers, health_worker_ids })
   const provider_availability = await getAllProviderAvailability(trx, providers)
 
+  console.log({ provider_availability })
   const slots: {
     provider: RenderedAppointmentEmployee
     start: string
