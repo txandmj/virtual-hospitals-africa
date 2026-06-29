@@ -1,5 +1,5 @@
-import { TrxOrDbOrQueryCreator } from '../../types.ts'
-import { now } from '../helpers.ts'
+import { RenderedEventListenerStatus, RenderedEventRow, TrxOrDbOrQueryCreator } from '../../types.ts'
+import { isoDate, jsonArrayFrom, now } from '../helpers.ts'
 import { EventInsertAny, EVENTS } from '../../events/handlers.ts'
 import { Client } from 'pg'
 import { opts } from '../db.ts'
@@ -176,6 +176,75 @@ export const initializeAllProcessedPubSub = once(
 
 export const events = {
   initializeAllProcessedPubSub,
+  async search(
+    trx: TrxOrDbOrQueryCreator,
+    search_terms: { search?: string | null; type?: string | null },
+    opts?: { page?: number; rows_per_page?: number },
+  ) {
+    const page = opts?.page ?? 1
+    const rows_per_page = opts?.rows_per_page ?? 10
+    const offset = (page - 1) * rows_per_page
+
+    const results = await trx
+      .selectFrom('events')
+      .select((eb) => [
+        'events.id',
+        'events.type',
+        isoDate(eb.ref('events.created_at')).as('created_at'),
+        'events.all_processed_at',
+        'events.error_message',
+        'events.listener_names',
+        jsonArrayFrom(
+          eb.selectFrom('event_listeners')
+            .whereRef('event_listeners.event_id', '=', 'events.id')
+            .select([
+              'event_listeners.listener_name',
+              'event_listeners.error_message',
+              'event_listeners.processed_at',
+              'event_listeners.started_processing_at',
+            ]),
+        ).as('raw_listeners'),
+      ])
+      .$if(!!search_terms.search, (qb) => qb.where('events.type', 'ilike', `%${search_terms.search}%`))
+      .$if(!!search_terms.type, (qb) => qb.where('events.type', '=', search_terms.type!))
+      .orderBy('events.created_at', 'desc')
+      .limit(rows_per_page + 1)
+      .offset(offset)
+      .execute()
+
+    return {
+      page,
+      rows_per_page,
+      results: results.slice(0, rows_per_page).map((r): RenderedEventRow => ({
+        id: r.id,
+        type: r.type,
+        created_at: r.created_at,
+        all_processed_at: r.all_processed_at?.toISOString() ?? null,
+        error_message: r.error_message,
+        listener_names: r.listener_names,
+        listeners: r.raw_listeners.map((l): RenderedEventListenerStatus => ({
+          listener_name: l.listener_name,
+          error_message: l.error_message,
+          status: l.error_message ? 'error' : l.processed_at ? 'processed' : l.started_processing_at ? 'processing' : 'pending',
+        })),
+      })),
+      has_next_page: results.length > rows_per_page,
+      search_terms,
+    }
+  },
+  getListenerOfEvent(
+    trx: TrxOrDbOrQueryCreator,
+    { event_id, listener_name }: { event_id: string; listener_name: string },
+  ) {
+    return trx
+      .selectFrom('event_listeners')
+      .innerJoin('events', 'event_listeners.event_id', 'events.id')
+      .where('event_listeners.event_id', '=', event_id)
+      .where('event_listeners.listener_name', '=', listener_name)
+      .selectAll('event_listeners')
+      .select(['events.type', 'events.data'])
+      .executeTakeFirst()
+  },
   async closeAllProcessedPubSub(opts: { graceful: boolean }) {
     assert(!opts.graceful, 'TODO support a graceful mode')
     if (!initializeAllProcessedPubSub.called) return

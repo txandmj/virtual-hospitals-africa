@@ -171,6 +171,15 @@ export const patients = base({
 
     return patient
   },
+  completeRegistration(
+    trx: TrxOrDbOrQueryCreator,
+    patient_id: string,
+  ) {
+    return trx.updateTable('patients')
+      .where('patients.id', '=', patient_id)
+      .set({ completed_registration: true })
+      .executeTakeFirstOrThrow()
+  },
   upsert(
     trx: TrxOrDbOrQueryCreator,
     patient: PatientUpsert,

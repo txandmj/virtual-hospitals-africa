@@ -26,11 +26,9 @@ const ScheduleFormSchema = z.object({
 const SearchSchema = z.object({
   employee_id: z.string().uuid().optional(),
   organization_id: z.string().uuid().optional(),
-  provider_name: z.string().uuid().optional(),
   patient_id: z.string().uuid().optional(),
-  patient_name: z.string().uuid().optional(),
-  date: z.string().uuid().optional(),
-  reason: z.string().uuid().optional(),
+  date: z.string().date().optional(),
+  reason: z.string().optional(),
 })
 
 export const handler = postHandler(

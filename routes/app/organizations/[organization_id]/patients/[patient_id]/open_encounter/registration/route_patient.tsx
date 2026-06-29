@@ -28,6 +28,7 @@ import { UpdateShape } from '../../../../../../../../types.ts'
 // import generateUUID from '../../../../../../../../util/uuid.ts'
 import type { DB } from '../../../../../../../../db.d.ts'
 import { objectPronoun } from '../../../../../../../../shared/sex_and_gender.ts'
+import { patients } from '../../../../../../../../db/models/patients.ts'
 
 // TODO not hard code this
 const senior_health_worker_name = 'Nomsa Moyo'
@@ -60,6 +61,7 @@ export const handler = postHandler(
 
     await Promise.all([
       completeLastStep(ctx),
+      patients.completeRegistration(trx, patient.id),
       patient_workflows.insertMany(trx, [
         {
           patient_encounter_id: encounter.patient_encounter_id,

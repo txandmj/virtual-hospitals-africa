@@ -107,7 +107,7 @@ function TableCellContent<T extends Row>({ column, value }: { column: ColumnWith
 }
 function TableCellDate<T extends Row>({ column, value }: { column: ColumnWithContents<T> & { type: 'date' }; value: unknown }) {
   if (!value) return null
-  assert(isDateLike(value))
+  assert(isDateLike(value), `${value} is not date like`)
   return (
     <TableCellX column={column}>
       <LocalTime timestamp={value} expected_time_range='any' />

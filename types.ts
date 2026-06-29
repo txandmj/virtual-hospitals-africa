@@ -2978,6 +2978,34 @@ export type SearchResults<SearchTerms, RenderedResult> = {
   search_terms: SearchTerms
 }
 
+export type RenderedEmploymentRow = {
+  id: string
+  health_worker_id: string
+  health_worker_name: string
+  organization_id: string
+  organization_name: string
+  role: string
+  is_admin: boolean
+  seniority_order: number
+  created_at: string
+}
+
+export type RenderedEventListenerStatus = {
+  listener_name: string
+  status: 'processed' | 'error' | 'processing' | 'pending'
+  error_message: string | null
+}
+
+export type RenderedEventRow = {
+  id: string
+  type: string
+  created_at: string
+  all_processed_at: string | null
+  error_message: string | null
+  listener_names: string[]
+  listeners: RenderedEventListenerStatus[]
+}
+
 export type EvaluatedRecord = DeepMaybe<{
   score: number
   priority: Priority
