@@ -13,6 +13,7 @@ import { promiseProps } from '../../../../util/promiseProps.ts'
 import { postHandler } from '../../../../backend/postHandler.ts'
 import z from 'zod'
 import { positive_integer } from '../../../../util/validators.ts'
+import { health_workers } from '../../../../db/models/health_workers.ts'
 
 const ScheduleFormSchema = z.object({
   start: z.string().datetime(),
@@ -24,7 +25,7 @@ const ScheduleFormSchema = z.object({
 })
 
 const SearchSchema = z.object({
-  employee_id: z.string().uuid().optional(),
+  health_worker_id: z.string().uuid().optional(),
   organization_id: z.string().uuid().optional(),
   patient_id: z.string().uuid().optional(),
   date: z.string().date().optional(),
@@ -53,18 +54,20 @@ export default HealthWorkerHomePage(
       SearchSchema.parse,
     )
 
-    const { patient, availability } = await promiseProps({
+    const { patient, health_worker, availability } = await promiseProps({
       patient: search.patient_id
         ? patients.getByIdCompletedRegistration(
           ctx.state.trx,
           search.patient_id,
         )
         : Promise.resolve(undefined),
-      availability: search.employee_id
+      health_worker: search.health_worker_id ? health_workers.getById(ctx.state.trx, search.health_worker_id) : Promise.resolve(undefined),
+      availability: search.health_worker_id
         ? availableSlots(ctx.state.trx, {
           count: 10,
           dates: search.date ? [search.date] : undefined,
-          employment_ids: [search.employee_id],
+          // employment_ids: [search.health_worker_id],
+          health_worker_ids: [search.health_worker_id],
         })
         : Promise.resolve([]),
     })
@@ -86,6 +89,9 @@ export default HealthWorkerHomePage(
         <ScheduleForm
           className='w-1/2'
           patient={patient}
+          health_worker={health_worker}
+          date={search.date}
+          reason={search.reason}
         />
         {slots && (
           <Appointments
