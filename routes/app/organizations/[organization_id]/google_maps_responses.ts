@@ -15,7 +15,7 @@ type AddressSuggestionResult = {
   name: string
   label: string
   main_text: string
-  secondary_text: string
+  description: string
 }
 
 export const handler = {
@@ -50,7 +50,7 @@ export const handler = {
         name: s.description,
         label: s.description,
         main_text: s.structured_formatting.main_text,
-        secondary_text: s.structured_formatting.secondary_text,
+        description: s.structured_formatting.secondary_text,
       }))
 
       console.log('Address search results:', results)
