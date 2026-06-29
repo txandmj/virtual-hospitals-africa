@@ -47,7 +47,8 @@ export const WORKFLOW_DEPARTMENTS = {
   prescription_refill: ['Pharmacy'],
   doctor_review: ['Remote care'],
   stabilization: ['Emergency'],
-  referral_placed: DEPARTMENTS as NonEmptyArray<Department>,
+  check_with_colleague: DEPARTMENTS as NonEmptyArray<Department>,
+  hand_over: DEPARTMENTS as NonEmptyArray<Department>,
   create_google_meet: DEPARTMENTS as NonEmptyArray<Department>,
 } satisfies {
   [w in Workflow]: NonEmptyArray<Department>

@@ -6,7 +6,7 @@ const CM_BASE = 'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16'
 declare const CodeMirror: any
 
 const SAMPLE = `(task
-  "Raise legs for anaphylaxis patient"
+  "Raise legs"
   adult
   (active_condition (snomed_concept "Anaphylaxis" "disorder"))
   (manage

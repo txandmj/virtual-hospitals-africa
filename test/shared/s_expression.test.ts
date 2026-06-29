@@ -106,31 +106,31 @@ describe('shared/s_expression.ts', () => {
     assertLength(parsed.excluding, 1)
   })
 
-  it('parses manage with permission: role', () => {
-    const parsed = parseWithSchema(`(manage (snomed_concept "Oxygen therapy" "procedure") (permission (role doctor)))`, schemas.manage)
+  it('parses manage with approved_by: role', () => {
+    const parsed = parseWithSchema(`(manage (snomed_concept "Oxygen therapy" "procedure") (approved_by (role doctor)))`, schemas.manage)
     assertEquals(parsed.permissions, [
-      { role: 'doctor' },
+      { type: 'approved_by', role: 'doctor' },
     ])
   })
 
-  it('parses manage with permission: role/specialty', () => {
+  it('parses manage with approved_by: role/specialty', () => {
     const parsed = parseWithSchema(
-      `(manage (snomed_concept "Oxygen therapy" "procedure") (permission (role nurse) (specialty "Primary care")))`,
+      `(manage (snomed_concept "Oxygen therapy" "procedure") (approved_by (role nurse) (specialty "Primary care")))`,
       schemas.manage,
     )
     assertEquals(parsed.permissions, [
-      { role: 'nurse', specialty: 'Primary care' },
+      { type: 'approved_by', role: 'nurse', specialty: 'Primary care' },
     ])
   })
 
-  it('parses manage with permission: multiple role/specialties', () => {
+  it('parses manage with approved_by: multiple role/specialties', () => {
     const parsed = parseWithSchema(
-      `(manage (snomed_concept "Oxygen therapy" "procedure") (permission (role nurse) (specialty "Primary care")) (permission (role nurse) (specialty "Pediatrics")))`,
+      `(manage (snomed_concept "Oxygen therapy" "procedure") (approved_by (role nurse) (specialty "Primary care")) (approved_by (role nurse) (specialty "Pediatrics")))`,
       schemas.manage,
     )
     assertEquals(parsed.permissions, [
-      { role: 'nurse', specialty: 'Primary care' },
-      { role: 'nurse', specialty: 'Pediatrics' },
+      { type: 'approved_by', role: 'nurse', specialty: 'Primary care' },
+      { type: 'approved_by', role: 'nurse', specialty: 'Pediatrics' },
     ])
   })
 
@@ -138,7 +138,7 @@ describe('shared/s_expression.ts', () => {
     it('gives an error message pointing to the atom that is incorrect and what might be expected', () => {
       const result = asResult(() =>
         parseWithSchema(
-          `(manage (snomed_concept "Oxygen therapy" "procedure") (not_an_atom (role nurse) (specialty "Primary care")) (permission (role nurse) (specialty "Pediatrics")))`,
+          `(manage (snomed_concept "Oxygen therapy" "procedure") (not_an_atom (role nurse) (specialty "Primary care")) (approved_by (role nurse) (specialty "Pediatrics")))`,
           schemas.manage,
         )
       )
@@ -153,7 +153,7 @@ describe('shared/s_expression.ts', () => {
       (role nurse)
       (specialty "Primary care")
     )
-    (permission
+    (approved_by
       (role nurse)
       (specialty "Pediatrics")
     )

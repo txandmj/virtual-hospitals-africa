@@ -106,11 +106,11 @@ export function inverseSExpression(node: AnyNode): string {
         assert(node.value)
         assert(node.value.atom === 'snomed_concept')
         const parts = ['manage', inverseSExpression(node.value)]
-        for (const perm of node.permissions ?? []) {
-          let permStr = `(permission (role ${perm.role})`
-          if (perm.specialty) permStr += ` (specialty "${perm.specialty}")`
-          permStr += ')'
-          parts.push(permStr)
+        for (const permission of node.permissions ?? []) {
+          let permission_string = `(${permission.type} (role ${permission.role})`
+          if (permission.specialty) permission_string += ` (specialty "${permission.specialty}")`
+          permission_string += ')'
+          parts.push(permission_string)
         }
         return `(${parts.join(' ')})`
       }

@@ -1,14 +1,14 @@
 name	requires_triage	workflows
-Primary care	t	{consultation,referral_placed,create_google_meet}
-Maternity	t	{maternity,referral_placed,create_google_meet}
-Immunizations	t	{referral_placed,create_google_meet}
-Chronic diseases	t	{referral_placed,create_google_meet}
-Reception	f	{registration,emergency_escalation,referral_placed,create_google_meet}
-Waiting room	f	{referral_placed,create_google_meet}
-Triage	f	{emergency_escalation,triage,referral_placed,create_google_meet}
-Administration	f	{referral_placed,create_google_meet}
-Pharmacy	f	{prescription_refill,referral_placed,create_google_meet}
-Oncology	t	{referral_placed,create_google_meet}
-Burns	t	{referral_placed,create_google_meet}
-Remote care	t	{doctor_review,referral_placed,create_google_meet}
-Emergency	f	{stabilization,referral_placed,create_google_meet}
+Primary care	t	{consultation,check_with_colleague,create_google_meet}
+Maternity	t	{maternity,check_with_colleague,create_google_meet}
+Immunizations	t	{check_with_colleague,create_google_meet}
+Chronic diseases	t	{check_with_colleague,create_google_meet}
+Reception	f	{registration,emergency_escalation,check_with_colleague,create_google_meet}
+Waiting room	f	{check_with_colleague,create_google_meet}
+Triage	f	{emergency_escalation,triage,check_with_colleague,create_google_meet}
+Administration	f	{check_with_colleague,create_google_meet}
+Pharmacy	f	{prescription_refill,check_with_colleague,create_google_meet}
+Oncology	t	{check_with_colleague,create_google_meet}
+Burns	t	{check_with_colleague,create_google_meet}
+Remote care	t	{doctor_review,check_with_colleague,create_google_meet}
+Emergency	f	{stabilization,check_with_colleague,create_google_meet}

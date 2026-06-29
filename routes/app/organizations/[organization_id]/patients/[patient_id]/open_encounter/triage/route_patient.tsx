@@ -6,18 +6,18 @@ import { assert } from 'std/assert/assert.ts'
 import { patient_presence } from '../../../../../../../../db/models/patient_presence.ts'
 import redirect from '../../../../../../../../util/redirect.ts'
 import { completedPersonal } from '../../../../../../../../shared/patient_registration.ts'
-import { OpenEncounterWorkflowContext, UpdateShape } from '../../../../../../../../types.ts'
+import { OpenEncounterWorkflowContext, RenderedManageTaskToBeDone, UpdateShape } from '../../../../../../../../types.ts'
 import { DB } from '../../../../../../../../db.d.ts'
 import { success } from '../../../../../../../../util/alerts.ts'
 import { completeLastStep, OpenEncounterWorkflowPage } from '../_middleware.tsx'
-import { TRIAGE_ROUTE_PATIENT_NEXT_STEPS } from '../../../../../../../../shared/triage_route_patient.ts'
+import { TRIAGE_ROUTE_PATIENT_NEXT_STEPS, triageNextStepRecommendations } from '../../../../../../../../shared/triage_route_patient.ts'
 import { startWorkflow } from '../start-workflow.tsx'
 import { promiseProps } from '../../../../../../../../util/promiseProps.ts'
 import { redirectToFirstIncompleteStep } from '../index.tsx'
 import { additional_tasks } from '../../../../../../../../db/models/additional_tasks.ts'
 import { assertOrRedirect } from '../../../../../../../../util/assertOr.ts'
 import { isManage } from '../../../../../../../../shared/tasks.ts'
-import partition from '../../../../../../../../util/partition.ts'
+import { applyPermissions } from '../../../../../../../../shared/permissions.ts'
 import { notifications } from '../../../../../../../../db/models/notifications.ts'
 import { assertArrayNonEmpty } from '../../../../../../../../util/arraySize.ts'
 
@@ -62,13 +62,17 @@ export const handler = postHandler(
           `/app/organizations/${organization.id}/waiting_room`,
         ))
       }
-      case 'manage_and_refer':
-      case 'refer': {
+
+      case 'hand_over': {
+        throw new Error('todo')
+      }
+
+      case 'check_with_colleague': {
         const { redirect_to } = await promiseProps({
           completing_last_step,
           redirect_to: startWorkflow(
             ctx,
-            'referral_placed',
+            'check_with_colleague',
             {
               planning: 'create_anew_every_time',
               patient_presence: 'move_into_specificed_workflow',
@@ -109,7 +113,7 @@ export const handler = postHandler(
 // While we have the evaluation_ids, this is not the time we do those tasks so we do not include them
 async function managePatientTasks(
   ctx: OpenEncounterWorkflowContext,
-) {
+): Promise<RenderedManageTaskToBeDone[]> {
   const { trx, health_worker_id, encounter, open_encounter_pathname } = ctx.state
   const { task_groups } = await additional_tasks.getTasksGroups(trx, { health_worker_id, encounter })
   const some_non_manage_task_incomplete = task_groups.some((task_group) =>
@@ -152,14 +156,9 @@ export async function PatientTriageRoutePatientPage(
     manage_patient_tasks: managePatientTasks(ctx),
   })
 
-  const [tasks_i_can_do, tasks_for_another] = partition(manage_patient_tasks, (task) => {
-    const { permissions } = task
-    if (!permissions?.length) return true
-    return permissions.some((p) =>
-      p.role === (organization_employment.role as 'doctor' | 'nurse' | 'specialist') &&
-        !p.specialty || (organization_employment.active_licences.some((licence: { specialty: string | null }) => licence.specialty === p.specialty))
-    )
-  })
+  // const tasks_divided_by_permission = divideTasksByPermissionsNeeded(organization_employment, clinic_employees, manage_patient_tasks)
+  const tasks_with_permissions = applyPermissions(organization_employment, clinic_employees, manage_patient_tasks)
+  const triage_next_step_recommendations = triageNextStepRecommendations(priority.name, clinic_employees, tasks_with_permissions)
 
   return (
     <TriageRoutePatientSection
@@ -167,8 +166,8 @@ export async function PatientTriageRoutePatientPage(
       patient={patient}
       priority={priority}
       clinic_employees={clinic_employees}
-      tasks_i_can_do={tasks_i_can_do}
-      tasks_for_another={tasks_for_another}
+      tasks_with_permissions={tasks_with_permissions}
+      triage_next_step_recommendations={triage_next_step_recommendations}
     />
   )
 }
