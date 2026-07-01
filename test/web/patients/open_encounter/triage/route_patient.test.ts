@@ -110,7 +110,7 @@ describeParallel('triage/additional_tasks_and_investigations', () => {
       const _route_patient_form_options = getFormOptions($route_patient)
 
       assertMatches(route_patient_form_values, {
-        'next_step': 'manage_and_refer' as const,
+        'next_step': 'check_with_colleague' as const,
         'health_worker_ids_to_be_notified': [shcp.id],
         'notes': null,
       }, { strict: true })
@@ -120,11 +120,11 @@ describeParallel('triage/additional_tasks_and_investigations', () => {
       })
       assertLength(notifications_of_shcp_prior, 0)
 
-      const $referral_placed = await postStep({
+      const $check_with_colleague = await postStep({
         route_patient: route_patient_form_values,
       })
 
-      assert($referral_placed.url.endsWith('/open_encounter/referral_placed/confirm_handoff'))
+      assert($check_with_colleague.url.endsWith('/open_encounter/check_with_colleague/await_instructions'))
 
       const notifications_of_shcp_post = await notifications.findAll(db, {
         health_worker_id: shcp.id,

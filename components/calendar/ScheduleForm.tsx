@@ -5,12 +5,15 @@ import FormButtons from '../../islands/form/buttons.tsx'
 import PersonSearch from '../../islands/PersonSearch.tsx'
 import { DateInput } from '../../islands/form/inputs/date.tsx'
 import { TextInput } from '../../islands/form/inputs/text.tsx'
-import { RenderedPatientCompletedRegistration } from '../../types.ts'
+import { Maybe, RenderedHealthWorker, RenderedPatientCompletedRegistration } from '../../types.ts'
 
 export default function ScheduleForm(
-  { className, patient }: {
+  { className, patient, health_worker, date, reason }: {
     className?: string
     patient?: RenderedPatientCompletedRegistration
+    health_worker?: RenderedHealthWorker
+    date?: Maybe<string>
+    reason?: Maybe<string>
   },
 ) {
   return (
@@ -25,15 +28,16 @@ export default function ScheduleForm(
       </FormRow>
       <FormRow>
         <PersonSearch
-          name='provider'
+          name='health_worker'
+          value={health_worker}
           search_route='/app/providers?roles=[doctor,nurse]'
         />
       </FormRow>
       <FormRow>
-        <DateInput className='w-full' />
+        <DateInput className='w-full' value={date} />
       </FormRow>
       <FormRow>
-        <TextInput name='reason' required />
+        <TextInput name='reason' value={reason} required />
       </FormRow>
       <FormButtons
         className='mt-4'

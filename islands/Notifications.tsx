@@ -6,6 +6,7 @@ import { useSignal } from '@preact/signals'
 import { useEffect } from 'preact/hooks'
 import { assert } from 'std/assert/assert.ts'
 import { Fragment } from 'preact'
+import { markNotificationsSeen } from './notifications/markNotificationsSeen.ts'
 
 /* NOTIFICATIONS SUBSCRIPTION */
 
@@ -20,8 +21,8 @@ export function Notifications(
 
   useEffect(() => {
     function listener(event: Event) {
-      console.log('notification event', event)
       assert(event instanceof CustomEvent)
+      if (event.detail?.type !== 'new_notification') return
       notifications_signal.value = [event.detail, ...notifications_signal.value]
     }
     self.addEventListener('notification', listener)
@@ -69,6 +70,15 @@ export function Notification(
     dismiss: () => void
   },
 ) {
+  function markSeenOnActivate() {
+    void markNotificationsSeen(notification.notification_id, { keepalive: true })
+  }
+
+  function handleActionAuxClick(event: MouseEvent) {
+    if (event.button !== 1) return
+    markSeenOnActivate()
+  }
+
   return (
     <div className='flex self-end float-right w-full max-w-md bg-white rounded-lg shadow-lg pointer-events-auto ring-1 ring-black ring-opacity-5 z-9'>
       <div className='flex-1 w-0 p-4'>
@@ -95,6 +105,8 @@ export function Notification(
               type='button'
               className='flex items-center justify-center w-full px-4 py-3 text-sm font-medium text-indigo-600 border border-transparent rounded-none rounded-tr-lg hover:text-indigo-500 focus:z-10 focus:outline-none focus:ring-2 focus:ring-indigo-500'
               href={notification.action.href}
+              onClick={markSeenOnActivate}
+              onAuxClick={handleActionAuxClick}
             >
               {notification.action.title}
             </a>

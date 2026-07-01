@@ -1,14 +1,14 @@
 import { useSignal } from '@preact/signals'
-import { RenderedEmployeeWithPresence } from '../types.ts'
+import { RenderedEmployeeWithPresenceAndSeniority } from '../types.ts'
 import ProvidersSelect from './ProvidersSelect.tsx'
 import { HiddenInput } from '../components/library/HiddenInput.tsx'
 
 export default function InviteParticipantsList({
-  facility_employees,
+  clinic_employees,
   hospital_employees,
 }: {
-  facility_employees: RenderedEmployeeWithPresence[]
-  hospital_employees: RenderedEmployeeWithPresence[]
+  clinic_employees: RenderedEmployeeWithPresenceAndSeniority[]
+  hospital_employees: RenderedEmployeeWithPresenceAndSeniority[]
 }) {
   const participant_emails = useSignal<string[]>([])
 
@@ -19,7 +19,7 @@ export default function InviteParticipantsList({
       </h1>
 
       <ProvidersSelect
-        providers={[...facility_employees, ...hospital_employees]}
+        providers={[...clinic_employees, ...hospital_employees]}
         onChange={(employees) => {
           participant_emails.value = employees.map((employee) => employee.email!)
         }}

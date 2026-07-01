@@ -37,6 +37,7 @@ import type { Decimal } from './util/decimal.ts'
 import type { InsertableFindingBase, Lang, QueryableEvidenceNode } from './shared/s_expression_schemas.ts'
 import type { PrescriptionFrequency } from './shared/prescription.ts'
 import { SEXED_RELATION_SNOMED_CONCEPT_IDS } from './shared/family.ts'
+import { TriageRoutePatientNextStep } from './shared/triage_route_patient.ts'
 export { type Department } from './shared/departments.ts'
 export { type DietFrequency } from './shared/diet.ts'
 export { type Priority } from './shared/priorities.ts'
@@ -1029,9 +1030,9 @@ export type GCalCalendarList = {
 }
 
 export type GCalFreeBusy = {
-  kind: 'calendar#free_busy'
-  time_min: string
-  time_max: string
+  kind: 'calendar#freeBusy'
+  timeMin: string
+  timeMax: string
   calendars: {
     [calendarId: string]: {
       busy: { start: string; end: string }[]
@@ -1273,6 +1274,7 @@ export type HealthWorker = Names & {
 
 export type HealthWorkerOrganization = RenderedOrganization & {
   employment_id: string
+  seniority_order: number
   is_admin: boolean
   role: string
   in_departments: {
@@ -1540,11 +1542,6 @@ export type LoggedInHealthWorker = {
 export type LoggedInHealthWorkerContext<T = Record<string, never>> = Context<
   LoggedInHealthWorker & { trx: TrxOrDb } & T
 >
-
-export class Foo<Ctx extends LoggedInHealthWorkerContext<any>> {
-  constructor(public x: Ctx) {
-  }
-}
 
 export type Organization = {
   name: string
@@ -2064,6 +2061,20 @@ export type RenderedNotification = {
   }
 }
 
+export type NewNotificationMessage = RenderedNotification & {
+  type: 'new_notification'
+}
+
+export type NotificationSummaryMessage = {
+  type: 'notification_summary'
+  unread_count: number
+  highest_priority: Priority | null
+}
+
+export type NotificationWebSocketMessage =
+  | NewNotificationMessage
+  | NotificationSummaryMessage
+
 export type ChatbotName = 'patient' | 'pharmacist'
 
 export type UnhandledMessage = {
@@ -2257,6 +2268,7 @@ export type RenderedLicence = {
 
 export type RenderedEmployee = RenderedHealthWorker & {
   organization_id: string
+  seniority_order: number
   employee_id: string
   is_admin: boolean
   role: string
@@ -2266,6 +2278,12 @@ export type RenderedEmployee = RenderedHealthWorker & {
 export type RenderedEmployeeWithPresence = RenderedEmployee & {
   at_work: boolean
   open_encounter: null | RenderedPatientOpenEncounter
+  next_appointment_within_hour: Date | null
+}
+
+export type RenderedEmployeeWithPresenceAndSeniority = RenderedEmployeeWithPresence & {
+  senior_on_staff: boolean
+  senior_on_duty: boolean
 }
 
 export type MessageTargetEntities = {
@@ -2825,13 +2843,9 @@ export type RenderedTaskToBeDone =
     s_expression: string
     existing_record: null | (RenderedFindingRelativeToHealthWorker & { value: RecordValueMeasurement })
   }
-// & {
-//   task: {
-//     id: string
-//     description: string
-//   }
-//   // atom: 'link' | 'finding' | 'measurement'
-// }
+
+export type RenderedManageTaskToBeDone = RenderedTaskToBeDone & { atom: 'procedure' }
+
 export type TaskGroup = {
   completed: boolean
   due_to: Array<RenderedFindingRelativeToHealthWorker | RenderedEvaluationRelativeToHealthWorker>
@@ -2962,6 +2976,34 @@ export type SearchResults<SearchTerms, RenderedResult> = {
   results: RenderedResult[]
   has_next_page: boolean
   search_terms: SearchTerms
+}
+
+export type RenderedEmploymentRow = {
+  id: string
+  health_worker_id: string
+  health_worker_name: string
+  organization_id: string
+  organization_name: string
+  role: string
+  is_admin: boolean
+  seniority_order: number
+  created_at: string
+}
+
+export type RenderedEventListenerStatus = {
+  listener_name: string
+  status: 'processed' | 'error' | 'processing' | 'pending'
+  error_message: string | null
+}
+
+export type RenderedEventRow = {
+  id: string
+  type: string
+  created_at: string
+  all_processed_at: string | null
+  error_message: string | null
+  listener_names: string[]
+  listeners: RenderedEventListenerStatus[]
 }
 
 export type EvaluatedRecord = DeepMaybe<{
@@ -3150,3 +3192,43 @@ export type FindingRelatedModifiers = {
 }
 
 export type BySExpressionResult = InsertableFindingBase & FindingRelatedModifiers
+
+export type TasksDividedByPermission = {
+  tasks_i_can_do_without_approval_needed: RenderedManageTaskToBeDone[]
+  tasks_i_can_do_with_approval: RenderedManageTaskToBeDone[]
+  tasks_i_cant_ever_do: RenderedManageTaskToBeDone[]
+  tasks_can_be_approved_by: Map<RenderedEmployeeWithPresenceAndSeniority, RenderedManageTaskToBeDone[]>
+  tasks_can_be_done_by: Map<RenderedEmployeeWithPresenceAndSeniority, RenderedManageTaskToBeDone[]>
+}
+
+export type TaskPermissions = {
+  type: 'no_approval_needed'
+} | {
+  type: 'approval_needed'
+  employees_who_can_approve: {
+    on_duty: RenderedEmployeeWithPresenceAndSeniority[]
+    off_duty: RenderedEmployeeWithPresenceAndSeniority[]
+  }
+} | {
+  type: 'cant_do'
+  employees_who_can_do: {
+    on_duty: RenderedEmployeeWithPresenceAndSeniority[]
+    off_duty: RenderedEmployeeWithPresenceAndSeniority[]
+  }
+}
+
+export type TaskWithPermissions = {
+  task: RenderedManageTaskToBeDone
+  permissions: TaskPermissions
+}
+
+export type TriageNextStepRecommendations = {
+  next_step: TriageRoutePatientNextStep
+  employees_with_tasks: {
+    employee: RenderedEmployeeWithPresenceAndSeniority
+    tasks_they_can_do_that_i_cant: TaskWithPermissions[]
+    tasks_they_can_approve_i_cant: TaskWithPermissions[]
+  }[]
+  to_be_notified: RenderedEmployeeWithPresenceAndSeniority[]
+  tasks_identified_requiring_staff_not_on_duty_at_this_facility: boolean
+}

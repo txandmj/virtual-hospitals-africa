@@ -26,6 +26,7 @@ export const handler = timeMiddlewareCallNext(async function attachOrganization(
   const employee: RenderedEmployee = {
     ...health_worker,
     organization_id: organization.id,
+    seniority_order: organization_employment.seniority_order,
     employee_id: organization_employment.employment_id,
     role: organization_employment.role,
     is_admin: organization_employment.is_admin,

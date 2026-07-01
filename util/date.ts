@@ -534,9 +534,9 @@ type FormattedDateTime = {
 }
 
 export function isDateLike(value: unknown): value is Date | string {
-  return isDate(value) || (
-    isString(value) && rfc3339_regex.test(value)
-  )
+  if (isDate(value)) return true
+  if (!isString(value)) return false
+  return rfc3339_regex.test(value) || date_regex.test(value)
 }
 
 export function formatDateTime(

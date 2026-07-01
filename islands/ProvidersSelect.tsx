@@ -1,5 +1,6 @@
 import { useSignal } from '@preact/signals'
-import { RenderedEmployeeWithPresence } from '../types.ts'
+import { useMemo } from 'preact/hooks'
+import { RenderedEmployeeWithPresenceAndSeniority } from '../types.ts'
 import cls from '../util/cls.ts'
 import Avatar from '../components/library/Avatar.tsx'
 import { employeeDisplay } from '../util/healthWorkerDisplay.ts'
@@ -7,6 +8,7 @@ import { Priority } from '../shared/priorities.ts'
 import { HiddenInput } from '../components/library/HiddenInput.tsx'
 import { HealthWorkerPresence } from '../components/HealthWorkerPresence.tsx'
 import OnlineIndicator from '../components/library/OnlineIndicator.tsx'
+import Badge from '../components/library/Badge.tsx'
 import sortBy from '../util/sortBy.ts'
 
 export type AvailabilityInfo = {
@@ -14,9 +16,11 @@ export type AvailabilityInfo = {
   priority?: Priority | null
 }
 
+type SeniorityLabel = null | 'Senior On Staff' | 'Senior On Duty'
+
 export function ProviderSelectOption(
   { provider, selected, toggleSelection }: {
-    provider: RenderedEmployeeWithPresence
+    provider: RenderedEmployeeWithPresenceAndSeniority
     selected: boolean
     availability?: AvailabilityInfo
     toggleSelection(): void
@@ -24,6 +28,7 @@ export function ProviderSelectOption(
 ) {
   const active = useSignal(false)
   const display = employeeDisplay(provider)
+  const seniority_label = provider.senior_on_staff ? 'Senior On Staff' : provider.senior_on_duty ? 'Senior On Duty' : null
 
   return (
     <label
@@ -53,9 +58,10 @@ export function ProviderSelectOption(
         <span className='flex flex-col'>
           <span
             id={`provider-${provider.employee_id}-label`}
-            className='font-medium text-gray-900 text-md'
+            className='flex items-center gap-2 font-medium text-gray-900 text-md'
           >
             {display.display_name}
+            {seniority_label && <Badge content={seniority_label} color='purple' round='md' />}
           </span>
           <span
             id={`provider-${provider.employee_id}-description-0`}
@@ -87,19 +93,25 @@ type TrackFormDataSomehow = {
   onChange?: never
 } | {
   name?: never
-  onChange(providers: RenderedEmployeeWithPresence[]): void
+  onChange(providers: RenderedEmployeeWithPresenceAndSeniority[]): void
 }
 
 export default function ProvidersSelect(
   { providers, name = 'employee_ids', className, onChange, initial_selected = [] }: {
-    providers: RenderedEmployeeWithPresence[]
+    providers: RenderedEmployeeWithPresenceAndSeniority[]
     className?: string
-    initial_selected?: RenderedEmployeeWithPresence[]
+    initial_selected?: RenderedEmployeeWithPresenceAndSeniority[]
   } & TrackFormDataSomehow,
 ) {
-  const providers_with_initially_selected_first = initial_selected ? sortBy(providers, (provider) => initial_selected.includes(provider) ? 0 : 1) : providers
+  // Compute the display order once on mount. `initial_selected` may be backed
+  // by a signal that this component's onChange mutates, so re-sorting on every
+  // render would shuffle just-selected providers to the front. Freeze the order.
+  const providers_with_initially_selected_first = useMemo(
+    () => providers.length ? sortBy(providers, (provider) => initial_selected.includes(provider) ? 0 : 1) : providers,
+    [],
+  )
 
-  const selected = useSignal<Set<RenderedEmployeeWithPresence>>(new Set(initial_selected))
+  const selected = useSignal<Set<RenderedEmployeeWithPresenceAndSeniority>>(new Set(initial_selected))
 
   if (!providers.length) {
     return (

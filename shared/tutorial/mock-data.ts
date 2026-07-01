@@ -5,12 +5,13 @@
 
 import type {
   Existence,
+  HealthWorkerOrganization,
   MostRecentBriefHistoryFindings,
   OptionalUndefinedFields,
   Priority,
   RenderedBriefHistoryRelativeToHealthWorker,
   RenderedEmployee,
-  RenderedEmployeeWithPresence,
+  RenderedEmployeeWithPresenceAndSeniority,
   RenderedEvaluationRelativeToHealthWorker,
   RenderedFindingRelativeToHealthWorker,
   RenderedPatientCompletedRegistration,
@@ -100,6 +101,7 @@ export const TUTORIAL_EMPLOYEE: RenderedEmployee = {
       waiting_room_id: null,
       reception_id: null,
       employment_id: 'tutorial-emp-001',
+      seniority_order: 1,
       role: 'nurse',
       is_admin: false,
       in_departments: [],
@@ -128,6 +130,7 @@ export const TUTORIAL_EMPLOYEE: RenderedEmployee = {
     },
   ],
   organization_id: 'tutorial-org-001',
+  seniority_order: 1,
   employee_id: 'tutorial-emp-001',
   role: 'nurse',
   is_admin: false,
@@ -168,6 +171,7 @@ export const TUTORIAL_OTHER_EMPLOYEE: RenderedEmployee = {
       waiting_room_id: null,
       reception_id: null,
       employment_id: 'tutorial-emp-001',
+      seniority_order: 1,
       role: 'nurse',
       is_admin: false,
       in_departments: [],
@@ -196,11 +200,19 @@ export const TUTORIAL_OTHER_EMPLOYEE: RenderedEmployee = {
     },
   ],
   organization_id: 'tutorial-org-001',
+  seniority_order: 1,
   employee_id: 'tutorial-emp-001',
   role: 'nurse',
   is_admin: false,
   href: '/tutorial',
 }
+
+/**
+ * The current health worker's employment at the tutorial clinic, mirroring
+ * `ctx.state.organization_employment` in the real route. Used to evaluate task
+ * permissions (`applyPermissions`).
+ */
+export const TUTORIAL_ORGANIZATION_EMPLOYMENT: HealthWorkerOrganization = TUTORIAL_EMPLOYEE.organizations[0]
 
 const MOCK_PROVIDER_IS_ME = {
   ...TUTORIAL_EMPLOYEE,
@@ -254,6 +266,7 @@ function makeMockWaitingRoomEmployee(data: {
         waiting_room_id: null,
         reception_id: null,
         employment_id: data.employee_id,
+        seniority_order: 1,
         role: data.role,
         is_admin: false,
         in_departments: [],
@@ -282,6 +295,7 @@ function makeMockWaitingRoomEmployee(data: {
       },
     ],
     organization_id: 'tutorial-org-001',
+    seniority_order: 1,
     is_admin: false,
     href: '/tutorial',
     patient_encounter_employee_id: `${data.employee_id}-encounter`,
@@ -774,6 +788,7 @@ const TUTORIAL_SIDEBAR_VITALS: RenderedFindingRelativeToHealthWorker[] = [
             'health_worker_view': '/regulator/organizations/00000000-0000-1000-8000-000000000001',
           },
           'employment_id': 'ff745916-d480-41e7-a293-1435c463bfe4',
+          'seniority_order': 1,
           'role': 'nurse',
           'is_admin': false,
           'in_departments': [
@@ -804,6 +819,7 @@ const TUTORIAL_SIDEBAR_VITALS: RenderedFindingRelativeToHealthWorker[] = [
         },
       ],
       'employee_id': 'ff745916-d480-41e7-a293-1435c463bfe4',
+      'seniority_order': 1,
       'organization_id': '00000000-0000-1000-8000-000000000001',
       'role': 'nurse',
       'is_admin': false,
@@ -889,6 +905,7 @@ const TUTORIAL_SIDEBAR_VITALS: RenderedFindingRelativeToHealthWorker[] = [
             'health_worker_view': '/regulator/organizations/00000000-0000-1000-8000-000000000001',
           },
           'employment_id': 'ff745916-d480-41e7-a293-1435c463bfe4',
+          'seniority_order': 1,
           'role': 'nurse',
           'is_admin': false,
           'in_departments': [
@@ -919,6 +936,7 @@ const TUTORIAL_SIDEBAR_VITALS: RenderedFindingRelativeToHealthWorker[] = [
         },
       ],
       'employee_id': 'ff745916-d480-41e7-a293-1435c463bfe4',
+      'seniority_order': 1,
       'organization_id': '00000000-0000-1000-8000-000000000001',
       'role': 'nurse',
       'is_admin': false,
@@ -1004,6 +1022,7 @@ const TUTORIAL_SIDEBAR_VITALS: RenderedFindingRelativeToHealthWorker[] = [
             'health_worker_view': '/regulator/organizations/00000000-0000-1000-8000-000000000001',
           },
           'employment_id': 'ff745916-d480-41e7-a293-1435c463bfe4',
+          'seniority_order': 1,
           'role': 'nurse',
           'is_admin': false,
           'in_departments': [
@@ -1034,6 +1053,7 @@ const TUTORIAL_SIDEBAR_VITALS: RenderedFindingRelativeToHealthWorker[] = [
         },
       ],
       'employee_id': 'ff745916-d480-41e7-a293-1435c463bfe4',
+      'seniority_order': 1,
       'organization_id': '00000000-0000-1000-8000-000000000001',
       'role': 'nurse',
       'is_admin': false,
@@ -1115,6 +1135,7 @@ const TUTORIAL_SIDEBAR_VITALS: RenderedFindingRelativeToHealthWorker[] = [
             'health_worker_view': '/regulator/organizations/00000000-0000-1000-8000-000000000001',
           },
           'employment_id': 'ff745916-d480-41e7-a293-1435c463bfe4',
+          'seniority_order': 1,
           'role': 'nurse',
           'is_admin': false,
           'in_departments': [
@@ -1145,6 +1166,7 @@ const TUTORIAL_SIDEBAR_VITALS: RenderedFindingRelativeToHealthWorker[] = [
         },
       ],
       'employee_id': 'ff745916-d480-41e7-a293-1435c463bfe4',
+      'seniority_order': 1,
       'organization_id': '00000000-0000-1000-8000-000000000001',
       'role': 'nurse',
       'is_admin': false,
@@ -1226,6 +1248,7 @@ const TUTORIAL_SIDEBAR_VITALS: RenderedFindingRelativeToHealthWorker[] = [
             'health_worker_view': '/regulator/organizations/00000000-0000-1000-8000-000000000001',
           },
           'employment_id': 'ff745916-d480-41e7-a293-1435c463bfe4',
+          'seniority_order': 1,
           'role': 'nurse',
           'is_admin': false,
           'in_departments': [
@@ -1256,6 +1279,7 @@ const TUTORIAL_SIDEBAR_VITALS: RenderedFindingRelativeToHealthWorker[] = [
         },
       ],
       'employee_id': 'ff745916-d480-41e7-a293-1435c463bfe4',
+      'seniority_order': 1,
       'organization_id': '00000000-0000-1000-8000-000000000001',
       'role': 'nurse',
       'is_admin': false,
@@ -1341,6 +1365,7 @@ const TUTORIAL_SIDEBAR_VITALS: RenderedFindingRelativeToHealthWorker[] = [
             'health_worker_view': '/regulator/organizations/00000000-0000-1000-8000-000000000001',
           },
           'employment_id': 'ff745916-d480-41e7-a293-1435c463bfe4',
+          'seniority_order': 1,
           'role': 'nurse',
           'is_admin': false,
           'in_departments': [
@@ -1371,6 +1396,7 @@ const TUTORIAL_SIDEBAR_VITALS: RenderedFindingRelativeToHealthWorker[] = [
         },
       ],
       'employee_id': 'ff745916-d480-41e7-a293-1435c463bfe4',
+      'seniority_order': 1,
       'organization_id': '00000000-0000-1000-8000-000000000001',
       'role': 'nurse',
       'is_admin': false,
@@ -1452,6 +1478,7 @@ const TUTORIAL_SIDEBAR_VITALS: RenderedFindingRelativeToHealthWorker[] = [
             'health_worker_view': '/regulator/organizations/00000000-0000-1000-8000-000000000001',
           },
           'employment_id': 'ff745916-d480-41e7-a293-1435c463bfe4',
+          'seniority_order': 1,
           'role': 'nurse',
           'is_admin': false,
           'in_departments': [
@@ -1482,6 +1509,7 @@ const TUTORIAL_SIDEBAR_VITALS: RenderedFindingRelativeToHealthWorker[] = [
         },
       ],
       'employee_id': 'ff745916-d480-41e7-a293-1435c463bfe4',
+      'seniority_order': 1,
       'organization_id': '00000000-0000-1000-8000-000000000001',
       'role': 'nurse',
       'is_admin': false,
@@ -1878,7 +1906,10 @@ function makeMockClinicEmployee(data: {
   profession: string
   specialty: string
   at_work: boolean
-}): RenderedEmployeeWithPresence {
+  seniority_order: number
+  senior_on_duty: boolean
+  senior_on_staff: boolean
+}): RenderedEmployeeWithPresenceAndSeniority {
   return {
     id: data.id,
     employee_id: data.employee_id,
@@ -1892,6 +1923,7 @@ function makeMockClinicEmployee(data: {
     demographics: { sex: data.sex, gender: data.gender, date_of_birth: data.date_of_birth },
     contact_details: { mobile_phone_number: null, address: null },
     ever_licensed_as_doctor: 0 as const,
+    next_appointment_within_hour: null,
     organizations: [
       {
         id: 'tutorial-org-001',
@@ -1907,6 +1939,7 @@ function makeMockClinicEmployee(data: {
         waiting_room_id: null,
         reception_id: null,
         employment_id: data.employee_id,
+        seniority_order: data.seniority_order,
         role: data.role,
         is_admin: false,
         in_departments: [{ id: `dept-${data.department.toLowerCase().replace(' ', '-')}`, name: data.department }],
@@ -1928,6 +1961,9 @@ function makeMockClinicEmployee(data: {
       },
     ],
     organization_id: 'tutorial-org-001',
+    seniority_order: data.seniority_order,
+    senior_on_duty: data.senior_on_duty,
+    senior_on_staff: data.senior_on_staff,
     is_admin: false,
     role: data.role,
     href: '/tutorial',
@@ -1943,7 +1979,7 @@ const SAPC = { name: 'South African Pharmacy Council', acronym: 'SAPC' }
  * Clinic employees available for routing during the tutorial.
  * Includes two triage nurses and a pharmacist (Bongani, the logged-in HW, is excluded).
  */
-export const TUTORIAL_CLINIC_EMPLOYEES: RenderedEmployeeWithPresence[] = [
+export const TUTORIAL_CLINIC_EMPLOYEES: RenderedEmployeeWithPresenceAndSeniority[] = [
   makeMockClinicEmployee({
     id: 'tutorial-hw-bongani',
     employee_id: 'tutorial-emp-bongani',
@@ -1960,6 +1996,9 @@ export const TUTORIAL_CLINIC_EMPLOYEES: RenderedEmployeeWithPresence[] = [
     profession: 'Nurse',
     specialty: 'Primary care',
     at_work: true,
+    seniority_order: 1,
+    senior_on_duty: true,
+    senior_on_staff: true,
   }),
   makeMockClinicEmployee({
     id: 'tutorial-hw-007',
@@ -1977,6 +2016,9 @@ export const TUTORIAL_CLINIC_EMPLOYEES: RenderedEmployeeWithPresence[] = [
     profession: 'Nurse',
     specialty: 'Triage',
     at_work: true,
+    seniority_order: 2,
+    senior_on_duty: false,
+    senior_on_staff: false,
   }),
   makeMockClinicEmployee({
     id: 'tutorial-hw-008',
@@ -1994,6 +2036,9 @@ export const TUTORIAL_CLINIC_EMPLOYEES: RenderedEmployeeWithPresence[] = [
     profession: 'Nurse',
     specialty: 'Triage',
     at_work: true,
+    seniority_order: 3,
+    senior_on_duty: false,
+    senior_on_staff: false,
   }),
   makeMockClinicEmployee({
     id: 'tutorial-hw-009',
@@ -2011,6 +2056,9 @@ export const TUTORIAL_CLINIC_EMPLOYEES: RenderedEmployeeWithPresence[] = [
     profession: 'Pharmacist',
     specialty: 'General pharmacy',
     at_work: true,
+    seniority_order: 4,
+    senior_on_duty: false,
+    senior_on_staff: false,
   }),
 ]
 
@@ -2275,6 +2323,7 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
                 'health_worker_view': '/regulator/organizations/00000000-0000-1000-8000-000000000001',
               },
               'employment_id': 'ff745916-d480-41e7-a293-1435c463bfe4',
+              'seniority_order': 1,
               'role': 'nurse',
               'is_admin': false,
               'in_departments': [
@@ -2305,6 +2354,7 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
             },
           ],
           'employee_id': 'ff745916-d480-41e7-a293-1435c463bfe4',
+          'seniority_order': 1,
           'organization_id': '00000000-0000-1000-8000-000000000001',
           'role': 'nurse',
           'is_admin': false,
@@ -2820,6 +2870,7 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
                   'health_worker_view': '/regulator/organizations/00000000-0000-1000-8000-000000000001',
                 },
                 'employment_id': 'ff745916-d480-41e7-a293-1435c463bfe4',
+                'seniority_order': 1,
                 'role': 'nurse',
                 'is_admin': false,
                 'in_departments': [
@@ -2850,6 +2901,7 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
               },
             ],
             'employee_id': 'ff745916-d480-41e7-a293-1435c463bfe4',
+            'seniority_order': 1,
             'organization_id': '00000000-0000-1000-8000-000000000001',
             'role': 'nurse',
             'is_admin': false,
@@ -3021,6 +3073,7 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
                   'health_worker_view': '/regulator/organizations/00000000-0000-1000-8000-000000000001',
                 },
                 'employment_id': 'ff745916-d480-41e7-a293-1435c463bfe4',
+                'seniority_order': 1,
                 'role': 'nurse',
                 'is_admin': false,
                 'in_departments': [
@@ -3051,6 +3104,7 @@ export const TUTORIAL_TASK_GROUPS: TaskGroup[] = [
               },
             ],
             'employee_id': 'ff745916-d480-41e7-a293-1435c463bfe4',
+            'seniority_order': 1,
             'organization_id': '00000000-0000-1000-8000-000000000001',
             'role': 'nurse',
             'is_admin': false,
@@ -3478,6 +3532,7 @@ export const TUTORIAL_ASSIGN_PRIORITY = {
                 'health_worker_view': '/regulator/organizations/00000000-0000-1000-8000-000000000001',
               },
               'employment_id': 'ff745916-d480-41e7-a293-1435c463bfe4',
+              'seniority_order': 1,
               'role': 'nurse',
               'is_admin': false,
               'in_departments': [
@@ -3510,6 +3565,7 @@ export const TUTORIAL_ASSIGN_PRIORITY = {
             },
           ],
           'employee_id': 'ff745916-d480-41e7-a293-1435c463bfe4',
+          'seniority_order': 1,
           'organization_id': '00000000-0000-1000-8000-000000000001',
           'role': 'nurse',
           'is_admin': false,
@@ -3605,6 +3661,7 @@ export const TUTORIAL_ASSIGN_PRIORITY = {
                 'health_worker_view': '/regulator/organizations/00000000-0000-1000-8000-000000000001',
               },
               'employment_id': 'ff745916-d480-41e7-a293-1435c463bfe4',
+              'seniority_order': 1,
               'role': 'nurse',
               'is_admin': false,
               'in_departments': [
@@ -3637,6 +3694,7 @@ export const TUTORIAL_ASSIGN_PRIORITY = {
             },
           ],
           'employee_id': 'ff745916-d480-41e7-a293-1435c463bfe4',
+          'seniority_order': 1,
           'organization_id': '00000000-0000-1000-8000-000000000001',
           'role': 'nurse',
           'is_admin': false,
@@ -3738,6 +3796,7 @@ export const TUTORIAL_ASSIGN_PRIORITY = {
                 'health_worker_view': '/regulator/organizations/00000000-0000-1000-8000-000000000001',
               },
               'employment_id': 'ff745916-d480-41e7-a293-1435c463bfe4',
+              'seniority_order': 1,
               'role': 'nurse',
               'is_admin': false,
               'in_departments': [
@@ -3770,6 +3829,7 @@ export const TUTORIAL_ASSIGN_PRIORITY = {
             },
           ],
           'employee_id': 'ff745916-d480-41e7-a293-1435c463bfe4',
+          'seniority_order': 1,
           'organization_id': '00000000-0000-1000-8000-000000000001',
           'role': 'nurse',
           'is_admin': false,
@@ -3867,6 +3927,7 @@ export const TUTORIAL_ASSIGN_PRIORITY = {
                 'health_worker_view': '/regulator/organizations/00000000-0000-1000-8000-000000000001',
               },
               'employment_id': 'ff745916-d480-41e7-a293-1435c463bfe4',
+              'seniority_order': 1,
               'role': 'nurse',
               'is_admin': false,
               'in_departments': [
@@ -3899,6 +3960,7 @@ export const TUTORIAL_ASSIGN_PRIORITY = {
             },
           ],
           'employee_id': 'ff745916-d480-41e7-a293-1435c463bfe4',
+          'seniority_order': 1,
           'organization_id': '00000000-0000-1000-8000-000000000001',
           'role': 'nurse',
           'is_admin': false,
@@ -3996,6 +4058,7 @@ export const TUTORIAL_ASSIGN_PRIORITY = {
                 'health_worker_view': '/regulator/organizations/00000000-0000-1000-8000-000000000001',
               },
               'employment_id': 'ff745916-d480-41e7-a293-1435c463bfe4',
+              'seniority_order': 1,
               'role': 'nurse',
               'is_admin': false,
               'in_departments': [
@@ -4028,6 +4091,7 @@ export const TUTORIAL_ASSIGN_PRIORITY = {
             },
           ],
           'employee_id': 'ff745916-d480-41e7-a293-1435c463bfe4',
+          'seniority_order': 1,
           'organization_id': '00000000-0000-1000-8000-000000000001',
           'role': 'nurse',
           'is_admin': false,
@@ -4132,6 +4196,7 @@ export const TUTORIAL_ASSIGN_PRIORITY = {
                 'health_worker_view': '/regulator/organizations/00000000-0000-1000-8000-000000000001',
               },
               'employment_id': 'ff745916-d480-41e7-a293-1435c463bfe4',
+              'seniority_order': 1,
               'role': 'nurse',
               'is_admin': false,
               'in_departments': [
@@ -4164,6 +4229,7 @@ export const TUTORIAL_ASSIGN_PRIORITY = {
             },
           ],
           'employee_id': 'ff745916-d480-41e7-a293-1435c463bfe4',
+          'seniority_order': 1,
           'organization_id': '00000000-0000-1000-8000-000000000001',
           'role': 'nurse',
           'is_admin': false,
@@ -4269,6 +4335,7 @@ export const TUTORIAL_ASSIGN_PRIORITY = {
                 'health_worker_view': '/regulator/organizations/00000000-0000-1000-8000-000000000001',
               },
               'employment_id': 'ff745916-d480-41e7-a293-1435c463bfe4',
+              'seniority_order': 1,
               'role': 'nurse',
               'is_admin': false,
               'in_departments': [
@@ -4301,6 +4368,7 @@ export const TUTORIAL_ASSIGN_PRIORITY = {
             },
           ],
           'employee_id': 'ff745916-d480-41e7-a293-1435c463bfe4',
+          'seniority_order': 1,
           'organization_id': '00000000-0000-1000-8000-000000000001',
           'role': 'nurse',
           'is_admin': false,
@@ -4403,6 +4471,7 @@ export const TUTORIAL_ASSIGN_PRIORITY = {
                 'health_worker_view': '/regulator/organizations/00000000-0000-1000-8000-000000000001',
               },
               'employment_id': 'ff745916-d480-41e7-a293-1435c463bfe4',
+              'seniority_order': 1,
               'role': 'nurse',
               'is_admin': false,
               'in_departments': [
@@ -4435,6 +4504,7 @@ export const TUTORIAL_ASSIGN_PRIORITY = {
             },
           ],
           'employee_id': 'ff745916-d480-41e7-a293-1435c463bfe4',
+          'seniority_order': 1,
           'organization_id': '00000000-0000-1000-8000-000000000001',
           'role': 'nurse',
           'is_admin': false,
@@ -4524,6 +4594,7 @@ export const TUTORIAL_ASSIGN_PRIORITY = {
                 'health_worker_view': '/regulator/organizations/00000000-0000-1000-8000-000000000001',
               },
               'employment_id': 'ff745916-d480-41e7-a293-1435c463bfe4',
+              'seniority_order': 1,
               'role': 'nurse',
               'is_admin': false,
               'in_departments': [
@@ -4556,6 +4627,7 @@ export const TUTORIAL_ASSIGN_PRIORITY = {
             },
           ],
           'employee_id': 'ff745916-d480-41e7-a293-1435c463bfe4',
+          'seniority_order': 1,
           'organization_id': '00000000-0000-1000-8000-000000000001',
           'role': 'nurse',
           'is_admin': false,
@@ -4639,6 +4711,7 @@ export const TUTORIAL_ASSIGN_PRIORITY = {
                 'health_worker_view': '/regulator/organizations/00000000-0000-1000-8000-000000000001',
               },
               'employment_id': 'ff745916-d480-41e7-a293-1435c463bfe4',
+              'seniority_order': 1,
               'role': 'nurse',
               'is_admin': false,
               'in_departments': [
@@ -4671,6 +4744,7 @@ export const TUTORIAL_ASSIGN_PRIORITY = {
             },
           ],
           'employee_id': 'ff745916-d480-41e7-a293-1435c463bfe4',
+          'seniority_order': 1,
           'organization_id': '00000000-0000-1000-8000-000000000001',
           'role': 'nurse',
           'is_admin': false,
@@ -4750,6 +4824,7 @@ export const TUTORIAL_ASSIGN_PRIORITY = {
                 'health_worker_view': '/regulator/organizations/00000000-0000-1000-8000-000000000001',
               },
               'employment_id': 'ff745916-d480-41e7-a293-1435c463bfe4',
+              'seniority_order': 1,
               'role': 'nurse',
               'is_admin': false,
               'in_departments': [
@@ -4782,6 +4857,7 @@ export const TUTORIAL_ASSIGN_PRIORITY = {
             },
           ],
           'employee_id': 'ff745916-d480-41e7-a293-1435c463bfe4',
+          'seniority_order': 1,
           'organization_id': '00000000-0000-1000-8000-000000000001',
           'role': 'nurse',
           'is_admin': false,
@@ -4880,6 +4956,7 @@ export const TUTORIAL_ASSIGN_PRIORITY = {
                 'health_worker_view': '/regulator/organizations/00000000-0000-1000-8000-000000000001',
               },
               'employment_id': 'ff745916-d480-41e7-a293-1435c463bfe4',
+              'seniority_order': 1,
               'role': 'nurse',
               'is_admin': false,
               'in_departments': [
@@ -4912,6 +4989,7 @@ export const TUTORIAL_ASSIGN_PRIORITY = {
             },
           ],
           'employee_id': 'ff745916-d480-41e7-a293-1435c463bfe4',
+          'seniority_order': 1,
           'organization_id': '00000000-0000-1000-8000-000000000001',
           'role': 'nurse',
           'is_admin': false,
@@ -5003,6 +5081,7 @@ export const TUTORIAL_ASSIGN_PRIORITY = {
                 'health_worker_view': '/regulator/organizations/00000000-0000-1000-8000-000000000001',
               },
               'employment_id': 'ff745916-d480-41e7-a293-1435c463bfe4',
+              'seniority_order': 1,
               'role': 'nurse',
               'is_admin': false,
               'in_departments': [
@@ -5035,6 +5114,7 @@ export const TUTORIAL_ASSIGN_PRIORITY = {
             },
           ],
           'employee_id': 'ff745916-d480-41e7-a293-1435c463bfe4',
+          'seniority_order': 1,
           'organization_id': '00000000-0000-1000-8000-000000000001',
           'role': 'nurse',
           'is_admin': false,
@@ -5112,6 +5192,7 @@ export const TUTORIAL_ASSIGN_PRIORITY = {
                 'health_worker_view': '/regulator/organizations/00000000-0000-1000-8000-000000000001',
               },
               'employment_id': 'ff745916-d480-41e7-a293-1435c463bfe4',
+              'seniority_order': 1,
               'role': 'nurse',
               'is_admin': false,
               'in_departments': [
@@ -5144,6 +5225,7 @@ export const TUTORIAL_ASSIGN_PRIORITY = {
             },
           ],
           'employee_id': 'ff745916-d480-41e7-a293-1435c463bfe4',
+          'seniority_order': 1,
           'organization_id': '00000000-0000-1000-8000-000000000001',
           'role': 'nurse',
           'is_admin': false,
@@ -5221,6 +5303,7 @@ export const TUTORIAL_ASSIGN_PRIORITY = {
                 'health_worker_view': '/regulator/organizations/00000000-0000-1000-8000-000000000001',
               },
               'employment_id': 'ff745916-d480-41e7-a293-1435c463bfe4',
+              'seniority_order': 1,
               'role': 'nurse',
               'is_admin': false,
               'in_departments': [
@@ -5253,6 +5336,7 @@ export const TUTORIAL_ASSIGN_PRIORITY = {
             },
           ],
           'employee_id': 'ff745916-d480-41e7-a293-1435c463bfe4',
+          'seniority_order': 1,
           'organization_id': '00000000-0000-1000-8000-000000000001',
           'role': 'nurse',
           'is_admin': false,
@@ -5297,7 +5381,7 @@ export const TUTORIAL_MANAGE_PATIENT_TASKS: Array<
     },
     's_expression': '(manage (snomed_concept "Oxygen therapy" "procedure"))',
     'existing_record': null,
-    'description': 'Administer 100% face mask oxygen for anaphylaxis patient',
+    'description': 'Administer 100% face mask oxygen',
   },
   {
     'atom': 'procedure',
@@ -5319,15 +5403,15 @@ export const TUTORIAL_MANAGE_PATIENT_TASKS: Array<
       'name': 'Product containing epinephrine',
       'category': 'medicinal product',
     },
-    'permissions': [{ 'role': 'nurse' }],
+    'permissions': [{ 'type': 'approved_by', 'role': 'shcp' }],
     'displays': {
       'finding': 'Patient management procedure Procedure',
       'value': 'Product containing epinephrine',
       'full': 'Patient management procedure Procedure: Product containing epinephrine',
     },
-    's_expression': '(manage (snomed_concept "Product containing epinephrine" "medicinal product") (permission (role nurse)))',
+    's_expression': '(manage (snomed_concept "Product containing epinephrine" "medicinal product") (approved_by (role shcp)))',
     'existing_record': null,
-    'description': 'Administer epinephrine 0.5mL (1:1000 solution) IM into mid outer thigh for anaphylaxis patient',
+    'description': 'Administer epinephrine 0.5mL (1:1000 solution) IM into mid outer thigh',
   },
   {
     'atom': 'procedure',
@@ -5349,15 +5433,15 @@ export const TUTORIAL_MANAGE_PATIENT_TASKS: Array<
       'name': 'Product containing only hydrocortisone',
       'category': 'medicinal product',
     },
-    'permissions': [{ 'role': 'nurse' }],
+    'permissions': [{ 'type': 'approved_by', 'role': 'shcp' }],
     'displays': {
       'finding': 'Patient management procedure Procedure',
       'value': 'Product containing only hydrocortisone',
       'full': 'Patient management procedure Procedure: Product containing only hydrocortisone',
     },
-    's_expression': '(manage (snomed_concept "Product containing only hydrocortisone" "medicinal product") (permission (role nurse)))',
+    's_expression': '(manage (snomed_concept "Product containing only hydrocortisone" "medicinal product") (approved_by (role shcp)))',
     'existing_record': null,
-    'description': 'Administer hydrocortisone 200mg IM/slow IV for anaphylaxis patient',
+    'description': 'Administer hydrocortisone 200mg IM/slow IV',
   },
   {
     'atom': 'procedure',
@@ -5379,15 +5463,15 @@ export const TUTORIAL_MANAGE_PATIENT_TASKS: Array<
       'name': 'Product containing only promethazine',
       'category': 'medicinal product',
     },
-    'permissions': [{ 'role': 'nurse' }],
+    'permissions': [{ 'type': 'approved_by', 'role': 'shcp' }],
     'displays': {
       'finding': 'Patient management procedure Procedure',
       'value': 'Product containing only promethazine',
       'full': 'Patient management procedure Procedure: Product containing only promethazine',
     },
-    's_expression': '(manage (snomed_concept "Product containing only promethazine" "medicinal product") (permission (role nurse)))',
+    's_expression': '(manage (snomed_concept "Product containing only promethazine" "medicinal product") (approved_by (role shcp)))',
     'existing_record': null,
-    'description': 'Administer promethazine 50mg IM/slow IV for anaphylaxis patient',
+    'description': 'Administer promethazine 50mg IM/slow IV',
   },
   {
     'atom': 'procedure',
@@ -5409,7 +5493,7 @@ export const TUTORIAL_MANAGE_PATIENT_TASKS: Array<
       'name': 'Product containing precisely sodium chloride 9 milligram/1 milliliter conventional release solution for infusion and/or injection',
       'category': 'clinical drug',
     },
-    'permissions': [{ 'role': 'nurse' }],
+    'permissions': [{ 'type': 'approved_by', 'role': 'shcp' }],
     'displays': {
       'finding': 'Patient management procedure Procedure',
       'value': 'Product containing precisely sodium chloride 9 milligram/1 milliliter conventional release solution for infusion and/or injection',
@@ -5417,9 +5501,9 @@ export const TUTORIAL_MANAGE_PATIENT_TASKS: Array<
         'Patient management procedure Procedure: Product containing precisely sodium chloride 9 milligram/1 milliliter conventional release solution for infusion and/or injection',
     },
     's_expression':
-      '(manage (snomed_concept "Product containing precisely sodium chloride 9 milligram/1 milliliter conventional release solution for infusion and/or injection" "clinical drug") (permission (role nurse)))',
+      '(manage (snomed_concept "Product containing precisely sodium chloride 9 milligram/1 milliliter conventional release solution for infusion and/or injection" "clinical drug") (approved_by (role shcp)))',
     'existing_record': null,
-    'description': 'Administer sodium chloride 0.9% 1-2L IV rapidly for anaphylaxis patient',
+    'description': 'Administer sodium chloride 0.9% 1-2L IV rapidly',
   },
   {
     'atom': 'procedure',
@@ -5444,6 +5528,6 @@ export const TUTORIAL_MANAGE_PATIENT_TASKS: Array<
     },
     's_expression': '(manage (snomed_concept "Elevation of lower limb" "procedure"))',
     'existing_record': null,
-    'description': 'Raise legs for anaphylaxis patient',
+    'description': 'Raise legs',
   },
 ]

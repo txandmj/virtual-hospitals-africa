@@ -1,10 +1,117 @@
 import { sql } from 'kysely'
+import { Client } from 'pg'
 import { isPriority, ORDERED_PRIORITIES, Priority, PRIORITY_SNOMED_CODES } from '../../shared/priorities.ts'
 import { NonEmptyArray, PostgresInterval, RenderedNotification, TrxOrDb, TrxOrDbOrQueryCreator } from '../../types.ts'
 import { orderByArrayPosition } from '../helpers.ts'
 import { timeAgoDisplay } from '../../util/timeAgoDisplay.ts'
 import { base } from './_base.ts'
 import { assertOr400 } from '../../util/assertOr.ts'
+import { opts } from '../db.ts'
+import { assert } from 'std/assert/assert.ts'
+import { isUUID } from '../../util/uuid.ts'
+import { exists } from '../../util/exists.ts'
+import assertHasProperty from '../../util/assertHasProperty.ts'
+
+const _PUBSUB_GLOBAL_KEY = '__vha_notificationsPubSub__'
+
+type NotificationInsertedPayload = {
+  id: string
+  health_worker_id: string
+}
+
+type NotificationsPubSub = {
+  any: {
+    subscribe(callback: (notification: NotificationInsertedPayload) => void): void
+    unsubscribe(callback: (notification: NotificationInsertedPayload) => void): void
+  }
+  by_health_worker_id: {
+    subscribe(health_worker_id: string, callback: (notification_id: string) => void): void
+    unsubscribe(health_worker_id: string, callback: (notification_id: string) => void): void
+  }
+  shutdown(): Promise<void>
+}
+
+function notifySubscribers<T>(subscribers: Iterable<(value: T) => void>, value: T) {
+  for (const subscriber of subscribers) {
+    try {
+      subscriber(value)
+    } catch (error) {
+      console.error('notifications pub/sub subscriber threw', { value, error })
+    }
+  }
+}
+
+let notifications_pub_sub_promise: Promise<NotificationsPubSub> | undefined
+
+async function createNotificationsPubSub(): Promise<NotificationsPubSub> {
+  const any_subscribers = new Set<(notification: NotificationInsertedPayload) => void>()
+  const by_health_worker_id_subscribers = new Map<string, Set<(notification_id: string) => void>>()
+
+  const client = new Client(opts || {})
+  await client.connect()
+  await client.query(`LISTEN health_worker_notification_inserted`)
+
+  const onNotification = (event: { channel?: string; payload?: string }) => {
+    if (event.channel !== 'health_worker_notification_inserted') return
+    assert(event.payload)
+    const notification = JSON.parse(event.payload)
+    assertHasProperty(notification, 'id')
+    assertHasProperty(notification, 'health_worker_id')
+    assert(isUUID(notification.id))
+    assert(isUUID(notification.health_worker_id))
+    const payload: NotificationInsertedPayload = {
+      id: notification.id,
+      health_worker_id: notification.health_worker_id,
+    }
+    notifySubscribers(any_subscribers, payload)
+    const subscriptions = by_health_worker_id_subscribers.get(payload.health_worker_id)
+    if (subscriptions?.size) {
+      notifySubscribers(subscriptions, payload.id)
+    }
+  }
+  client.on('notification', onNotification)
+
+  return {
+    any: {
+      subscribe(callback: (notification: NotificationInsertedPayload) => void) {
+        any_subscribers.add(callback)
+      },
+      unsubscribe(callback: (notification: NotificationInsertedPayload) => void) {
+        any_subscribers.delete(callback)
+      },
+    },
+    by_health_worker_id: {
+      subscribe(health_worker_id: string, callback: (notification_id: string) => void) {
+        assert(isUUID(health_worker_id))
+        if (!by_health_worker_id_subscribers.has(health_worker_id)) {
+          by_health_worker_id_subscribers.set(health_worker_id, new Set())
+        }
+        const subscriptions = exists(by_health_worker_id_subscribers.get(health_worker_id))
+        subscriptions.add(callback)
+      },
+      unsubscribe(health_worker_id: string, callback: (notification_id: string) => void) {
+        assert(isUUID(health_worker_id))
+        const subscriptions = by_health_worker_id_subscribers.get(health_worker_id)
+        subscriptions?.delete(callback)
+        if (!subscriptions?.size) {
+          by_health_worker_id_subscribers.delete(health_worker_id)
+        }
+      },
+    },
+    async shutdown() {
+      any_subscribers.clear()
+      by_health_worker_id_subscribers.clear()
+      client.removeListener('notification', onNotification)
+      client.removeAllListeners('notification')
+      try {
+        await client.query('UNLISTEN health_worker_notification_inserted')
+      } catch {
+        // Connection may already be closing.
+      }
+      await client.end()
+    },
+  }
+}
 
 // Deceased is in ORDERED_PRIORITIES but is not assigned as a live encounter triage level.
 const ENCOUNTER_ORDERED_PRIORITIES = ORDERED_PRIORITIES.filter(
@@ -182,5 +289,44 @@ export const notifications = base({
 
     const priority = row?.encounter_priority
     return priority && isPriority(priority) ? priority : null
+  },
+  async markSeen(
+    trx: TrxOrDb,
+    { health_worker_id, notification_ids }: {
+      health_worker_id: string
+      notification_ids: string[]
+    },
+  ): Promise<number> {
+    assertOr400(health_worker_id)
+    if (!notification_ids.length) return 0
+    const result = await trx
+      .updateTable('health_worker_web_notifications')
+      .set({ seen_at: new Date() })
+      .where('health_worker_id', '=', health_worker_id)
+      .where('id', 'in', notification_ids)
+      .where('seen_at', 'is', null)
+      .executeTakeFirst()
+    return Number(result.numUpdatedRows)
+  },
+  async initializeNotificationsPubSub(): Promise<NotificationsPubSub> {
+    // deno-lint-ignore no-explicit-any
+    const existing = (globalThis as any)[_PUBSUB_GLOBAL_KEY] as NotificationsPubSub | undefined
+    if (existing) return existing
+
+    notifications_pub_sub_promise ||= createNotificationsPubSub().then((instance) => {
+      // deno-lint-ignore no-explicit-any
+      ;(globalThis as any)[_PUBSUB_GLOBAL_KEY] = instance
+      return instance
+    })
+    return await notifications_pub_sub_promise
+  },
+  async closeNotificationsPubSub(opts: { graceful: boolean }) {
+    assert(!opts.graceful, 'TODO support a graceful mode')
+    if (!notifications_pub_sub_promise) return
+    const pub_sub = await notifications_pub_sub_promise
+    await pub_sub.shutdown()
+    // deno-lint-ignore no-explicit-any
+    delete (globalThis as any)[_PUBSUB_GLOBAL_KEY]
+    notifications_pub_sub_promise = undefined
   },
 })

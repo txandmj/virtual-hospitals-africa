@@ -95,9 +95,9 @@ describe.skip('patient chatbot', () => {
         () =>
           Promise.resolve(
             {
-              kind: 'calendar#free_busy' as const,
-              time_min,
-              time_max,
+              kind: 'calendar#freeBusy' as const,
+              timeMin: time_min,
+              timeMax: time_max,
               calendars: {
                 [health_worker.calendars!.gcal_appointments_calendar_id]: {
                   busy: [

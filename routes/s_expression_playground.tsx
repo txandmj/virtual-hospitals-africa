@@ -3,7 +3,8 @@ import { formatExpressionWithErrorAt, parseWithSchema } from '../shared/s_expres
 import { any_rule } from '../shared/s_expression_schemas.ts'
 import { json } from '../util/responses.ts'
 import SExpressionPlayground from '../islands/SExpressionPlayground.tsx'
-import { allConceptsToLookFor, conceptDoesNotExist } from '../test/shared/compiled_s_expressions.test.ts'
+import { allConceptsToLookFor } from '../shared/s_expression_concepts.ts'
+import { conceptDoesNotExist } from '../db/models/snomed_concept_exists.ts'
 import { stripComments } from '../s_expression/compile.ts'
 
 function countInstances(str: string, needle: string): number {

@@ -16,8 +16,8 @@ import {
   HISTORY_TAKING_LIMITED,
   PATIENT_REGISTRATION,
   PRENATAL_EXAMINATION_AND_CARE_OF_MOTHER,
-  REFERRAL_PLACED,
   REFERRAL_TO_ACCIDENT_AND_EMERGENCY_SERVICE,
+  REFERRAL_TO_PERSON,
   STABILIZATION,
   TAKING_PATIENT_VITAL_SIGNS_ASSESSMENT,
   TELEMEDICINE_CONSULTATION_WITH_PATIENT,
@@ -27,7 +27,8 @@ import {
 export const WORKFLOWS = [
   'registration' as const,
   'triage' as const,
-  'referral_placed' as const,
+  'check_with_colleague' as const,
+  'hand_over' as const,
   'emergency_escalation' as const,
   'stabilization' as const,
   'consultation' as const,
@@ -43,7 +44,8 @@ export type Workflow = (typeof WORKFLOWS)[number]
 export const WORKFLOW_SNOMED_CONCEPTS = {
   registration: PATIENT_REGISTRATION,
   triage: TRIAGE,
-  referral_placed: REFERRAL_PLACED,
+  check_with_colleague: REFERRAL_TO_PERSON,
+  hand_over: HANDOFF_COMMUNICATION,
   emergency_escalation: REFERRAL_TO_ACCIDENT_AND_EMERGENCY_SERVICE,
   stabilization: STABILIZATION,
   consultation: ENCOUNTER_FOR_PROBLEM,
@@ -75,8 +77,11 @@ export const WORKFLOW_STEPS = {
     'recommended_doses',
     'route_patient',
   ],
-  referral_placed: [
-    'confirm_handoff',
+  check_with_colleague: [
+    'await_instructions',
+  ],
+  hand_over: [
+    'confirm_hand_over',
   ],
   emergency_escalation: [
     'identify_patient',
@@ -141,9 +146,6 @@ export const WORKFLOW_STEP_SNOMED_CONCEPTS: Partial<
     'measure_vitals': TAKING_PATIENT_VITAL_SIGNS_ASSESSMENT,
     'additional_tasks_and_investigations': EVALUATION_PROCEDURE,
     // 'assign_priority': '',
-  },
-  referral_placed: {
-    'confirm_handoff': HANDOFF_COMMUNICATION,
   },
 }
 

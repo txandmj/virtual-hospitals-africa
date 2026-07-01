@@ -1,29 +1,18 @@
 import { notifications } from '../../db/models/notifications.ts'
-import { LoggedInHealthWorkerContext } from '../../types.ts'
+import { LoggedInHealthWorkerContext, RenderedNotification } from '../../types.ts'
 import upgradeWebsocket from '../../util/websocket.ts'
 import last from '../../util/last.ts'
 
-export default upgradeWebsocket((
-  ctx: LoggedInHealthWorkerContext,
-  socket: WebSocket,
-) => {
-  console.log('upgraded websocket')
-  // deno-lint-ignore no-explicit-any
-  let timeout: any
-  let past_ts: Date | undefined
+export const handler = {
+  GET: upgradeWebsocket((
+    ctx: LoggedInHealthWorkerContext,
+    socket: WebSocket,
+  ) => {
+    let past_ts: Date | undefined
+    const health_worker_id = ctx.state.health_worker.id
+    let pub_sub: Awaited<ReturnType<typeof notifications.initializeNotificationsPubSub>> | undefined
 
-  async function loop() {
-    console.log('notifications-websocket loop')
-    notifications.verbose = true
-    const new_notifications = await notifications.findAll(
-      ctx.state.trx,
-      {
-        health_worker_id: ctx.state.health_worker.id,
-        past_ts,
-      },
-    )
-    for (const new_notification of new_notifications) {
-      console.log('new_notification weklewkl', new_notification)
+    const sendIfNew = (new_notification: RenderedNotification) => {
       if (!past_ts || (new_notification.created_at > past_ts)) {
         socket.send(JSON.stringify({
           ...new_notification,
@@ -32,23 +21,64 @@ export default upgradeWebsocket((
       }
       past_ts = new_notification.created_at
     }
-    timeout = setTimeout(loop, 1000)
-  }
 
-  socket.onopen = async () => {
-    const notifs = await notifications.findAll(
-      ctx.state.trx,
-      {
-        health_worker_id: ctx.state.health_worker.id,
-      },
-    )
-    past_ts = last(notifs)?.created_at
-    await loop()
-  }
-  socket.onclose = () => clearTimeout(timeout)
-  socket.onerror = (/* error */) => {
-    // TODO: distinguish between different socket errors?
-    // console.error('SOCKET ERROR:', error)
-    clearTimeout(timeout)
-  }
-})
+    const sendNotificationSummary = async () => {
+      if (socket.readyState !== WebSocket.OPEN) return
+      const unread_count = await notifications.countAll(ctx.state.trx, {
+        health_worker_id,
+        only_unread: true,
+      })
+      const highest_priority = await notifications.highestUnreadPriority(
+        ctx.state.trx,
+        { health_worker_id },
+      )
+      socket.send(JSON.stringify({
+        type: 'notification_summary',
+        unread_count,
+        highest_priority,
+      }))
+    }
+
+    const on_notification = async (notification_id: string) => {
+      try {
+        const new_notification = await notifications.getByIdOptional(
+          ctx.state.trx,
+          notification_id,
+          { health_worker_id },
+        )
+        if (!new_notification) return
+        sendIfNew(new_notification)
+        await sendNotificationSummary()
+      } catch (error) {
+        console.error(error)
+      }
+    }
+
+    const cleanup = () => {
+      pub_sub?.by_health_worker_id.unsubscribe(health_worker_id, on_notification)
+    }
+
+    socket.onopen = async () => {
+      pub_sub = await notifications.initializeNotificationsPubSub()
+      pub_sub.by_health_worker_id.subscribe(health_worker_id, on_notification)
+
+      const notifs = await notifications.findAll(
+        ctx.state.trx,
+        { health_worker_id },
+      )
+      past_ts = last(notifs)?.created_at
+
+      const new_notifications = await notifications.findAll(
+        ctx.state.trx,
+        { health_worker_id, past_ts },
+      )
+      for (const new_notification of new_notifications) {
+        sendIfNew(new_notification)
+      }
+
+      await sendNotificationSummary()
+    }
+    socket.onclose = cleanup
+    socket.onerror = cleanup
+  }),
+}

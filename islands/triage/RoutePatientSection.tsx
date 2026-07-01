@@ -1,55 +1,16 @@
-import { Maybe, Names, Priority, RenderedEmployeeWithPresence, RenderedTaskToBeDone } from '../../types.ts'
+import { Maybe, Names, Priority, RenderedEmployeeWithPresenceAndSeniority, TaskWithPermissions, TriageNextStepRecommendations } from '../../types.ts'
 import { EncounterReason } from '../../db.d.ts'
 import { TextArea } from '../../islands/form/inputs/textarea.tsx'
 import FormRow from '../../components/library/FormRow.tsx'
 import FormSection from '../../components/library/FormSection.tsx'
-
-import { computed, useSignal } from '@preact/signals'
-import { employeeDisplay } from '../../util/healthWorkerDisplay.ts'
+import { useSignal } from '@preact/signals'
 import { HiddenInput } from '../../components/library/HiddenInput.tsx'
-import { assertUnreachable } from '../../util/assertUnreachable.ts'
-import { organizationOf } from '../../shared/employees.ts'
-import { TriageRoutePatientNextStep } from '../../shared/triage_route_patient.ts'
 import { NextStepSelect } from '../../components/library/NextStepSelect.tsx'
+import RecommendedCarePlan from '../../components/library/RecommendedCarePlan.tsx'
 import ProvidersSelect from '../ProvidersSelect.tsx'
 
-function defaultNextStep(priority: Priority, has_manage_patient_tasks: boolean): TriageRoutePatientNextStep {
-  switch (priority) {
-    case 'Non-urgent':
-      return 'await_consultation'
-    case 'Urgent':
-    case 'Deceased':
-      return has_manage_patient_tasks ? 'manage_and_refer' : 'refer'
-    case 'Very urgent':
-    case 'Emergency':
-      return 'stabilize_patient'
-    default:
-      return assertUnreachable(priority)
-  }
-}
-
-function getSHCP(clinic_employees: RenderedEmployeeWithPresence[]) {
-  return clinic_employees.find((employee) => organizationOf(employee).in_departments.some((department) => department.name === 'Primary care'))
-}
-
-function defaultToBeNotified(next_step: TriageRoutePatientNextStep, clinic_employees: RenderedEmployeeWithPresence[]): RenderedEmployeeWithPresence[] {
-  switch (next_step) {
-    case 'await_consultation':
-      return []
-    case 'refer':
-    case 'manage_and_refer':
-    case 'stabilize_patient': {
-      const shcp = getSHCP(clinic_employees)
-      return shcp ? [shcp] : []
-    }
-    default: {
-      return assertUnreachable(next_step)
-    }
-  }
-}
-
 export default function TriageRoutePatientSection(
-  { this_visit, patient, priority, clinic_employees, tasks_i_can_do, tasks_for_another }: {
+  { this_visit, patient, priority, clinic_employees, tasks_with_permissions, triage_next_step_recommendations }: {
     this_visit: {
       reason: Maybe<EncounterReason>
       notes?: Maybe<string>
@@ -62,27 +23,41 @@ export default function TriageRoutePatientSection(
       name: Priority
       target_treatment_time: Date | null
     }
-    clinic_employees: RenderedEmployeeWithPresence[]
-    tasks_i_can_do: Array<RenderedTaskToBeDone & { atom: 'procedure' }>
-    tasks_for_another: Array<RenderedTaskToBeDone & { atom: 'procedure' }>
+    clinic_employees: RenderedEmployeeWithPresenceAndSeniority[]
+    tasks_with_permissions: TaskWithPermissions[]
+    triage_next_step_recommendations: TriageNextStepRecommendations
   },
 ) {
-  const default_next_step = defaultNextStep(priority.name, !!tasks_i_can_do.length)
-  const next_step = useSignal<string>(default_next_step)
-  const to_be_notified = useSignal<RenderedEmployeeWithPresence[]>(defaultToBeNotified(default_next_step, clinic_employees))
-  const to_be_notified_display = computed(() => [...to_be_notified.value].map(employeeDisplay).map((e) => e.display_name))
+  const next_step = useSignal<string>(triage_next_step_recommendations.next_step)
+
+  const to_be_notified = useSignal<RenderedEmployeeWithPresenceAndSeniority[]>(triage_next_step_recommendations.to_be_notified)
+
+  // TODO for tomorrow
+  // Panel to pick a facility to escalate to instead of within this facility
+  // Warning label if the staff you're escalating to aren't enough to do/get approval for what you need?
 
   return (
     <div class='flex flex-col gap-6'>
+      {!!tasks_with_permissions.length && (
+        <FormSection id='recommended_care_plan' header='Recommended Care Plan' always_column>
+          <FormRow>
+            <RecommendedCarePlan
+              to_be_notified={to_be_notified.value}
+              clinic_employees={clinic_employees}
+              tasks_with_permissions={tasks_with_permissions}
+              triage_next_step_recommendations={triage_next_step_recommendations}
+            />
+          </FormRow>
+        </FormSection>
+      )}
       <FormSection id='route_patient_next_step' header='Next Step' always_column>
         <FormRow>
           <NextStepSelect
             patient={patient}
             priority={priority}
-            default_next_step={default_next_step}
-            to_be_notified={to_be_notified_display.value}
-            tasks_i_can_do={tasks_i_can_do}
-            tasks_for_another={tasks_for_another}
+            default_next_step={triage_next_step_recommendations.next_step}
+            to_be_notified={to_be_notified.value}
+            tasks_with_permissions={tasks_with_permissions}
             onSelect={(step) => next_step.value = step}
           />
         </FormRow>

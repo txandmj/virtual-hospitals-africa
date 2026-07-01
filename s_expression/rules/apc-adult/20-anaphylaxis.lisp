@@ -33,7 +33,7 @@
   )
 )
 (task
-  "Raise legs for anaphylaxis patient"
+  "Raise legs"
   adult
   (active_condition (snomed_concept "Anaphylaxis" "disorder"))
   (manage
@@ -41,7 +41,7 @@
   )
 )
 (task
-  "Administer 100% face mask oxygen for anaphylaxis patient"
+  "Administer 100% face mask oxygen"
   adult
   (active_condition (snomed_concept "Anaphylaxis" "disorder"))
   (manage
@@ -49,39 +49,39 @@
   )
 )
 (task
-  "Administer epinephrine 0.5mL (1:1000 solution) IM into mid outer thigh for anaphylaxis patient"
+  "Administer epinephrine 0.5mL (1:1000 solution) IM into mid outer thigh"
   adult
   (active_condition (snomed_concept "Anaphylaxis" "disorder"))
   (manage
     (snomed_concept "Product containing epinephrine" "medicinal product")
-    (permission (role nurse))
+    (approved_by (role shcp))
   )
 )
 (task
-  "Administer sodium chloride 0.9% 1-2L IV rapidly for anaphylaxis patient"
+  "Administer sodium chloride 0.9% 1-2L IV rapidly"
   adult
   (active_condition (snomed_concept "Anaphylaxis" "disorder"))
   (manage
     (snomed_concept "Product containing precisely sodium chloride 9 milligram/1 milliliter conventional release solution for infusion and/or injection" "clinical drug")
-    (permission (role nurse))
+    (approved_by (role shcp))
   )
 )
 (task
-  "Administer hydrocortisone 200mg IM/slow IV for anaphylaxis patient"
+  "Administer hydrocortisone 200mg IM/slow IV"
   adult
   (active_condition (snomed_concept "Anaphylaxis" "disorder"))
   (manage
     (snomed_concept "Product containing only hydrocortisone" "medicinal product")
-    (permission (role nurse))
+    (approved_by (role shcp))
   )
 )
 (task
-  "Administer promethazine 50mg IM/slow IV for anaphylaxis patient"
+  "Administer promethazine 50mg IM/slow IV"
   adult
   (active_condition (snomed_concept "Anaphylaxis" "disorder"))
   (manage
     (snomed_concept "Product containing only promethazine" "medicinal product")
-    (permission (role nurse))
+    (approved_by (role shcp))
   )
 )
 (system_diagnosis_rule

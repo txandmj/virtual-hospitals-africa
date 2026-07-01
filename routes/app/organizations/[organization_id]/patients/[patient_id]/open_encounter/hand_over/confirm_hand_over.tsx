@@ -17,10 +17,10 @@ import Badge from '../../../../../../../../components/library/Badge.tsx'
 import { promiseProps } from '../../../../../../../../util/promiseProps.ts'
 import { patient_workflows } from '../../../../../../../../db/models/patient_workflows.ts'
 
-const ReferralPlacedConfirmHandoffSchema = z.object({})
+const HandOverConfirmHandOverSchema = z.object({})
 
 export const handler = postHandler(
-  ReferralPlacedConfirmHandoffSchema,
+  HandOverConfirmHandOverSchema,
   async (ctx: OpenEncounterWorkflowContext, _form_values) => {
     const { trx, encounter, organization_id, organization_pathname, organization_employment, patient, patient_id, patient_encounter_id } = ctx.state
     await completeLastStep(ctx)
@@ -70,7 +70,7 @@ export const handler = postHandler(
   },
 )
 
-async function ReferralPlacedConfirmHandoffPage(
+async function HandOverConfirmHandOverPage(
   ctx: OpenEncounterWorkflowContext,
 ) {
   const { trx, health_worker_id, encounter, organization_employment, organization_id } = ctx.state
@@ -91,7 +91,7 @@ async function ReferralPlacedConfirmHandoffPage(
         {primary_care_nurse && (
           <div class='flex items-center gap-3'>
             <Person person={employeeDisplay(primary_care_nurse)} />
-            <Badge content='Awaiting handoff' color='yellow' />
+            <Badge content='Awaiting handOver' color='yellow' />
           </div>
         )}
       </div>
@@ -115,4 +115,4 @@ async function ReferralPlacedConfirmHandoffPage(
   )
 }
 
-export default OpenEncounterWorkflowPage(ReferralPlacedConfirmHandoffPage)
+export default OpenEncounterWorkflowPage(HandOverConfirmHandOverPage)

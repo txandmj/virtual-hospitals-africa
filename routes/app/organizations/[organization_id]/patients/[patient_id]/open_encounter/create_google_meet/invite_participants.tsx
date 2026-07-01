@@ -79,14 +79,21 @@ async function CreateGoogleMeetInviteParticipantsPage(
   assertOr400(html_link, 'html_link is required')
   assertOr400(event_id, 'event_id is required')
 
-  const { facility_employees, hospital_employees } = await employees_presence.getForClinicAssumingTestHospital(
+  const { clinic_employees, hospital_employees } = await employees_presence.getForClinicAssumingTestHospital(
     ctx.state.trx,
-    ctx.state,
+    {
+      organization_id: ctx.state.organization_id,
+      excluding_health_worker: {
+        health_worker_id: ctx.state.health_worker_id,
+        seniority_order: ctx.state.organization_employment.seniority_order,
+        at_work: true,
+      },
+    },
   )
 
   return (
     <InviteParticipantsList
-      facility_employees={facility_employees}
+      clinic_employees={clinic_employees}
       hospital_employees={hospital_employees}
     />
   )

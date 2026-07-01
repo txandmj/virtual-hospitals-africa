@@ -80,11 +80,20 @@ export class GoogleClient {
       body: opts?.data ? JSON.stringify(opts.data) : undefined,
     })
     if (method !== 'delete') {
-      let data
+      let text: string
       try {
-        data = await response.json()
+        text = await response.text()
       } catch (error) {
         console.error(`${method} ${url}`, error)
+        assert(error instanceof Error)
+        return { result: 'other_error', error }
+      }
+      let data
+      try {
+        data = JSON.parse(text)
+      } catch (error) {
+        console.log({ text })
+        console.error(`${method} ${url}`, 'Unable to parse as JSON')
         assert(error instanceof Error)
         return { result: 'other_error', error }
       }
@@ -317,12 +326,12 @@ export class GoogleClient {
     calendarIds: string[]
   }): Promise<GCalFreeBusy> {
     const free_busy: GCalFreeBusy = await this.makeCalendarRequest(
-      '/free_busy',
+      '/freeBusy',
       {
         method: 'post',
         data: {
-          time_min: formatJohannesburg(time_min),
-          time_max: formatJohannesburg(time_max),
+          timeMin: formatJohannesburg(time_min),
+          timeMax: formatJohannesburg(time_max),
           timeZone: 'Africa/Johannesburg',
           items: calendarIds.map((id) => ({ id })),
         },
@@ -422,10 +431,10 @@ function testServerMock(
   // deno-lint-ignore no-explicit-any
 ): { result: 'success'; data: any } {
   requests_to_google.push([path, opts])
-  if (path === '/calendar/v3/free_busy' && opts?.method === 'post') {
+  if (path === '/calendar/v3/freeBusy' && opts?.method === 'post') {
     assert(isObjectLike(opts.data))
-    assert(opts.data.time_min)
-    assert(opts.data.time_max)
+    assert(opts.data.timeMin)
+    assert(opts.data.timeMax)
     assert(Array.isArray(opts.data.items))
     const calendars: GCalFreeBusy['calendars'] = {}
     for (const { id } of opts.data.items) {
@@ -436,9 +445,9 @@ function testServerMock(
     return {
       result: 'success' as const,
       data: {
-        kind: 'calendar#free_busy',
-        time_min: opts.data.time_min,
-        time_max: opts.data.time_max,
+        kind: 'calendar#freeBusy',
+        timeMin: opts.data.timeMin,
+        timeMax: opts.data.timeMax,
         calendars,
       },
     }

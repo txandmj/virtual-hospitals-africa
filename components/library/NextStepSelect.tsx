@@ -1,5 +1,5 @@
 import { TRIAGE_ROUTE_PATIENT_NEXT_STEPS, TriageRoutePatientNextStep } from '../../shared/triage_route_patient.ts'
-import { Names, Priority, RenderedTaskToBeDone } from '../../types.ts'
+import { Names, Priority, RenderedEmployeeWithPresenceAndSeniority, TaskWithPermissions } from '../../types.ts'
 import assertOneOf from '../../util/assertOneOf.ts'
 import capitalize from '../../util/capitalize.ts'
 import compact from '../../util/compact.ts'
@@ -7,9 +7,10 @@ import { ArrowTrendingUpIcon, AtSymbolIcon, ClockIcon } from './icons/heroicons/
 import { ActionsRadioGroupSelect } from './ActionsRadioGroupSelect.tsx'
 import { objectPronoun, posessivePronoun, pronoun } from '../../shared/sex_and_gender.ts'
 import { preferredName } from '../../util/asNames.ts'
+import { employeeDisplay } from '../../util/healthWorkerDisplay.ts'
 
 export function NextStepSelect(
-  { patient, default_next_step, priority, to_be_notified, tasks_i_can_do, tasks_for_another, onSelect }: {
+  { patient, default_next_step, priority, to_be_notified, tasks_with_permissions, onSelect }: {
     patient: {
       names: Names
       gender: string | null
@@ -19,13 +20,18 @@ export function NextStepSelect(
       name: Priority
       target_treatment_time: Date | null
     }
-    to_be_notified: string[]
-    tasks_i_can_do: Array<RenderedTaskToBeDone & { atom: 'procedure' }>
-    tasks_for_another: Array<RenderedTaskToBeDone & { atom: 'procedure' }>
+    to_be_notified: RenderedEmployeeWithPresenceAndSeniority[]
+    tasks_with_permissions: TaskWithPermissions[]
     onSelect(next_step: TriageRoutePatientNextStep): void
   },
 ) {
-  const staff = new Intl.ListFormat('en').format(to_be_notified) || 'staff'
+  const staff = new Intl.ListFormat('en').format(to_be_notified.map(employeeDisplay).map((e) => e.display_name)) || 'staff'
+  const no_approval_needed = tasks_with_permissions.filter((task) => task.permissions.type === 'no_approval_needed')
+
+  const recommended = (
+    <span key='recommended' className='italic'>Recommended based on {objectPronoun(patient)} having a {priority.name.toLowerCase()} case.</span>
+  )
+  const preferred_name = preferredName(patient, 'the patient')
 
   return (
     <ActionsRadioGroupSelect
@@ -43,50 +49,40 @@ export function NextStepSelect(
           iconForeground: 'text-green-700',
           iconBackground: 'bg-green-50',
           description: compact([
-            `I will show ${patient.names.preferred_name} to the waiting room.`,
+            `I will show ${preferred_name} to the waiting room.`,
             `${capitalize(pronoun(patient))} will be prioritized based on ${posessivePronoun(patient)} ${priority.name.toLowerCase()} case.`,
             priority.target_treatment_time &&
             `Target treatment time: ${new Date(priority.target_treatment_time).toLocaleTimeString('en', { hour: 'numeric', minute: 'numeric' })}`,
+            default_next_step === 'await_consultation' && recommended,
           ]),
         },
-        tasks_i_can_do.length && {
-          id: 'manage_and_refer' satisfies TriageRoutePatientNextStep,
-          name: 'Manage and refer',
+        default_next_step === 'hand_over' && {
+          id: 'hand_over' satisfies TriageRoutePatientNextStep,
+          name: 'Hand over',
           icon: AtSymbolIcon,
           iconForeground: 'text-yellow-700',
           iconBackground: 'bg-yellow-50',
           description: compact([
-            `I will stay here to manage ${patient.names.preferred_name}:`,
-            <ul key='manage-tasks' class='mt-1.5 list-disc list-inside space-y-1'>
-              {tasks_i_can_do.map((task, i) => <li key={i} class='text-xs text-gray-700'>{task.description}</li>)}
-            </ul>,
-            `${capitalize(staff)} will be notified immediately about ${posessivePronoun(patient)} case and location.${
-              tasks_for_another.length ? ' They may approve:' : ''
-            }`,
-            !!tasks_for_another.length && (
-              <ul key='pending-approval-tasks' class='mt-1.5 list-disc list-inside space-y-1'>
-                {tasks_for_another.map((task, i) => <li key={i} class='text-xs text-gray-700'>{task.description}</li>)}
-              </ul>
-            ),
-            default_next_step === 'manage_and_refer' && (
-              <span key='recommended' className='italic'>
-                Recommended based on {objectPronoun(patient)} having a {priority.name.toLowerCase()} case and tasks for you to manage.
-              </span>
-            ),
+            `${staff} will be notified immediately about ${preferred_name}'s case and location.`,
+            no_approval_needed.length
+              ? `I will manage ${posessivePronoun(patient)} care until hand over is confirmed.`
+              : `I will stay here with ${objectPronoun(patient)} until hand over is confirmed.`,
+            default_next_step === 'hand_over' && recommended,
           ]),
         },
-        !tasks_i_can_do.length && {
-          id: 'refer' satisfies TriageRoutePatientNextStep,
-          name: 'Refer',
+        default_next_step !== 'hand_over' && {
+          id: 'check_with_colleague' satisfies TriageRoutePatientNextStep,
+          name: 'Check with colleague',
           icon: AtSymbolIcon,
           iconForeground: 'text-yellow-700',
           iconBackground: 'bg-yellow-50',
           description: compact([
-            `${capitalize(staff)} will be notified immediately about ${preferredName(patient, 'the patient')}'s case and location.`,
-            `I will move on to triage another patient once they have confirmed they are taking over.`,
-            default_next_step === 'refer' && (
-              <span key='recommended' className='italic'>Recommended based on {objectPronoun(patient)} having a {priority.name.toLowerCase()} case.</span>
-            ),
+            `${staff} will be notified immediately about ${preferred_name}'s case and location.`,
+            `I will stay and await instructions`,
+            no_approval_needed.length
+              ? `I will manage ${posessivePronoun(patient)} care and await instructions.`
+              : `I will stay here with ${objectPronoun(patient)} and await instructions.`,
+            default_next_step === 'check_with_colleague' && recommended,
           ]),
         },
         {
@@ -97,38 +93,11 @@ export function NextStepSelect(
           iconBackground: 'bg-rose-50',
           description: compact([
             `I will transfer ${patient.names.preferred_name} to the stabilization area.`,
-            `${capitalize(staff)} will be notified immediately to meet us there.`,
-            default_next_step === 'stabilize_patient' && (
-              <span key='recommended' className='italic'>Recommended based on {objectPronoun(patient)} having a {priority.name.toLowerCase()} case.</span>
-            ),
+            `${staff} will be notified immediately to meet us there.`,
+            default_next_step === 'stabilize_patient' && recommended,
           ]),
         },
-        // {
-        //   id: 'confirm' as unknown as TriageRoutePatientNextStep,
-        //   name: 'Confirm treatment plan',
-        //   icon: AtSymbolIcon,
-        //   iconForeground: 'text-sky-700',
-        //   iconBackground: 'bg-sky-50',
-        //   description: compact([
-        //     `I will stay here with ${patient.names.preferred_name}.`,
-        //     `${capitalize(staff)} will be notified immediately about ${posessivePronoun(patient)} case to confirm next steps.`,
-        //     // default_next_step === 'hand_over' && (
-        //     //   <span key='recommended' className='italic'>Recommended based on {objectPronoun(patient)} having a {priority.name.toLowerCase()} case.</span>
-        //     // ),
-        //   ]),
-        // },
-        // {
-        //   id: 'come_back_later' satisfies TriageRoutePatientNextStep,
-        //   name: 'Come back later',
-        //   icon: ReceiptRefundIcon,
-        //   iconForeground: 'text-yellow-700',
-        //   iconBackground: 'bg-yellow-50',
-        //   description: compact([
-        //     `${capitalize(staff)} will be notified with my message.`,
-        //     `${patient.names.preferred_name} will stay here.`,
-        //     `I will serve other patients and come back once ${staff} ${to_be_notified.length === 1 ? 'has' : 'have'} responded.`,
-        //   ]),
-        // },
+        // TODO come_back_later?
       ])}
     />
   )

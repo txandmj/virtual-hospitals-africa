@@ -62,7 +62,7 @@ A task tells a health worker what to do (check for findings, take measurements, 
 )
 (manage
   (snomed_concept "Product containing epinephrine" "medicinal product")
-  (permission (role nurse))
+  (approved_by (role shcp))
 )
 ```
 

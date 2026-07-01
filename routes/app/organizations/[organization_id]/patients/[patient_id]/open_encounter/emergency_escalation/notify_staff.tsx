@@ -46,11 +46,15 @@ export async function EmergencyEscalationNotifyStaffPage(
   assertAllPriorStepsCompleted(ctx, {
     attempting_to_complete_workflow: false,
   })
-  const { trx, organization_id, health_worker_id } = ctx.state
+  const { trx, organization_id, health_worker_id, organization_employment } = ctx.state
 
-  const clinic_employees = await employees_presence.findAll(trx, {
+  const clinic_employees = await employees_presence.getAllAtOrganization(trx, {
     organization_id,
-    excluding_health_worker_id: health_worker_id,
+    excluding_health_worker: {
+      health_worker_id,
+      at_work: true,
+      seniority_order: organization_employment.seniority_order,
+    },
   })
 
   return <ProvidersSelect providers={clinic_employees} />

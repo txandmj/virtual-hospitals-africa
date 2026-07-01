@@ -188,13 +188,14 @@ export type VitalAssessment = 'consciousness' | 'mobility_assessment' | 'trauma_
 export type WarningSignPriority = 'Emergency' | 'Urgent' | 'Very urgent'
 
 export type Workflow =
+  | 'check_with_colleague'
   | 'consultation'
   | 'create_google_meet'
   | 'doctor_review'
   | 'emergency_escalation'
+  | 'hand_over'
   | 'maternity'
   | 'prescription_refill'
-  | 'referral_placed'
   | 'registration'
   | 'stabilization'
   | 'triage'
@@ -388,6 +389,7 @@ export interface Employment {
   is_admin: boolean
   organization_id: string
   role: string
+  seniority_order: number
   updated_at: Generated<Timestamp>
 }
 
@@ -565,6 +567,17 @@ export interface HealthWorkerWebNotifications {
   table_name: string
   title: string
   updated_at: Generated<Timestamp>
+}
+
+export interface HealthWorkerWebPushSubscriptions {
+  auth: string
+  created_at: Generated<Timestamp>
+  endpoint: string
+  health_worker_id: string
+  id: Generated<string>
+  p256dh: string
+  updated_at: Generated<Timestamp>
+  user_agent: string | null
 }
 
 export interface Icd10Categories {
@@ -1866,6 +1879,7 @@ export interface DB {
   health_worker_licence_revocations: HealthWorkerLicenceRevocations
   health_worker_licences: HealthWorkerLicences
   health_worker_web_notifications: HealthWorkerWebNotifications
+  health_worker_web_push_subscriptions: HealthWorkerWebPushSubscriptions
   health_workers: HealthWorkers
   icd10_categories: Icd10Categories
   icd10_codes: Icd10Codes

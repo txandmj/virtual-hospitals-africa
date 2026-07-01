@@ -8,7 +8,7 @@ import { formatAddress } from '../shared/addresses.ts'
 import compactMap from '../util/compactMap.ts'
 import sortBy from '../util/sortBy.ts'
 
-const GOOGLE_MAPS_API_KEY = getEnvVariableRequiredOutsideDockerQuickstart(
+export const GOOGLE_MAPS_API_KEY = getEnvVariableRequiredOutsideDockerQuickstart(
   'GOOGLE_MAPS_API_KEY',
 )
 

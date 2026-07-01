@@ -3,7 +3,14 @@
 // Route patient step - wraps RegistrationRoutePatientSection with mock data
 // =============================================================================
 
-import { getTutorialRoutePatientData, TUTORIAL_CLINIC_EMPLOYEES, TUTORIAL_MANAGE_PATIENT_TASKS } from '../../../shared/tutorial/mock-data.ts'
+import { applyPermissions } from '../../../shared/permissions.ts'
+import { triageNextStepRecommendations } from '../../../shared/triage_route_patient.ts'
+import {
+  getTutorialRoutePatientData,
+  TUTORIAL_CLINIC_EMPLOYEES,
+  TUTORIAL_MANAGE_PATIENT_TASKS,
+  TUTORIAL_ORGANIZATION_EMPLOYMENT,
+} from '../../../shared/tutorial/mock-data.ts'
 import TriageRoutePatientSection from '../../triage/RoutePatientSection.tsx'
 
 /**
@@ -12,6 +19,13 @@ import TriageRoutePatientSection from '../../triage/RoutePatientSection.tsx'
  */
 export function RoutePatientStep() {
   const { this_visit, patient_names } = getTutorialRoutePatientData()
+  const priority = {
+    name: 'Urgent' as const,
+    target_treatment_time: new Date(),
+  }
+
+  const tasks_with_permissions = applyPermissions(TUTORIAL_ORGANIZATION_EMPLOYMENT, TUTORIAL_CLINIC_EMPLOYEES, TUTORIAL_MANAGE_PATIENT_TASKS)
+  const triage_next_step_recommendations = triageNextStepRecommendations(priority.name, TUTORIAL_CLINIC_EMPLOYEES, tasks_with_permissions)
 
   return (
     <div data-tutorial='route-patient'>
@@ -21,13 +35,10 @@ export function RoutePatientStep() {
           names: patient_names,
           gender: 'woman',
         }}
-        priority={{
-          name: 'Urgent' as const,
-          target_treatment_time: new Date(),
-        }}
+        priority={priority}
         clinic_employees={TUTORIAL_CLINIC_EMPLOYEES}
-        tasks_i_can_do={TUTORIAL_MANAGE_PATIENT_TASKS}
-        tasks_for_another={[]}
+        tasks_with_permissions={tasks_with_permissions}
+        triage_next_step_recommendations={triage_next_step_recommendations}
       />
     </div>
   )
